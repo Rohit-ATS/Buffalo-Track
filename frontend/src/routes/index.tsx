@@ -1,3 +1,4 @@
+import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowDown,
@@ -17,6 +18,8 @@ import researcherPhoto from "@/assets/atlas-researcher.jpg";
 import { Button } from "@/components/ui/button";
 import { GITHUB_URL, PersonaSwitch, SearchBox } from "@/components/atlas-ui";
 import { coverage } from "@/lib/atlas-data";
+import { AtlasResults } from "@/components/atlas-results";
+import { searchAtlas } from "@/lib/atlas-search";
 
 export const Route = createFileRoute("/")({
   staticData: { sitemap: true },
@@ -82,6 +85,12 @@ function Index() {
   const [isOpening, setIsOpening] = useState(true);
   const mainRef = useRef<HTMLElement>(null);
 
+  // Hits the graph through a server function: RLS blocks the anon key, so the
+  // lookup has to run server-side with the service-role key.
+  const atlasSearch = useMutation({
+    mutationFn: (variables: { data: { query: string } }) => searchAtlas(variables),
+  });
+
   useEffect(() => {
     document.body.style.overflow = "hidden";
     const timer = window.setTimeout(() => {
@@ -111,7 +120,8 @@ function Index() {
     if (!next) return;
     setQuery(next);
     setResult(next);
-    window.setTimeout(() => document.querySelector("#sample-journey")?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+    atlasSearch.mutate({ data: { query: next } });
+    window.setTimeout(() => document.querySelector("#atlas-results")?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -218,6 +228,8 @@ function Index() {
           </div>
         </div>
       </section>
+
+      <AtlasResults result={atlasSearch.data} isPending={atlasSearch.isPending} />
 
       <div className="mt-12 overflow-hidden border-y border-border">
         <div className="marquee-track py-5 text-xs font-semibold">
