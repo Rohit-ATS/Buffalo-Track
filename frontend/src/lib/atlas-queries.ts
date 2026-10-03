@@ -768,7 +768,7 @@ export async function getDuplicateEffort(db: SupabaseClient): Promise<DuplicateE
 /** Priya's view: pick an effect class and/or pathway, get ranked units. */
 export async function searchByMechanism(
   db: SupabaseClient,
-  filters: { effectClass?: string; pathway?: string },
+  filters: { effectClass?: string | undefined; pathway?: string | undefined },
 ): Promise<DiseaseRef[]> {
   let query = db.from("atlas_diseases").select(DISEASE_SELECT);
   if (filters.effectClass) query = query.eq("effect_class", filters.effectClass);
