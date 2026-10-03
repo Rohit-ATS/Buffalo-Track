@@ -4,7 +4,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
  * Server-only Supabase client.
  *
  * RLS is enabled on `nodes`, `edges`, and `evidence` with no policies (see
- * supabase/migrations/0001_init.sql), so the anon key reads nothing. Reads go
+ * supabase/migrations), so the anon key reads nothing. Reads go
  * through the service-role key, which bypasses RLS — hence server-only. This
  * module must never be imported from a component that ships to the browser.
  */
