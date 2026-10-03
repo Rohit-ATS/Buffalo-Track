@@ -5,7 +5,7 @@ A graph-backed rare-disease atlas. Two halves:
 | Path        | What it is                                                                    |
 | ----------- | ----------------------------------------------------------------------------- |
 | `supabase/` | Postgres schema: `nodes`, `edges`, `evidence` (with pgvector embeddings)      |
-| `frontend/` | TanStack Start app — the search-first landing page and live graph lookup      |
+| `frontend/` | TanStack Start app — search-first landing page, research workspace, dashboard |
 
 Searching a gene, mechanism, or disorder on the landing page walks the graph: it
 finds the matching node, lists its edges with the number of evidence rows behind
@@ -68,6 +68,11 @@ The lookup runs in a TanStack Start **server function**:
   substring), then loads edges, neighbours, and evidence counts.
 - `frontend/src/components/atlas-results.tsx` — renders the match, its connections,
   and the evidence receipts.
+
+The research views (`/dashboard`, `/disease/$id`, `/compare`, `/mechanisms`,
+`/researchers`, `/methods`) read the static sample dataset in
+`frontend/src/lib/atlas-data.ts`, not the database. Only the landing-page search
+is live.
 
 Keep `SUPABASE_SERVICE_ROLE_KEY` unprefixed: anything named `VITE_*` is bundled
 into client JavaScript.
