@@ -12,6 +12,7 @@ Two layers live here:
 | `20261003000006_web_discovery.sql`         | Bright Data discovery output: runs, SERP candidates, fetched pages, extracted claims, discovered assets. See backend/DISCOVERY.md |
 | `20261003000007_effect_class_hyphenation.sql` | Renames `effect_class` values to match the plan's spelling (`loss-of-function`, not `loss of function`) |
 | `20261003000008_disease_entities.sql`      | `atlas_disease_entities` (MONDO), FK'd from `atlas_diseases` — Disease as its own node, separate from Mechanism Unit |
+| `20261003000009_loader_columns.sql`        | `atlas_symptoms.frequency`, `atlas_genes.clinvar_summary`/`.dosage_sensitivity` — see backend/LOADERS.md |
 
 | Seed                             | Loads                                                             |
 | --------------------------------- | ------------------------------------------------------------------ |
