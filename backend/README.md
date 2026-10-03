@@ -34,3 +34,5 @@ prefix, in the frontend server environment. It signs the browser's rate-limit
 identity without exposing a secret to the browser. Render injects `PORT`
 automatically. The blueprint fixes the API at one instance; use a shared rate
 limiter before scaling it out.
+
+Follow the complete [Render deployment checklist](RENDER_DEPLOY.md).

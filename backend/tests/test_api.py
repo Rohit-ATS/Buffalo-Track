@@ -4,6 +4,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 import httpx
+import pytest
 from fastapi.testclient import TestClient
 
 from app.atlas import AtlasRepository
@@ -123,6 +124,25 @@ def test_comma_separated_cors_origins_load_from_dotenv(tmp_path: Path) -> None:
     env_file.write_text("CORS_ORIGINS=http://localhost:8080,https://atlas.example.org\n")
     settings = Settings(_env_file=env_file)
     assert settings.cors_origins == ["http://localhost:8080", "https://atlas.example.org"]
+
+
+def test_production_with_database_requires_proxy_secret() -> None:
+    with pytest.raises(ValueError, match="BACKEND_PROXY_SECRET"):
+        Settings(
+            _env_file=None,
+            environment="production",
+            supabase_url="https://project.supabase.co",
+            supabase_service_role_key="secret",
+        )
+
+    settings = Settings(
+        _env_file=None,
+        environment="production",
+        supabase_url="https://project.supabase.co",
+        supabase_service_role_key="secret",
+        backend_proxy_secret="a" * 32,
+    )
+    assert settings.database_configured
 
 
 def test_search_returns_live_graph_data_from_supabase() -> None:
