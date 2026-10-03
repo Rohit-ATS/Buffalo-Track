@@ -1,0 +1,20 @@
+{
+  "name": "buffalo-track",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A graph-backed rare-disease atlas",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "build:dev": "npm --prefix frontend run build:dev",
+    "preview": "npm --prefix frontend run preview",
+    "test": "npm --prefix frontend run test",
+    "test:watch": "npm --prefix frontend run test:watch",
+    "lint": "npm --prefix frontend run lint",
+    "format": "npm --prefix frontend run format"
+  },
+  "workspaces": [
+    "frontend"
+  ]
+}
+
