@@ -10,12 +10,43 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CompareRouteImport } from './routes/compare'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as MechanismsRouteImport } from './routes/mechanisms'
+import { Route as MethodsRouteImport } from './routes/methods'
+import { Route as ResearchersRouteImport } from './routes/researchers'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as Stxbp1DisorderRouteImport } from './routes/stxbp1-disorder'
+import { Route as DiseaseIdRouteImport } from './routes/disease.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MechanismsRoute = MechanismsRouteImport.update({
+  id: '/mechanisms',
+  path: '/mechanisms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MethodsRoute = MethodsRouteImport.update({
+  id: '/methods',
+  path: '/methods',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResearchersRoute = ResearchersRouteImport.update({
+  id: '/researchers',
+  path: '/researchers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -28,35 +59,92 @@ const Stxbp1DisorderRoute = Stxbp1DisorderRouteImport.update({
   path: '/stxbp1-disorder',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DiseaseIdRoute = DiseaseIdRouteImport.update({
+  id: '/disease/$id',
+  path: '/disease/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
+  '/dashboard': typeof DashboardRoute
+  '/mechanisms': typeof MechanismsRoute
+  '/methods': typeof MethodsRoute
+  '/researchers': typeof ResearchersRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stxbp1-disorder': typeof Stxbp1DisorderRoute
+  '/disease/$id': typeof DiseaseIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
+  '/dashboard': typeof DashboardRoute
+  '/mechanisms': typeof MechanismsRoute
+  '/methods': typeof MethodsRoute
+  '/researchers': typeof ResearchersRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stxbp1-disorder': typeof Stxbp1DisorderRoute
+  '/disease/$id': typeof DiseaseIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
+  '/dashboard': typeof DashboardRoute
+  '/mechanisms': typeof MechanismsRoute
+  '/methods': typeof MethodsRoute
+  '/researchers': typeof ResearchersRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stxbp1-disorder': typeof Stxbp1DisorderRoute
+  '/disease/$id': typeof DiseaseIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sitemap.xml' | '/stxbp1-disorder'
+  fullPaths:
+    | '/'
+    | '/compare'
+    | '/dashboard'
+    | '/mechanisms'
+    | '/methods'
+    | '/researchers'
+    | '/sitemap.xml'
+    | '/stxbp1-disorder'
+    | '/disease/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sitemap.xml' | '/stxbp1-disorder'
-  id: '__root__' | '/' | '/sitemap.xml' | '/stxbp1-disorder'
+  to:
+    | '/'
+    | '/compare'
+    | '/dashboard'
+    | '/mechanisms'
+    | '/methods'
+    | '/researchers'
+    | '/sitemap.xml'
+    | '/stxbp1-disorder'
+    | '/disease/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/compare'
+    | '/dashboard'
+    | '/mechanisms'
+    | '/methods'
+    | '/researchers'
+    | '/sitemap.xml'
+    | '/stxbp1-disorder'
+    | '/disease/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CompareRoute: typeof CompareRoute
+  DashboardRoute: typeof DashboardRoute
+  MechanismsRoute: typeof MechanismsRoute
+  MethodsRoute: typeof MethodsRoute
+  ResearchersRoute: typeof ResearchersRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Stxbp1DisorderRoute: typeof Stxbp1DisorderRoute
+  DiseaseIdRoute: typeof DiseaseIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -66,6 +154,41 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mechanisms': {
+      id: '/mechanisms'
+      path: '/mechanisms'
+      fullPath: '/mechanisms'
+      preLoaderRoute: typeof MechanismsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/methods': {
+      id: '/methods'
+      path: '/methods'
+      fullPath: '/methods'
+      preLoaderRoute: typeof MethodsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/researchers': {
+      id: '/researchers'
+      path: '/researchers'
+      fullPath: '/researchers'
+      preLoaderRoute: typeof ResearchersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -82,13 +205,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Stxbp1DisorderRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/disease/$id': {
+      id: '/disease/$id'
+      path: '/disease/$id'
+      fullPath: '/disease/$id'
+      preLoaderRoute: typeof DiseaseIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CompareRoute: CompareRoute,
+  DashboardRoute: DashboardRoute,
+  MechanismsRoute: MechanismsRoute,
+  MethodsRoute: MethodsRoute,
+  ResearchersRoute: ResearchersRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   Stxbp1DisorderRoute: Stxbp1DisorderRoute,
+  DiseaseIdRoute: DiseaseIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

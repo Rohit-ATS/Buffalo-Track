@@ -3,10 +3,13 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 /**
  * Server-only Supabase client.
  *
- * RLS is enabled on `nodes`, `edges`, and `evidence` with no policies (see
- * supabase/migrations/20261003000001_init.sql), so the anon key reads nothing. Reads go
- * through the service-role key, which bypasses RLS — hence server-only. This
- * module must never be imported from a component that ships to the browser.
+ * RLS is enabled on `nodes`, `edges`, and `evidence` (see supabase/migrations)
+ * with public SELECT policies and no write policies, so the anon key can read
+ * but not write. This client uses the service-role key instead, which
+ * bypasses RLS entirely — hence server-only. This module must never be
+ * imported from a component that ships to the browser. For client-side reads
+ * (e.g. live graph updates), use src/lib/supabase.client.ts, which uses the
+ * anon key and is safe to ship.
  */
 
 let cached: SupabaseClient | null | undefined;

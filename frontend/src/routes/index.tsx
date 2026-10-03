@@ -25,8 +25,10 @@ import {
 import communityPhoto from "@/assets/atlas-community.jpg";
 import motherPhoto from "@/assets/atlas-mother.jpg";
 import researcherPhoto from "@/assets/atlas-researcher.jpg";
-import { AtlasResults } from "@/components/atlas-results";
 import { Button } from "@/components/ui/button";
+import { GITHUB_URL, PersonaSwitch, SearchBox } from "@/components/atlas-ui";
+import { coverage } from "@/lib/atlas-data";
+import { AtlasResults } from "@/components/atlas-results";
 import { searchAtlas } from "@/lib/atlas-search";
 
 export const Route = createFileRoute("/")({
@@ -55,10 +57,25 @@ export const Route = createFileRoute("/")({
 });
 
 const examples = [
-  { label: "Find a shared path", value: "STX1B", tone: "bg-example-blue" },
-  { label: "See why they differ", value: "CACNA1A", tone: "bg-example-yellow" },
-  { label: "Explore an evidence gap", value: "SNARE gene disorder", tone: "bg-example-mint" },
-];
+  {
+    label: "Maria's journey",
+    value: "STXBP1 disorder",
+    tone: "bg-example-blue",
+    link: { to: "/disease/$id", params: { id: "stxbp1" }, search: { q: "STXBP1 disorder" } },
+  },
+  {
+    label: "The counterexample",
+    value: "CACNA1A",
+    tone: "bg-example-yellow",
+    link: { to: "/compare", search: { a: "cacna1a-ea2", b: "cacna1a-fhm1" } },
+  },
+  {
+    label: "The gap",
+    value: "VAMP2",
+    tone: "bg-example-mint",
+    link: { to: "/disease/$id", params: { id: "vamp2" }, search: { q: "VAMP2" } },
+  },
+] as const;
 
 const pathSteps = [
   ["01", "Diagnosis", "A rare SNARE-gene disorder"],
@@ -221,15 +238,18 @@ function Index() {
             <a className="hover:text-primary" href="#action">
               Shared action
             </a>
-            <Link to="/stxbp1-disorder" className="hover:text-primary">
-              STXBP1 research
+            <Link to="/dashboard" className="hover:text-primary">
+              Dashboard
             </Link>
           </nav>
-          <Button asChild size="sm">
-            <a href="#search">
-              Explore atlas <ArrowRight className="size-3.5" />
-            </a>
-          </Button>
+          <div className="flex items-center gap-2">
+            <PersonaSwitch />
+            <Button asChild size="sm" className="hidden sm:inline-flex">
+              <a href="#search">
+                Explore atlas <ArrowRight className="size-3.5" />
+              </a>
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -291,39 +311,24 @@ function Index() {
           className="relative mt-10 max-w-4xl scroll-mt-6 animate-fade-in [animation-delay:.75s] [animation-fill-mode:both]"
         >
           <Magnifier className="absolute -right-20 -top-8 hidden w-14 rotate-[12deg] float-fast text-foreground xl:block" />
-          <form
-            onSubmit={handleSubmit}
-            className="flex min-h-16 items-center rounded-full border border-foreground bg-background p-1.5 pl-5 shadow-search transition-shadow focus-within:shadow-paper focus-within:ring-2 focus-within:ring-ring"
-          >
-            <Search className="mr-3 size-5 shrink-0" aria-hidden="true" />
-            <label htmlFor="atlas-search" className="sr-only">
-              Search the atlas
-            </label>
-            <input
-              id="atlas-search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
-              placeholder="Search a disease, gene, symptom, group, or mechanism"
-            />
-            <Button type="submit" className="group shrink-0">
-              Follow the biology{" "}
-              <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-            </Button>
-          </form>
+          <SearchBox size="lg" />
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="font-sketch text-lg text-muted-foreground">try →</span>
             {examples.map((example) => (
-              <button
+              <Link
                 key={example.value}
-                type="button"
-                onClick={() => search(example.value)}
+                {...example.link}
                 className={`rounded-full border border-border px-3 py-1.5 text-xs font-medium transition-transform hover:-translate-y-0.5 hover:rotate-[-1deg] ${example.tone}`}
               >
                 <span className="text-muted-foreground">{example.label}</span> · {example.value}
-              </button>
+              </Link>
             ))}
           </div>
+          <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="size-2 rounded-full bg-primary node-pulse" />
+            {coverage.diseases} diseases, {coverage.connections} sourced connections, updated{" "}
+            {coverage.updated}
+          </p>
         </div>
 
         <div className="mt-12 grid h-[480px] grid-cols-[.72fr_1.35fr_.8fr] gap-2 overflow-hidden md:h-[560px] md:gap-3">
@@ -770,13 +775,18 @@ function Index() {
                 by qualified experts.
               </p>
             </div>
-            <a
-              href="#top"
-              className="group flex items-center gap-2 font-semibold text-contrast-foreground"
-            >
-              Back to top{" "}
-              <ArrowDown className="size-4 rotate-180 transition-transform group-hover:-translate-y-1" />
-            </a>
+            <div className="flex items-center gap-5 font-semibold text-contrast-foreground">
+              <Link to="/methods" className="hover:text-primary">
+                Methods
+              </Link>
+              <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="hover:text-primary">
+                GitHub
+              </a>
+              <a href="#top" className="group flex items-center gap-2">
+                Back to top{" "}
+                <ArrowDown className="size-4 rotate-180 transition-transform group-hover:-translate-y-1" />
+              </a>
+            </div>
           </div>
         </div>
       </footer>
