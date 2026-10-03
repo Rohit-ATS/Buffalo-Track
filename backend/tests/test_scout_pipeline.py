@@ -95,6 +95,8 @@ def _handler(request: httpx.Request) -> httpx.Response:
 def test_unreviewed_organization_like_domains_are_not_fetched() -> None:
     assert not classify("https://attacker-foundation.example/registry").accepted
     assert not classify("https://unreviewed-patient-group.org/registry").accepted
+    assert not classify("https://attacker.example.org/natural-history-registry").accepted
+    assert not classify("https://foundation.example.com/research").accepted
     assert classify("https://stx1b-alliance.org/research").accepted
 
 

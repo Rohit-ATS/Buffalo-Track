@@ -4,8 +4,8 @@ A SERP run returns foundations, hospital pages, trial records, Wikipedia,
 Facebook groups and SEO filler in one list. Fetching all of it wastes credits
 and feeds the extraction model junk.
 
-This is a cheap, auditable filter: domain suffix and host/path keywords, no
-model call. Every decision records a reason, which is what the discovery table
+This is a cheap, auditable allowlist: only a reviewed source domain can be
+fetched. Every decision records a reason, which is what the discovery table
 stores, so a judge can see why a URL was skipped.
 
 Two rules worth stating:
@@ -67,45 +67,10 @@ EXCLUDED_HOSTS = {
 
 WIKI_HOSTS = {"wikipedia.org", "wikidata.org", "wikiwand.com"}
 
-# Domains reviewed by the project. A hostname or generic nonprofit suffix is
-# only a discovery signal; it is not evidence of who operates the source.
-TRUSTED_ORGANIZATION_HOSTS = {"stx1b-alliance.org"}
-
-# Host fragments that suggest a patient-led organization.
-ORG_HOST_WORDS = (
-    "foundation",
-    "trust",
-    "alliance",
-    "association",
-    "society",
-    "charity",
-    "advocacy",
-    "families",
-    "parents",
-    "warriors",
-    "cure",
-    "research-fund",
-    "patient",
-)
-
-# Host fragments for research institutions.
-INSTITUTION_HOST_WORDS = (
-    "hospital",
-    "childrens",
-    "children",
-    "clinic",
-    "medicine",
-    "medical",
-    "health",
-    "institute",
-    "univ",
-    "college",
-    "school",
-)
-
-LAB_PATH_WORDS = ("/lab", "/labs/", "/faculty", "/people/", "/profile", "/researcher")
-
-REGISTRY_PATH_WORDS = ("registry", "natural-history", "naturalhistory", "biobank")
+# Domains reviewed by the project. A hostname, suffix, or URL path is only a
+# discovery signal; it is not evidence of who operates the source. Add a host
+# here only after a human has verified its ownership and publication role.
+TRUSTED_SOURCE_HOSTS = {"stx1b-alliance.org", "stxbp1disorders.org"}
 
 
 def _host(url: str) -> str:
@@ -143,33 +108,10 @@ def classify(url: str) -> Verdict:
             api_kind, False, f"{base} has an official API; fetch it there, not via scraping"
         )
 
-    if host in TRUSTED_ORGANIZATION_HOSTS or base in TRUSTED_ORGANIZATION_HOSTS:
+    if host in TRUSTED_SOURCE_HOSTS or base in TRUSTED_SOURCE_HOSTS:
         return Verdict("patient organization", True, "Reviewed organization domain")
 
-    # A .org or .ngo whose host reads like a patient group.
-    if any(word in host for word in ORG_HOST_WORDS):
-        return Verdict("patient organization", False, "Organization-like host requires domain review")
-
-    if host.endswith(".gov"):
-        return Verdict("government", True, "Government domain")
-
-    # Institution keywords are only a signal on a domain that could plausibly
-    # be one. "health" in a .com host is an SEO blog far more often than a
-    # hospital, so a bare keyword match is not enough.
-    institutional_tld = host.endswith((".edu", ".ac.uk")) or ".edu." in host
-    nonprofit_tld = host.endswith((".org", ".ngo", ".charity"))
-    if institutional_tld or (nonprofit_tld and any(w in host for w in INSTITUTION_HOST_WORDS)):
-        if any(word in path for word in LAB_PATH_WORDS):
-            return Verdict("lab", True, "Institution domain with a lab or profile path")
-        return Verdict("research institution", True, "Research institution domain")
-
-    if any(word in path for word in REGISTRY_PATH_WORDS):
-        return Verdict("registry", True, "Path names a registry or natural history programme")
-
-    if host.endswith((".org", ".ngo", ".charity")):
-        return Verdict("patient organization", False, "Non-profit domain requires review")
-
-    return Verdict("unknown", False, "No signal that this is an official source")
+    return Verdict("unknown", False, "Domain requires review before it can become evidence")
 
 
 def accepted(urls: list[str]) -> list[str]:

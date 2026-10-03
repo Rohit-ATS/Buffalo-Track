@@ -30,6 +30,7 @@ The production search API lives in [`backend/`](backend/README.md). It exposes
 Render web service. Copy `backend/.env.example` to `backend/.env` locally, then
 set `BACKEND_URL` in `frontend/.env` to connect the frontend. The service-role
 key stays in the backend environment and must never use a `VITE_` prefix.
+Before production deployment, follow the [Render checklist](backend/RENDER_DEPLOY.md).
 
 Without `.env`, the app still runs — search reports that the live atlas is not
 connected and the curated sample path on the page carries the demo.
