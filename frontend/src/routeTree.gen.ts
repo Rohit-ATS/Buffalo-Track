@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as FamilyRouteImport } from './routes/family'
 import { Route as MechanismsRouteImport } from './routes/mechanisms'
 import { Route as MethodsRouteImport } from './routes/methods'
 import { Route as ResearchersRouteImport } from './routes/researchers'
@@ -32,6 +33,11 @@ const CompareRoute = CompareRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FamilyRoute = FamilyRouteImport.update({
+  id: '/family',
+  path: '/family',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MechanismsRoute = MechanismsRouteImport.update({
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
+  '/family': typeof FamilyRoute
   '/mechanisms': typeof MechanismsRoute
   '/methods': typeof MethodsRoute
   '/researchers': typeof ResearchersRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
+  '/family': typeof FamilyRoute
   '/mechanisms': typeof MechanismsRoute
   '/methods': typeof MethodsRoute
   '/researchers': typeof ResearchersRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
+  '/family': typeof FamilyRoute
   '/mechanisms': typeof MechanismsRoute
   '/methods': typeof MethodsRoute
   '/researchers': typeof ResearchersRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/'
     | '/compare'
     | '/dashboard'
+    | '/family'
     | '/mechanisms'
     | '/methods'
     | '/researchers'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/'
     | '/compare'
     | '/dashboard'
+    | '/family'
     | '/mechanisms'
     | '/methods'
     | '/researchers'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/compare'
     | '/dashboard'
+    | '/family'
     | '/mechanisms'
     | '/methods'
     | '/researchers'
@@ -139,6 +151,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CompareRoute: typeof CompareRoute
   DashboardRoute: typeof DashboardRoute
+  FamilyRoute: typeof FamilyRoute
   MechanismsRoute: typeof MechanismsRoute
   MethodsRoute: typeof MethodsRoute
   ResearchersRoute: typeof ResearchersRoute
@@ -168,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/family': {
+      id: '/family'
+      path: '/family'
+      fullPath: '/family'
+      preLoaderRoute: typeof FamilyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mechanisms': {
@@ -219,6 +239,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CompareRoute: CompareRoute,
   DashboardRoute: DashboardRoute,
+  FamilyRoute: FamilyRoute,
   MechanismsRoute: MechanismsRoute,
   MethodsRoute: MethodsRoute,
   ResearchersRoute: ResearchersRoute,

@@ -2,19 +2,37 @@
 .env
 .env.local
 .env.*.local
+frontend/.env
+backend/.env
+
+# Python
 backend/.venv/
 backend/.pytest_cache/
 __pycache__/
+*.pyc
 
 # Supabase
 supabase/.branches
 supabase/.temp
 .supabase
 
-# Node
+# Node & Build artifacts
 node_modules/
+frontend/node_modules/
 dist/
+dist-ssr/
+.output/
+frontend/.output/
+.wrangler/
+frontend/.wrangler/
+.nitro/
+frontend/.nitro/
+.tanstack/
+frontend/.tanstack/
 *.log
 
-# macOS
+# OS & Editor
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
