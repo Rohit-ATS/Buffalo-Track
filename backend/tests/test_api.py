@@ -1,4 +1,5 @@
 import asyncio
+from pathlib import Path
 
 import httpx
 from fastapi.testclient import TestClient
@@ -41,6 +42,13 @@ def test_cors_allows_configured_frontend_only() -> None:
         blocked = api.options("/api/v1/search", headers={"Origin": "https://other.example.org", "Access-Control-Request-Method": "POST"})
     assert allowed.headers["access-control-allow-origin"] == "https://atlas.example.org"
     assert blocked.status_code == 400
+
+
+def test_comma_separated_cors_origins_load_from_dotenv(tmp_path: Path) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text("CORS_ORIGINS=http://localhost:8080,https://atlas.example.org\n")
+    settings = Settings(_env_file=env_file)
+    assert settings.cors_origins == ["http://localhost:8080", "https://atlas.example.org"]
 
 
 def test_search_returns_live_graph_data_from_supabase() -> None:
