@@ -30,6 +30,33 @@ class Settings(BaseSettings):
     openai_extract_model: str = "gpt-4.1-mini"
     openai_prompt_version: str = "extract-v1"
 
+    @field_validator("supabase_url", mode="before")
+    @classmethod
+    def normalize_supabase_url(cls, value: object) -> object:
+        """Accept a bare host, and reject the Postgres host with an explanation.
+
+        Two easy mistakes: pasting `<ref>.supabase.co` without a scheme, and
+        pasting `db.<ref>.supabase.co` from the connection-string panel. The
+        second is the direct Postgres host, not the Data API, so adding a scheme
+        would produce a URL that resolves but serves nothing.
+        """
+        if not isinstance(value, str) or not value.strip():
+            return value
+
+        candidate = value.strip()
+        host = candidate.split("://", 1)[-1].split("/", 1)[0].lower()
+
+        if host.startswith("db.") and host.endswith(".supabase.co"):
+            ref = host[3:-len(".supabase.co")]
+            raise ValueError(
+                f"SUPABASE_URL is the Postgres host ({host}), not the Data API URL. "
+                f"Use https://{ref}.supabase.co and keep the db host for DATABASE_URL."
+            )
+
+        if "://" not in candidate:
+            return f"https://{candidate}"
+        return candidate
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def split_origins(cls, value: str | list[str]) -> list[str]:
