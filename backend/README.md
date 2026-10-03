@@ -27,5 +27,10 @@ Run the tests with `uv run pytest`.
 ## Render
 
 The root `render.yaml` defines the service. Create a Render Blueprint from this
-repository and enter `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and the final
-frontend URL in `CORS_ORIGINS`. Render injects `PORT` automatically.
+repository and enter `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, the final
+frontend URL in `CORS_ORIGINS`, and a random `BACKEND_PROXY_SECRET` (at least
+32 characters). Set the identical `BACKEND_PROXY_SECRET`, without a `VITE_`
+prefix, in the frontend server environment. It signs the browser's rate-limit
+identity without exposing a secret to the browser. Render injects `PORT`
+automatically. The blueprint fixes the API at one instance; use a shared rate
+limiter before scaling it out.

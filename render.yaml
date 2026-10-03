@@ -2,6 +2,9 @@ services:
   - type: web
     name: buffalo-track-api
     runtime: python
+    # The in-memory public-search limiter is intentionally service-wide.
+    # Do not raise this without moving the limiter to shared storage.
+    numInstances: 1
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
@@ -16,4 +19,6 @@ services:
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
       - key: CORS_ORIGINS
+        sync: false
+      - key: BACKEND_PROXY_SECRET
         sync: false

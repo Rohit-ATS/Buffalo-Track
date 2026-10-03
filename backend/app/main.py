@@ -1,3 +1,7 @@
+import hmac
+import time
+import uuid
+from collections import defaultdict, deque
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -10,6 +14,54 @@ from .config import Settings, get_settings
 from .schemas import HealthResponse, ReadinessResponse, SearchRequest, SearchResponse
 
 
+class SearchLimiter:
+    """Per-process admission control for the public, database-backed search."""
+
+    def __init__(self, *, limit: int, window_seconds: int, max_concurrency: int) -> None:
+        self.limit = limit
+        self.window_seconds = window_seconds
+        self.requests: dict[str, deque[float]] = defaultdict(deque)
+        self.max_concurrency = max_concurrency
+        self.in_flight = 0
+
+    def consume(self, client: str) -> int | None:
+        now = time.monotonic()
+        timestamps = self.requests[client]
+        cutoff = now - self.window_seconds
+        while timestamps and timestamps[0] <= cutoff:
+            timestamps.popleft()
+        if len(timestamps) >= self.limit:
+            return max(1, int(self.window_seconds - (now - timestamps[0])) + 1)
+        timestamps.append(now)
+        return None
+
+    def acquire_slot(self) -> bool:
+        """Reserve a slot without an await between the check and increment."""
+        if self.in_flight >= self.max_concurrency:
+            return False
+        self.in_flight += 1
+        return True
+
+    def release_slot(self) -> None:
+        self.in_flight -= 1
+
+
+def rate_limit_identity(request: Request, proxy_secret: str | None) -> str:
+    """Use a frontend-signed browser identity; fall back to direct caller IP."""
+    client_id = request.headers.get("x-buffalo-client-id", "")
+    signature = request.headers.get("x-buffalo-client-signature", "")
+    if proxy_secret and len(client_id) == 36 and signature:
+        try:
+            uuid.UUID(client_id)
+        except ValueError:
+            pass
+        else:
+            expected = hmac.digest(proxy_secret.encode(), client_id.encode(), "sha256").hex()
+            if hmac.compare_digest(expected, signature):
+                return f"browser:{client_id}"
+    return f"ip:{request.client.host if request.client else 'unknown'}"
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.http = httpx.AsyncClient(timeout=httpx.Timeout(10.0))
@@ -20,6 +72,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     app = FastAPI(title=settings.app_name, version="1.0.0", lifespan=lifespan)
+    app.state.search_limiter = SearchLimiter(
+        limit=settings.search_rate_limit,
+        window_seconds=settings.search_rate_window_seconds,
+        max_concurrency=settings.search_max_concurrency,
+    )
     app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins, allow_credentials=False, allow_methods=["GET", "POST"], allow_headers=["Content-Type"], max_age=600)
 
     def repository(request: Request) -> AtlasRepository:
@@ -48,10 +105,32 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return ReadinessResponse(status="ready", database="connected")
 
     @app.post("/api/v1/search", response_model=SearchResponse, tags=["atlas"])
-    async def search(payload: SearchRequest, repo: AtlasRepository = Depends(repository)) -> SearchResponse:
+    async def search(
+        payload: SearchRequest,
+        request: Request,
+        repo: AtlasRepository = Depends(repository),
+    ) -> SearchResponse:
         if not settings.database_configured:
             return SearchResponse(status="unconfigured", query=payload.query)
-        return await repo.search(payload.query)
+
+        limiter: SearchLimiter = request.app.state.search_limiter
+        retry_after = limiter.consume(rate_limit_identity(request, settings.backend_proxy_secret))
+        if retry_after is not None:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Search rate limit exceeded",
+                headers={"Retry-After": str(retry_after)},
+            )
+        if not limiter.acquire_slot():
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Search is busy; retry shortly",
+                headers={"Retry-After": "1"},
+            )
+        try:
+            return await repo.search(payload.query)
+        finally:
+            limiter.release_slot()
 
     return app
 

@@ -1,5 +1,7 @@
 import asyncio
+import hmac
 from pathlib import Path
+from unittest.mock import AsyncMock, patch
 
 import httpx
 from fastapi.testclient import TestClient
@@ -7,6 +9,7 @@ from fastapi.testclient import TestClient
 from app.atlas import AtlasRepository
 from app.config import Settings
 from app.main import create_app
+from app.schemas import SearchResponse
 
 
 def client(**overrides: object) -> TestClient:
@@ -34,6 +37,72 @@ def test_search_reports_unconfigured_without_database_credentials() -> None:
         response = api.post("/api/v1/search", json={"query": "STXBP1"})
     assert response.status_code == 200
     assert response.json() == {"status": "unconfigured", "query": "STXBP1", "message": None, "match": None, "alsoMatched": None}
+
+
+def test_search_rate_limit_rejects_excess_requests_before_database_work() -> None:
+    settings = Settings(
+        supabase_url="https://project.supabase.co",
+        supabase_service_role_key="secret",
+        search_rate_limit=2,
+        search_rate_window_seconds=60,
+    )
+    response = SearchResponse(status="empty", query="STXBP1")
+    with patch("app.main.AtlasRepository.search", new_callable=AsyncMock, return_value=response) as search:
+        with TestClient(create_app(settings)) as api:
+            first = api.post("/api/v1/search", json={"query": "STXBP1"})
+            second = api.post("/api/v1/search", json={"query": "STXBP1"})
+            limited = api.post("/api/v1/search", json={"query": "STXBP1"})
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert limited.status_code == 429
+    assert limited.headers["retry-after"]
+    assert search.await_count == 2
+
+
+def test_search_concurrency_limit_rejects_before_database_work() -> None:
+    settings = Settings(
+        supabase_url="https://project.supabase.co",
+        supabase_service_role_key="secret",
+        search_max_concurrency=1,
+    )
+    app = create_app(settings)
+    app.state.search_limiter.in_flight = 1
+    try:
+        with patch("app.main.AtlasRepository.search", new_callable=AsyncMock) as search:
+            with TestClient(app) as api:
+                limited = api.post("/api/v1/search", json={"query": "STXBP1"})
+        assert limited.status_code == 429
+        assert limited.headers["retry-after"] == "1"
+        assert search.await_count == 0
+    finally:
+        app.state.search_limiter.in_flight = 0
+
+
+def test_search_rate_limit_uses_valid_frontend_signed_browser_identity() -> None:
+    secret = "a" * 32
+    settings = Settings(
+        supabase_url="https://project.supabase.co",
+        supabase_service_role_key="secret",
+        backend_proxy_secret=secret,
+        search_rate_limit=1,
+    )
+    signature = hmac.digest(secret.encode(), b"123e4567-e89b-12d3-a456-426614174000", "sha256").hex()
+    response = SearchResponse(status="empty", query="STXBP1")
+    headers = {
+        "x-buffalo-client-id": "123e4567-e89b-12d3-a456-426614174000",
+        "x-buffalo-client-signature": signature,
+    }
+    with patch("app.main.AtlasRepository.search", new_callable=AsyncMock, return_value=response) as search:
+        with TestClient(create_app(settings)) as api:
+            first = api.post("/api/v1/search", json={"query": "STXBP1"}, headers=headers)
+            second = api.post("/api/v1/search", json={"query": "STXBP1"}, headers=headers)
+            other = api.post("/api/v1/search", json={"query": "STXBP1"})
+
+    assert first.status_code == 200
+    assert second.status_code == 429
+    assert other.status_code == 200
+    assert search.await_count == 2
 
 
 def test_cors_allows_configured_frontend_only() -> None:
