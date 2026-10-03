@@ -38,35 +38,10 @@ function Mechanisms() {
     clusters,
     diseases,
     edges,
-    organizations,
-    diseaseOrganizations,
-    assets,
-    contacts,
+    diseaseHasPatientGroup,
+    assetCountByDisease,
+    contactCountByDisease,
   } = useRealtimeMechanisms();
-
-  const orgKindById = useMemo(
-    () => new Map(organizations.map((o) => [o.id, o.kind])),
-    [organizations],
-  );
-  // A mechanism unit "has a patient group" when it's linked to an org of that kind —
-  // the live equivalent of the static dataset's `disease.patientGroup` field.
-  const diseaseHasPatientGroup = useMemo(() => {
-    const set = new Set<string>();
-    for (const link of diseaseOrganizations) {
-      if (orgKindById.get(link.organization_id) === "patient group") set.add(link.disease_id);
-    }
-    return set;
-  }, [diseaseOrganizations, orgKindById]);
-  const assetCountByDisease = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const a of assets) counts.set(a.disease_id, (counts.get(a.disease_id) ?? 0) + 1);
-    return counts;
-  }, [assets]);
-  const contactCountByDisease = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const c of contacts) counts.set(c.disease_id, (counts.get(c.disease_id) ?? 0) + 1);
-    return counts;
-  }, [contacts]);
 
   const rows = useMemo(
     () =>
@@ -74,7 +49,7 @@ function Mechanisms() {
         .filter((c) => pathway === "any" || c.pathway === pathway)
         .map((c) => {
           const ds = diseases.filter(
-            (d) => d.cluster_id === c.id && (mech === "any" || d.effect_class === mech),
+            (d) => d.clusterId === c.id && (mech === "any" || d.effectClass === mech),
           );
           const ids = new Set(ds.map((d) => d.id));
           const es = edges.filter((e) => ids.has(e.from_id) || ids.has(e.to_id));

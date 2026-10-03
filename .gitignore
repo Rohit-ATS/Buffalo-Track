@@ -15,6 +15,3 @@ dist/
 
 # macOS
 .DS_Store
-
-# Stray workspace lockfile: the frontend keeps its own at frontend/bun.lock
-/bun.lock

@@ -1,18 +1,15 @@
--- Enables Realtime on the atlas_* tables /mechanisms reads live. RLS already
--- grants anon/authenticated SELECT on all of them (20261003000003_atlas.sql),
--- so Realtime subscribers see exactly what that policy allows.
---
--- Scoped to the tables the live mechanism view actually queries, not the
--- whole atlas_* set (atlas_trials, atlas_researchers, atlas_metrics, and
--- atlas_similarity aren't read by any live view yet).
+-- Extends the realtime coverage 20261003000003_atlas.sql set up (which
+-- covers atlas_diseases/atlas_edges/atlas_metrics) with the remaining tables
+-- /mechanisms needs for a fully live view: cluster identity/color, and the
+-- organization/asset/contact counts behind its "patient groups", "assets",
+-- and "contacts" columns.
 
 do $$
 declare t text;
 begin
   foreach t in array array[
-    'atlas_clusters', 'atlas_diseases', 'atlas_edges',
-    'atlas_organizations', 'atlas_disease_organizations',
-    'atlas_assets', 'atlas_contacts'
+    'atlas_clusters', 'atlas_organizations',
+    'atlas_disease_organizations', 'atlas_assets', 'atlas_contacts'
   ]
   loop
     if not exists (
@@ -26,11 +23,7 @@ begin
   end loop;
 end $$;
 
--- Small reference tables: send full rows on UPDATE/DELETE so clients can
--- patch in place without a refetch.
 alter table atlas_clusters replica identity full;
-alter table atlas_diseases replica identity full;
-alter table atlas_edges replica identity full;
 alter table atlas_organizations replica identity full;
 alter table atlas_disease_organizations replica identity full;
 alter table atlas_assets replica identity full;
