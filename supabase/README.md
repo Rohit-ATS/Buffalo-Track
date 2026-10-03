@@ -2,19 +2,23 @@
 
 Two layers live here:
 
-| Migration                              | What it adds                                                        |
-| -------------------------------------- | ------------------------------------------------------------------- |
-| `20261003000001_init.sql`              | Generic `nodes` / `edges` / `evidence` store with pgvector           |
-| `20261003000002_public_read_realtime.sql` | Public read + realtime for those three tables                     |
-| `20261003000003_atlas.sql`             | The typed `atlas_*` domain the product queries                      |
+| Migration                                  | What it adds                                                        |
+| ------------------------------------------ | --------------------------------------------------------------------- |
+| `20261003000001_init.sql`                  | Generic `nodes` / `edges` / `evidence` store with pgvector            |
+| `20261003000002_public_read_realtime.sql`  | Public read + realtime for those three tables                         |
+| `20261003000003_atlas.sql`                 | The typed `atlas_*` domain the product queries                        |
+| `20261003000004_atlas_realtime.sql`        | Realtime for the atlas tables `/mechanisms` reads live                |
+| `20261003000005_atlas_nodes.sql`           | First-class `atlas_genes` / `atlas_pathways` / `atlas_phenotypes` / `atlas_publications` / `atlas_grants`, FK'd from `atlas_diseases` / `atlas_symptoms` |
 
-| Seed              | Loads                                                     |
-| ----------------- | --------------------------------------------------------- |
-| `seed.sql`        | A small demo graph into `nodes` / `edges` / `evidence`     |
-| `seed_atlas.sql`  | The curated atlas snapshot into the `atlas_*` tables       |
+| Seed                    | Loads                                                             |
+| ----------------------- | ------------------------------------------------------------------ |
+| `seed.sql`              | A small demo graph into `nodes` / `edges` / `evidence`             |
+| `seed_atlas.sql`        | The curated atlas snapshot into the `atlas_*` tables               |
+| `seed_atlas_nodes.sql`  | Genes/pathways/phenotypes derived from the same snapshot, plus the FK backfill — run after `seed_atlas.sql` |
 
 `seed_atlas.sql` is **generated** — edit `frontend/src/lib/atlas-data.ts` and run
-`cd frontend && bun run seed:generate`.
+`cd frontend && bun run seed:generate`. `seed_atlas_nodes.sql` is hand-written but
+mechanical: every id/name comes straight from that same dataset (see its own header).
 
 ## Apply to your Supabase project
 
@@ -24,12 +28,14 @@ supabase link --project-ref <your-ref>
 supabase db push                      # applies all three migrations
 ```
 
-Then load the seeds. In the dashboard SQL Editor, paste `seed.sql` and
-`seed_atlas.sql` in that order. Or with `psql`:
+Then load the seeds, in order (`seed_atlas_nodes.sql` backfills FKs onto rows
+`seed_atlas.sql` creates, so it has to run after). In the dashboard SQL Editor,
+paste each in turn. Or with `psql`:
 
 ```bash
 psql "$DATABASE_URL" -f supabase/seed.sql
 psql "$DATABASE_URL" -f supabase/seed_atlas.sql
+psql "$DATABASE_URL" -f supabase/seed_atlas_nodes.sql
 ```
 
 Point the frontend at it (`frontend/.env`, see `frontend/.env.example`):
@@ -79,3 +85,16 @@ exist yet:
 `quote_verified` is `false` on every seeded edge. The snapshot quotes are
 hand-entered and have not been checked verbatim against source text. Do that
 before the demo — it is item one on the plan's own final checklist.
+
+`atlas_publications` and `atlas_grants` (20261003000005_atlas_nodes.sql) exist
+as tables but are seeded with **zero rows**. The curated dataset only has
+database-level sources (`atlas_sources`: ClinVar, PubMed, …), never an
+individual paper or grant record — seeding either would mean inventing ones
+that don't exist. Same reasoning as the metrics above: an honest gap, not a
+placeholder.
+
+The plan's node list also calls for `hgnc_id` / `reactome_id` / `go_id` /
+`hpo_id` on genes, pathways, and phenotypes. All four are `null` on every
+seeded row, for the same reason `atlas_trials.nct_id` is null until matched to
+a real ClinicalTrials.gov entry — these need a real registry lookup, which
+this snapshot never did.
