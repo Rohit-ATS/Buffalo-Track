@@ -238,16 +238,13 @@ function Index() {
             <a className="hover:text-primary" href="#action">
               Shared action
             </a>
-            <Link to="/dashboard" className="hover:text-primary">
-              Dashboard
-            </Link>
           </nav>
           <div className="flex items-center gap-2">
             <PersonaSwitch />
             <Button asChild size="sm" className="hidden sm:inline-flex">
-              <a href="#search">
-                Explore atlas <ArrowRight className="size-3.5" />
-              </a>
+              <Link to="/dashboard">
+                Dashboard <ArrowRight className="size-3.5" />
+              </Link>
             </Button>
           </div>
         </div>
