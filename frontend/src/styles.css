@@ -624,6 +624,93 @@
   filter: blur(24px);
 }
 
+/* ---------- Research dashboard ---------- */
+.dashboard-shell {
+  border: 1px solid var(--border);
+  border-radius: 2rem;
+  box-shadow: 0 22px 70px color-mix(in oklab, var(--foreground) 9%, transparent);
+}
+.dashboard-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.dashboard-nav::-webkit-scrollbar {
+  display: none;
+}
+.dashboard-nav a {
+  display: flex;
+  min-height: 2.5rem;
+  flex: none;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  padding: 0 0.8rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+.dashboard-nav a:hover {
+  color: var(--foreground);
+  transform: translateY(-1px);
+}
+.dashboard-nav a.is-active {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.dashboard-card {
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  padding: 1.25rem;
+  box-shadow: 0 8px 24px color-mix(in oklab, var(--foreground) 4%, transparent);
+  animation: dashboard-enter 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.dashboard-card:nth-child(2) {
+  animation-delay: 0.06s;
+}
+.dashboard-card:nth-child(3) {
+  animation-delay: 0.12s;
+}
+.dashboard-card:nth-child(4) {
+  animation-delay: 0.18s;
+}
+.dashboard-card:nth-child(5) {
+  animation-delay: 0.24s;
+}
+.dashboard-card:nth-child(6) {
+  animation-delay: 0.3s;
+}
+.dashboard-icon {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--background);
+  color: var(--primary);
+}
+@keyframes dashboard-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (max-width: 767px) {
   #top > div:last-child {
     height: 390px;
@@ -640,6 +727,22 @@
   }
   .atlas-opening-sketch {
     display: none;
+  }
+  .dashboard-shell {
+    border-radius: 1.25rem;
+  }
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-grid > * {
+    grid-column: 1 / -1;
+  }
+  .dashboard-nav {
+    order: 3;
+    width: 100%;
+  }
+  .dashboard-shell > header > div {
+    flex-wrap: wrap;
   }
 }
 
