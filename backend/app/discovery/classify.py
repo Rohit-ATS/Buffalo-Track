@@ -67,6 +67,10 @@ EXCLUDED_HOSTS = {
 
 WIKI_HOSTS = {"wikipedia.org", "wikidata.org", "wikiwand.com"}
 
+# Domains reviewed by the project. A hostname or generic nonprofit suffix is
+# only a discovery signal; it is not evidence of who operates the source.
+TRUSTED_ORGANIZATION_HOSTS = {"stx1b-alliance.org"}
+
 # Host fragments that suggest a patient-led organization.
 ORG_HOST_WORDS = (
     "foundation",
@@ -139,9 +143,12 @@ def classify(url: str) -> Verdict:
             api_kind, False, f"{base} has an official API; fetch it there, not via scraping"
         )
 
+    if host in TRUSTED_ORGANIZATION_HOSTS or base in TRUSTED_ORGANIZATION_HOSTS:
+        return Verdict("patient organization", True, "Reviewed organization domain")
+
     # A .org or .ngo whose host reads like a patient group.
     if any(word in host for word in ORG_HOST_WORDS):
-        return Verdict("patient organization", True, f"Host name suggests a patient organization")
+        return Verdict("patient organization", False, "Organization-like host requires domain review")
 
     if host.endswith(".gov"):
         return Verdict("government", True, "Government domain")
@@ -160,7 +167,7 @@ def classify(url: str) -> Verdict:
         return Verdict("registry", True, "Path names a registry or natural history programme")
 
     if host.endswith((".org", ".ngo", ".charity")):
-        return Verdict("patient organization", True, "Non-profit domain")
+        return Verdict("patient organization", False, "Non-profit domain requires review")
 
     return Verdict("unknown", False, "No signal that this is an official source")
 

@@ -92,6 +92,12 @@ def _handler(request: httpx.Request) -> httpx.Response:
     raise AssertionError(f"unexpected request to {url}")
 
 
+def test_unreviewed_organization_like_domains_are_not_fetched() -> None:
+    assert not classify("https://attacker-foundation.example/registry").accepted
+    assert not classify("https://unreviewed-patient-group.org/registry").accepted
+    assert classify("https://stx1b-alliance.org/research").accepted
+
+
 @pytest.fixture
 def settings() -> Settings:
     return Settings(
