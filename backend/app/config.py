@@ -1,7 +1,8 @@
 from functools import lru_cache
+from typing import Annotated
 
 from pydantic import Field, HttpUrl, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -13,7 +14,9 @@ class Settings(BaseSettings):
     environment: str = "development"
     supabase_url: HttpUrl | None = None
     supabase_service_role_key: str | None = Field(default=None, min_length=1)
-    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:8080"])
+    cors_origins: Annotated[list[str], NoDecode] = Field(
+        default_factory=lambda: ["http://localhost:8080"],
+    )
 
     # Bright Data: web discovery and difficult-page fetching. Runs from the
     # pipeline only, never from a browser.

@@ -21,15 +21,15 @@ insert into atlas_clusters (id, name, pathway, color) values
 on conflict (id) do nothing;
 
 insert into atlas_diseases (id, name, gene, effect_class, pathway, cluster_id, importance, no_route) values
-  ('stxbp1', 'STXBP1 encephalopathy', 'STXBP1', 'loss of function', 'Presynaptic vesicle release', 'snare', 10, false),
-  ('stx1b', 'STX1B-related epilepsy', 'STX1B', 'loss of function', 'Presynaptic vesicle release', 'snare', 6, false),
-  ('snap25', 'SNAP25 encephalopathy', 'SNAP25', 'loss of function', 'Presynaptic vesicle release', 'snare', 5, false),
-  ('syt1', 'SYT1-associated neurodevelopmental disorder', 'SYT1', 'loss of function', 'Presynaptic vesicle release', 'snare', 4, false),
-  ('scn2a', 'SCN2A-related disorder', 'SCN2A', 'gain of function', 'Neuronal excitability', 'channel', 8, false),
-  ('kcnq2', 'KCNQ2 encephalopathy', 'KCNQ2', 'loss of function', 'Neuronal excitability', 'channel', 6, false),
-  ('cacna1a-ea2', 'Episodic ataxia type 2', 'CACNA1A', 'loss of function', 'Calcium signaling', 'calcium', 5, false),
-  ('cacna1a-fhm1', 'Familial hemiplegic migraine type 1', 'CACNA1A', 'gain of function', 'Calcium signaling', 'calcium', 4, false),
-  ('vamp2', 'VAMP2-related neurodevelopmental disorder', 'VAMP2', 'loss of function', 'Presynaptic vesicle release', 'snare', 2, true)
+  ('stxbp1', 'STXBP1 encephalopathy', 'STXBP1', 'loss-of-function', 'Presynaptic vesicle release', 'snare', 10, false),
+  ('stx1b', 'STX1B-related epilepsy', 'STX1B', 'loss-of-function', 'Presynaptic vesicle release', 'snare', 6, false),
+  ('snap25', 'SNAP25 encephalopathy', 'SNAP25', 'loss-of-function', 'Presynaptic vesicle release', 'snare', 5, false),
+  ('syt1', 'SYT1-associated neurodevelopmental disorder', 'SYT1', 'loss-of-function', 'Presynaptic vesicle release', 'snare', 4, false),
+  ('scn2a', 'SCN2A-related disorder', 'SCN2A', 'gain-of-function', 'Neuronal excitability', 'channel', 8, false),
+  ('kcnq2', 'KCNQ2 encephalopathy', 'KCNQ2', 'loss-of-function', 'Neuronal excitability', 'channel', 6, false),
+  ('cacna1a-ea2', 'Episodic ataxia type 2', 'CACNA1A', 'loss-of-function', 'Calcium signaling', 'calcium', 5, false),
+  ('cacna1a-fhm1', 'Familial hemiplegic migraine type 1', 'CACNA1A', 'gain-of-function', 'Calcium signaling', 'calcium', 4, false),
+  ('vamp2', 'VAMP2-related neurodevelopmental disorder', 'VAMP2', 'loss-of-function', 'Presynaptic vesicle release', 'snare', 2, true)
 on conflict (id) do nothing;
 
 insert into atlas_synonyms (disease_id, synonym) values
@@ -106,13 +106,13 @@ insert into atlas_organizations (id, name, kind, url, source_id) values
 on conflict (id) do nothing;
 
 insert into atlas_disease_organizations (disease_id, organization_id, relevance) values
-  ('stxbp1', 'stxbp1-foundation', 'Supports STXBP1 encephalopathy (STXBP1 loss of function)'),
-  ('snap25', 'snap25-families', 'Supports SNAP25 encephalopathy (SNAP25 loss of function)'),
-  ('syt1', 'baker-gordon-syndrome-network', 'Supports SYT1-associated neurodevelopmental disorder (SYT1 loss of function)'),
-  ('scn2a', 'familiescn2a', 'Supports SCN2A-related disorder (SCN2A gain of function)'),
-  ('kcnq2', 'kcnq2-cure-alliance', 'Supports KCNQ2 encephalopathy (KCNQ2 loss of function)'),
-  ('cacna1a-ea2', 'cacna1a-foundation', 'Supports Episodic ataxia type 2 (CACNA1A loss of function)'),
-  ('cacna1a-fhm1', 'cacna1a-foundation', 'Supports Familial hemiplegic migraine type 1 (CACNA1A gain of function)')
+  ('stxbp1', 'stxbp1-foundation', 'Supports STXBP1 encephalopathy (STXBP1 loss-of-function)'),
+  ('snap25', 'snap25-families', 'Supports SNAP25 encephalopathy (SNAP25 loss-of-function)'),
+  ('syt1', 'baker-gordon-syndrome-network', 'Supports SYT1-associated neurodevelopmental disorder (SYT1 loss-of-function)'),
+  ('scn2a', 'familiescn2a', 'Supports SCN2A-related disorder (SCN2A gain-of-function)'),
+  ('kcnq2', 'kcnq2-cure-alliance', 'Supports KCNQ2 encephalopathy (KCNQ2 loss-of-function)'),
+  ('cacna1a-ea2', 'cacna1a-foundation', 'Supports Episodic ataxia type 2 (CACNA1A loss-of-function)'),
+  ('cacna1a-fhm1', 'cacna1a-foundation', 'Supports Familial hemiplegic migraine type 1 (CACNA1A gain-of-function)')
 on conflict (disease_id, organization_id) do nothing;
 
 insert into atlas_assets (id, disease_id, kind, name, owner, url, reusable_because) values
@@ -240,7 +240,7 @@ insert into atlas_similarity (a_id, b_id, mechanism_score, phenotype_score, comb
   ('cacna1a-ea2', 'syt1', 0.4, 0, 0.24, '{}', '{}', null),
   ('cacna1a-ea2', 'scn2a', 0.1, 0, 0.06, '{}', '{}', null),
   ('cacna1a-ea2', 'kcnq2', 0.4, 0, 0.24, '{}', '{}', null),
-  ('cacna1a-ea2', 'cacna1a-fhm1', 0.7, 0, 0.42, array['Calcium signaling']::text[], '{}', 'Same gene (CACNA1A) but different effect class: loss of function vs gain of function. Mechanism units are never merged across effect classes.'),
+  ('cacna1a-ea2', 'cacna1a-fhm1', 0.7, 0, 0.42, array['Calcium signaling']::text[], '{}', 'Same gene (CACNA1A) but different effect class: loss-of-function vs gain-of-function. Mechanism units are never merged across effect classes.'),
   ('cacna1a-ea2', 'vamp2', 0.4, 0, 0.24, '{}', '{}', null),
   ('cacna1a-fhm1', 'stxbp1', 0.1, 0, 0.06, '{}', '{}', null),
   ('cacna1a-fhm1', 'stx1b', 0.1, 0, 0.06, '{}', '{}', null),
@@ -248,7 +248,7 @@ insert into atlas_similarity (a_id, b_id, mechanism_score, phenotype_score, comb
   ('cacna1a-fhm1', 'syt1', 0.1, 0, 0.06, '{}', '{}', null),
   ('cacna1a-fhm1', 'scn2a', 0.4, 0, 0.24, '{}', '{}', null),
   ('cacna1a-fhm1', 'kcnq2', 0.1, 0, 0.06, '{}', '{}', null),
-  ('cacna1a-fhm1', 'cacna1a-ea2', 0.7, 0, 0.42, array['Calcium signaling']::text[], '{}', 'Same gene (CACNA1A) but different effect class: gain of function vs loss of function. Mechanism units are never merged across effect classes.'),
+  ('cacna1a-fhm1', 'cacna1a-ea2', 0.7, 0, 0.42, array['Calcium signaling']::text[], '{}', 'Same gene (CACNA1A) but different effect class: gain-of-function vs loss-of-function. Mechanism units are never merged across effect classes.'),
   ('cacna1a-fhm1', 'vamp2', 0.1, 0, 0.06, '{}', '{}', null),
   ('vamp2', 'stxbp1', 1, 0.3333, 0.7333, array['Presynaptic vesicle release']::text[], array['developmental delay']::text[], null),
   ('vamp2', 'stx1b', 1, 0.3333, 0.7333, array['Presynaptic vesicle release']::text[], array['developmental delay']::text[], null),

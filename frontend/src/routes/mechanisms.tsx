@@ -30,7 +30,7 @@ export const Route = createFileRoute("/mechanisms")({
 
 function Mechanisms() {
   const navigate = useNavigate();
-  const [mech, setMech] = useState<"any" | "loss of function" | "gain of function">("any");
+  const [mech, setMech] = useState<"any" | "loss-of-function" | "gain-of-function">("any");
   const [pathway, setPathway] = useState("any");
   const {
     status,
@@ -109,8 +109,8 @@ function Mechanisms() {
                 aria-label="Mechanism type"
               >
                 <option value="any">Any mechanism type</option>
-                <option>loss of function</option>
-                <option>gain of function</option>
+                <option value="loss-of-function">loss of function</option>
+                <option value="gain-of-function">gain of function</option>
               </select>
               <select
                 value={pathway}

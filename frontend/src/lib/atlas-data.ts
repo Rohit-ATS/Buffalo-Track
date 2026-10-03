@@ -41,7 +41,7 @@ export interface Disease {
   name: string;
   synonyms: string[];
   gene: string;
-  mechanism: "loss of function" | "gain of function";
+  mechanism: "loss-of-function" | "gain-of-function";
   pathway: string;
   cluster: string;
   importance: number;
@@ -143,7 +143,7 @@ export const diseases: Disease[] = [
       "Early infantile epileptic encephalopathy",
     ],
     gene: "STXBP1",
-    mechanism: "loss of function",
+    mechanism: "loss-of-function",
     pathway: "Presynaptic vesicle release",
     cluster: "snare",
     importance: 10,
@@ -196,7 +196,7 @@ export const diseases: Disease[] = [
     name: "STX1B-related epilepsy",
     synonyms: ["STX1B disorder", "Fever-associated epilepsy syndrome"],
     gene: "STX1B",
-    mechanism: "loss of function",
+    mechanism: "loss-of-function",
     pathway: "Presynaptic vesicle release",
     cluster: "snare",
     importance: 6,
@@ -224,7 +224,7 @@ export const diseases: Disease[] = [
     name: "SNAP25 encephalopathy",
     synonyms: ["SNAP25 disorder", "CMS18"],
     gene: "SNAP25",
-    mechanism: "loss of function",
+    mechanism: "loss-of-function",
     pathway: "Presynaptic vesicle release",
     cluster: "snare",
     importance: 5,
@@ -255,7 +255,7 @@ export const diseases: Disease[] = [
     name: "SYT1-associated neurodevelopmental disorder",
     synonyms: ["Baker-Gordon syndrome", "SYT1 disorder"],
     gene: "SYT1",
-    mechanism: "loss of function",
+    mechanism: "loss-of-function",
     pathway: "Presynaptic vesicle release",
     cluster: "snare",
     importance: 4,
@@ -280,7 +280,7 @@ export const diseases: Disease[] = [
     name: "SCN2A-related disorder",
     synonyms: ["SCN2A epilepsy"],
     gene: "SCN2A",
-    mechanism: "gain of function",
+    mechanism: "gain-of-function",
     pathway: "Neuronal excitability",
     cluster: "channel",
     importance: 8,
@@ -311,7 +311,7 @@ export const diseases: Disease[] = [
     name: "KCNQ2 encephalopathy",
     synonyms: ["KCNQ2 DEE"],
     gene: "KCNQ2",
-    mechanism: "loss of function",
+    mechanism: "loss-of-function",
     pathway: "Neuronal excitability",
     cluster: "channel",
     importance: 6,
@@ -341,7 +341,7 @@ export const diseases: Disease[] = [
     name: "Episodic ataxia type 2",
     synonyms: ["EA2", "CACNA1A episodic ataxia"],
     gene: "CACNA1A",
-    mechanism: "loss of function",
+    mechanism: "loss-of-function",
     pathway: "Calcium signaling",
     cluster: "calcium",
     importance: 5,
@@ -364,7 +364,7 @@ export const diseases: Disease[] = [
     name: "Familial hemiplegic migraine type 1",
     synonyms: ["FHM1", "CACNA1A migraine"],
     gene: "CACNA1A",
-    mechanism: "gain of function",
+    mechanism: "gain-of-function",
     pathway: "Calcium signaling",
     cluster: "calcium",
     importance: 4,
@@ -390,7 +390,7 @@ export const diseases: Disease[] = [
     name: "VAMP2-related neurodevelopmental disorder",
     synonyms: ["VAMP2 disorder"],
     gene: "VAMP2",
-    mechanism: "loss of function",
+    mechanism: "loss-of-function",
     pathway: "Presynaptic vesicle release",
     cluster: "snare",
     importance: 2,

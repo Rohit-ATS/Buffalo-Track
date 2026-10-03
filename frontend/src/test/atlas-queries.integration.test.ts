@@ -118,9 +118,9 @@ describe.skipIf(!live)("atlas queries against a live database", () => {
   });
 
   it("filters units by effect class for the mechanism view", async () => {
-    const gain = await Q.searchByMechanism(db, { effectClass: "gain of function" });
+    const gain = await Q.searchByMechanism(db, { effectClass: "gain-of-function" });
     expect(gain.length).toBeGreaterThan(0);
-    expect(gain.every((d) => d.effectClass === "gain of function")).toBe(true);
+    expect(gain.every((d) => d.effectClass === "gain-of-function")).toBe(true);
   });
 
   it("returns a complete receipt for one edge", async () => {
