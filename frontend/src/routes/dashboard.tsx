@@ -18,6 +18,7 @@ import {
   LayoutDashboard,
   Network,
   Search,
+  Share2,
   Sparkles,
   Users,
 } from "lucide-react";
@@ -159,6 +160,9 @@ function DashboardPage() {
               </Link>
               <Link to="/mechanisms">
                 <Network className="size-4" /> Mechanisms
+              </Link>
+              <Link to="/graph">
+                <Share2 className="size-4" /> Live graph
               </Link>
               <Link to="/researchers">
                 <Users className="size-4" /> Researchers
