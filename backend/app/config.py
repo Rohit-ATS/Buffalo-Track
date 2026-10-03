@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Annotated
 
-from pydantic import Field, HttpUrl, field_validator
+from pydantic import Field, HttpUrl, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
@@ -17,6 +17,12 @@ class Settings(BaseSettings):
     cors_origins: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["http://localhost:8080"],
     )
+    # Public search protection. Render runs one API instance (render.yaml), so
+    # these values bound the deployed service as well as the local process.
+    search_rate_limit: int = Field(default=30, ge=1, le=10_000)
+    search_rate_window_seconds: int = Field(default=60, ge=1, le=3_600)
+    search_max_concurrency: int = Field(default=8, ge=1, le=1_000)
+    backend_proxy_secret: str | None = Field(default=None, min_length=32)
 
     # Bright Data: web discovery and difficult-page fetching. Runs from the
     # pipeline only, never from a browser.
@@ -66,6 +72,15 @@ class Settings(BaseSettings):
         if isinstance(value, str):
             return [origin.strip().rstrip("/") for origin in value.split(",") if origin.strip()]
         return [origin.strip().rstrip("/") for origin in value if origin.strip()]
+
+    @model_validator(mode="after")
+    def require_proxy_secret_in_production(self) -> "Settings":
+        if self.environment == "production" and self.database_configured and not self.backend_proxy_secret:
+            raise ValueError(
+                "BACKEND_PROXY_SECRET is required in production when Supabase is configured. "
+                "Set the same random value in the frontend server environment."
+            )
+        return self
 
     @property
     def database_configured(self) -> bool:
