@@ -19,7 +19,7 @@ The API is then available at `http://localhost:8000/docs`.
 | Endpoint | Purpose |
 | --- | --- |
 | `GET /healthz` | Process health, used by Render |
-| `GET /readyz` | Confirms that Supabase credentials are configured |
+| `GET /readyz` | Confirms that Supabase is reachable with the configured credentials |
 | `POST /api/v1/search` | Graph lookup, body: `{ "query": "STXBP1" }` |
 
 Run the tests with `uv run pytest`.

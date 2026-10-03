@@ -29,7 +29,7 @@ export type AtlasMatch = {
 };
 
 export type AtlasSearchResult =
-  /** No SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY — the page falls back to the curated demo. */
+  /** No backend URL is configured — the page falls back to the curated demo. */
   | { status: "unconfigured"; query: string }
   /** Database reachable, nothing matched the query. */
   | { status: "empty"; query: string }
