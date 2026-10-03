@@ -113,7 +113,8 @@ export function AtlasResults({
     );
   }
 
-  const { match, alsoMatched } = result;
+  const { match, alsoMatched: rawAlsoMatched } = result;
+  const alsoMatched = rawAlsoMatched ?? [];
   const withEvidence = match.connections.filter((c) => c.evidenceCount > 0).length;
 
   return (
