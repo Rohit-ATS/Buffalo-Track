@@ -9,6 +9,7 @@ Two layers live here:
 | `20261003000003_atlas.sql`                 | The typed `atlas_*` domain the product queries                        |
 | `20261003000004_atlas_realtime.sql`        | Realtime for the atlas tables `/mechanisms` reads live                |
 | `20261003000005_atlas_nodes.sql`           | First-class `atlas_genes` / `atlas_pathways` / `atlas_phenotypes` / `atlas_publications` / `atlas_grants`, FK'd from `atlas_diseases` / `atlas_symptoms` |
+| `20261003000006_web_discovery.sql`         | Bright Data discovery output: runs, SERP candidates, fetched pages, extracted claims, discovered assets. See backend/DISCOVERY.md |
 
 | Seed                    | Loads                                                             |
 | ----------------------- | ------------------------------------------------------------------ |
