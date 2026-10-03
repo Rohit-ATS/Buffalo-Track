@@ -1,0 +1,18 @@
+# Normalise line endings.
+#
+# core.autocrlf=true on Windows checks files out as CRLF, but prettier's
+# endOfLine defaults to "lf", so `bun run lint` reported a Delete-CR error on
+# every line of every checked-out file. Pinning the working tree to LF makes
+# the repo's own lint script pass on every platform.
+* text=auto eol=lf
+
+# Binary: never touch these.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.pdf  binary
