@@ -17,7 +17,7 @@ seed term (gene or disease)
    │                              │
    ├─ Web Unlocker / Crawl ──► page markdown          (billable)
    │                              │
-   ├─ OpenAI extract ────────► structured claims      (billable)
+   ├─ Claude Haiku extract ──► structured claims      (billable)
    │                              │
    │                        quote verifier            (free, and it is the gate)
    │                              │
@@ -45,7 +45,7 @@ python -m app.discovery.cli plan STXBP1 STX1B SNAP25
 python -m app.discovery.cli run STX1B --disease-id stx1b --max-pages 6
 ```
 
-Needs `BRIGHT_DATA_API_KEY`, `OPENAI_API_KEY`, and Supabase credentials — see
+Needs `BRIGHT_DATA_API_KEY`, `ANTHROPIC_API_KEY`, and Supabase credentials — see
 `.env.example`. `run` refuses to start if any are missing and names which.
 
 ## Where the credits go
@@ -69,6 +69,25 @@ would be money burned:
 
 Social and wiki domains are skipped too: useful for spotting an organization's
 real name, never acceptable as evidence.
+
+## Why Claude Haiku 4.5
+
+The model's whole job is to read a page and copy the sentence that supports
+each claim. It never scores, never infers, and anything it invents is thrown
+away by the verifier. That makes this the cheapest useful tier —
+**`claude-haiku-4-5`, $1 / $5 per MTok** — and no thinking is requested, since
+reasoning depth buys nothing on a copy task and would cost tokens on every
+page.
+
+Structured outputs do the schema work: `messages.parse()` validates against a
+Pydantic model, so a malformed batch is impossible rather than something to
+repair. A truncated batch (`max_tokens`) is discarded whole — a half-written
+quote would fail the verifier for the wrong reason.
+
+Cost scales with page size, not claim count. At roughly 6K input tokens per
+page (24K chars, truncated) and a few hundred output tokens, a page costs on
+the order of a hundredth of a cent. Extraction is not where the money goes;
+Bright Data requests are.
 
 ## The verifier is the point
 

@@ -62,8 +62,8 @@ def _missing(settings) -> list[str]:
     missing: list[str] = []
     if not settings.bright_data_configured:
         missing.append("BRIGHT_DATA_API_KEY")
-    if not settings.openai_configured:
-        missing.append("OPENAI_API_KEY")
+    if not settings.anthropic_configured:
+        missing.append("ANTHROPIC_API_KEY")
     if not settings.database_configured:
         missing.append("SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY")
     return missing

@@ -21,6 +21,7 @@ import pytest
 from app.config import Settings
 from app.discovery.classify import classify
 from app.discovery.scout import AssetScout
+from app.llm.extract import Claim
 from app.llm.verify import verify_quote
 
 FOUNDATION_PAGE = """
@@ -36,7 +37,7 @@ led by Dr. A. Rivera, open to anyone with a confirmed STX1B variant.
 """
 
 # One real quote, one paraphrase the verifier must reject.
-MODEL_CLAIMS = {
+MODEL_CLAIMS: dict[str, list[dict[str, Any]]] = {
     "claims": [
         {
             "subject_type": "organization",
@@ -88,12 +89,6 @@ def _handler(request: httpx.Request) -> httpx.Response:
             return httpx.Response(200, json=SERP_PAYLOAD)
         return httpx.Response(200, text=FOUNDATION_PAGE)
 
-    if url.startswith("https://api.openai.com/"):
-        return httpx.Response(
-            200,
-            json={"choices": [{"message": {"content": json.dumps(MODEL_CLAIMS)}}]},
-        )
-
     raise AssertionError(f"unexpected request to {url}")
 
 
@@ -110,7 +105,7 @@ def settings() -> Settings:
         supabase_url="https://example.supabase.co",
         supabase_service_role_key="test-key",
         bright_data_api_key="test-bright-data",
-        openai_api_key="test-openai",
+        anthropic_api_key="test-anthropic",
     )
 
 
@@ -146,10 +141,28 @@ class StubStore:
         self.finished = True
 
 
+class StubExtractor:
+    """Returns the fixture claims without calling the model.
+
+    Stubbed at the extractor boundary rather than over HTTP: the Anthropic SDK
+    builds the request, and asserting on its wire format would test the SDK
+    rather than this pipeline. The extractor's own contract is covered in
+    test_extract.py.
+    """
+
+    method = "claude-haiku-4-5/extract-v1"
+
+    async def extract(self, url: str, content: str) -> list[Claim]:
+        return [Claim(**raw) for raw in MODEL_CLAIMS["claims"]]
+
+
 @pytest.fixture
 def stubbed_scout(monkeypatch, settings):  # noqa: ANN001
     store = StubStore()
     monkeypatch.setattr("app.discovery.scout.DiscoveryStore", lambda *a, **k: store)
+    monkeypatch.setattr(
+        "app.discovery.scout.ClaimExtractor", lambda *a, **k: StubExtractor()
+    )
     client = httpx.AsyncClient(transport=httpx.MockTransport(_handler))
     return AssetScout(settings, client), store, client
 
@@ -238,9 +251,9 @@ def test_run_refuses_without_credentials(settings):
 def test_the_paraphrase_really_is_absent_from_the_page():
     """Guards the fixture itself: if the page ever contains the paraphrase,
     the rejection assertions above would pass for the wrong reason."""
-    claims = MODEL_CLAIMS["claims"]
-    assert verify_quote(claims[0]["quote"], FOUNDATION_PAGE).ok
-    assert not verify_quote(claims[1]["quote"], FOUNDATION_PAGE).ok
+    claims = [Claim(**raw) for raw in MODEL_CLAIMS["claims"]]
+    assert verify_quote(claims[0].quote, FOUNDATION_PAGE).ok
+    assert not verify_quote(claims[1].quote, FOUNDATION_PAGE).ok
 
 
 def test_classifier_decisions_for_the_fixture_urls():

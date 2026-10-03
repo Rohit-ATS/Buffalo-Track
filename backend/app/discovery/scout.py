@@ -22,6 +22,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 
+import anthropic
 import httpx
 
 from ..brightdata.client import BrightDataClient, BudgetExhausted, RequestBudget
@@ -119,10 +120,9 @@ class AssetScout:
         serp = SerpClient(bright, self._settings.bright_data_serp_zone)
         unlocker = UnlockerClient(bright, self._settings.bright_data_unlocker_zone)
         extractor = ClaimExtractor(
-            self._client,
-            self._settings.openai_api_key or "",
-            self._settings.openai_extract_model,
-            self._settings.openai_prompt_version,
+            anthropic.AsyncAnthropic(api_key=self._settings.anthropic_api_key),
+            self._settings.anthropic_extract_model,
+            self._settings.anthropic_prompt_version,
         )
         store = DiscoveryStore(self._settings, self._client)
 
@@ -147,8 +147,8 @@ class AssetScout:
         missing: list[str] = []
         if not self._settings.bright_data_configured:
             missing.append("BRIGHT_DATA_API_KEY")
-        if not self._settings.openai_configured:
-            missing.append("OPENAI_API_KEY")
+        if not self._settings.anthropic_configured:
+            missing.append("ANTHROPIC_API_KEY")
         if not self._settings.database_configured:
             missing.append("SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY")
         return missing
