@@ -9,7 +9,9 @@ from app.main import create_app
 
 
 def client(**overrides: object) -> TestClient:
-    settings = Settings(**overrides)
+    # _env_file=None keeps the developer's .env out of the test run: otherwise a
+    # local SUPABASE_URL leaks in and the suite passes or fails by machine.
+    settings = Settings(_env_file=None, **overrides)
     return TestClient(create_app(settings))
 
 
