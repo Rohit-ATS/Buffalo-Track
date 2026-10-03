@@ -166,7 +166,7 @@ function EvidenceDrawer({ edge, onClose }: { edge: Edge | null; onClose: () => v
                 <dt className="eyebrow">Source</dt>
                 <dd>
                   <a
-                    href={src.url}
+                    href={edge.sourceUrl ?? src.url}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-1 font-semibold text-primary underline-offset-4 hover:underline"
@@ -174,6 +174,22 @@ function EvidenceDrawer({ edge, onClose }: { edge: Edge | null; onClose: () => v
                     {src.name} <ExternalLink className="size-3.5" />
                   </a>
                 </dd>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <dt className="eyebrow">Source record</dt>
+                  <dd>{edge.sourceRecordId ?? "Source-level record"}</dd>
+                </div>
+                <div>
+                  <dt className="eyebrow">Clinical proof</dt>
+                  <dd
+                    className={
+                      edge.clinicalProof ? "font-semibold text-primary" : "text-muted-foreground"
+                    }
+                  >
+                    {edge.clinicalProof ? "Direct clinical evidence" : "Not established"}
+                  </dd>
+                </div>
               </div>
               <div>
                 <dt className="eyebrow">Exact quote</dt>
@@ -199,6 +215,10 @@ function EvidenceDrawer({ edge, onClose }: { edge: Edge | null; onClose: () => v
                   <span className="font-display text-3xl">{edge.confidence.toFixed(2)}</span>
                   <p className="text-muted-foreground">Rule: {edge.rule}</p>
                 </dd>
+              </div>
+              <div>
+                <dt className="eyebrow">Extraction method</dt>
+                <dd>{edge.method}</dd>
               </div>
               <div>
                 <dt className="eyebrow">Contradicting evidence</dt>
