@@ -2,6 +2,9 @@
 .env
 .env.local
 .env.*.local
+backend/.venv/
+backend/.pytest_cache/
+__pycache__/
 
 # Supabase
 supabase/.branches
