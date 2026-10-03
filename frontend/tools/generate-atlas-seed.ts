@@ -46,12 +46,41 @@ const slug = (s: string): string =>
 const lines: string[] = [];
 const say = (s = "") => lines.push(s);
 
-/** Emits an idempotent multi-row insert. */
-function insert(table: string, columns: string[], rows: string[][], conflict: string) {
+/**
+ * Emits an idempotent multi-row insert.
+ *
+ * `conflict` is the conflict target, e.g. "(id)". By default the non-key
+ * columns are updated on conflict, so re-running the seed propagates an edit
+ * to atlas-data.ts into rows that already exist. Pass mode "nothing" only for
+ * tables whose every column is part of the key -- a pure join row has nothing
+ * to update.
+ *
+ * This matters: with `do nothing` everywhere, correcting the dataset and
+ * re-seeding silently changed nothing, and renaming an enum value left stale
+ * free text behind in rows that were already seeded.
+ */
+function insert(
+  table: string,
+  columns: string[],
+  rows: string[][],
+  conflict: string,
+  mode: "update" | "nothing" = "update",
+) {
   if (rows.length === 0) return;
+  const keys = conflict
+    .replace(/[()]/g, "")
+    .split(",")
+    .map((k) => k.trim());
+  const updatable = columns.filter((c) => !keys.includes(c));
+
   say(`insert into ${table} (${columns.join(", ")}) values`);
   say(rows.map((r) => `  (${r.join(", ")})`).join(",\n"));
-  say(`on conflict ${conflict} do nothing;`);
+  if (mode === "nothing" || updatable.length === 0) {
+    say(`on conflict ${conflict} do nothing;`);
+  } else {
+    say(`on conflict ${conflict} do update set`);
+    say(updatable.map((c) => `  ${c} = excluded.${c}`).join(",\n") + ";");
+  }
   say();
 }
 
@@ -103,6 +132,7 @@ insert(
   ["disease_id", "synonym"],
   diseases.flatMap((d) => d.synonyms.map((s) => [q(d.id), q(s)])),
   "(disease_id, synonym)",
+  "nothing",
 );
 
 insert(
@@ -110,6 +140,7 @@ insert(
   ["disease_id", "symptom"],
   diseases.flatMap((d) => d.symptoms.map((s) => [q(d.id), q(s)])),
   "(disease_id, symptom)",
+  "nothing",
 );
 
 // Open questions are ordered, so a surrogate key plus position.
