@@ -1,36 +1,9 @@
-const entries = [
-  { gene: "STXBP1", disease: "STXBP1 encephalopathy", mechanism: "Loss of function", pathway: "Presynaptic vesicle release", organization: "STXBP1 Foundation", symptoms: "epilepsy, developmental delay, tremor" },
-  { gene: "STX1B", disease: "STX1B-related developmental and epileptic encephalopathy", mechanism: "Loss of function", pathway: "Presynaptic vesicle release", organization: "STXBP1 Foundation", symptoms: "epilepsy, developmental delay" },
-  { gene: "SNAP25", disease: "SNAP25 developmental and epileptic encephalopathy", mechanism: "Loss of function", pathway: "SNARE vesicle fusion", organization: "Rare disease community", symptoms: "epilepsy, developmental delay" },
-  { gene: "CACNA1A", disease: "CACNA1A-related disorder", mechanism: "Loss of function", pathway: "Calcium signaling", organization: "Rare disease community", symptoms: "epilepsy, ataxia, developmental delay" },
-  { gene: "KCNQ2", disease: "KCNQ2 developmental and epileptic encephalopathy", mechanism: "Loss of function", pathway: "Ion channel excitability", organization: "KCNQ2 Cure Alliance", symptoms: "epilepsy, developmental delay" },
-  { gene: "SCN2A", disease: "SCN2A-related disorder", mechanism: "Gain of function", pathway: "Ion channel excitability", organization: "FamilieSCN2A Foundation", symptoms: "epilepsy, developmental delay, autism" },
+const atlas = [
+  { gene: "STXBP1", title: "STXBP1 encephalopathy", links: ["Presynaptic vesicle release", "STX1B-related disorder", "STXBP1 Foundation"] },
+  { gene: "CACNA1A", title: "CACNA1A-related disorder", links: ["Calcium signaling", "Loss of function", "Gain of function"] },
+  { gene: "STX1B", title: "STX1B-related disorder", links: ["Presynaptic vesicle release", "STXBP1 encephalopathy", "Natural history study"] },
+  { gene: "VAMP2", title: "VAMP2 disorder", links: ["SNARE vesicle fusion", "Evidence gap", "Rare disease community"] },
 ];
-
-const form = document.querySelector("#atlas-search");
-const input = document.querySelector("#search-input");
-const status = document.querySelector("#search-status");
-const results = document.querySelector("#search-results");
-
-function render(query) {
-  const normalized = query.trim().toLocaleLowerCase();
-  results.replaceChildren();
-  if (!normalized) {
-    status.textContent = "Enter a query to explore the public sample.";
-    return;
-  }
-  const matches = entries.filter((entry) => Object.values(entry).join(" ").toLocaleLowerCase().includes(normalized));
-  status.textContent = matches.length ? `${matches.length} ${matches.length === 1 ? "connection" : "connections"} in the public sample` : `No public-sample connection for “${query.trim()}”. Try STXBP1 or calcium.`;
-  matches.forEach((entry) => {
-    const card = document.createElement("article");
-    card.className = "result-card";
-    const tag = document.createElement("span"); tag.className = "tag"; tag.textContent = entry.gene;
-    const title = document.createElement("strong"); title.textContent = entry.disease;
-    const pathway = document.createElement("p"); pathway.textContent = `${entry.pathway} · ${entry.mechanism}`;
-    const community = document.createElement("p"); community.textContent = entry.organization;
-    card.append(tag, title, pathway, community); results.append(card);
-  });
-}
-
-form.addEventListener("submit", (event) => { event.preventDefault(); render(input.value); });
-document.querySelectorAll("[data-query]").forEach((button) => button.addEventListener("click", () => { input.value = button.dataset.query; render(input.value); input.focus(); }));
+const form = document.querySelector("#atlas-search"); const input = document.querySelector("#search-input"); const results = document.querySelector("#atlas-results"); const title = document.querySelector("#result-title"); const connections = document.querySelector("#connections");
+function search(value) { const query = value.trim().toLocaleLowerCase(); if (!query) return; const item = atlas.find((entry) => `${entry.gene} ${entry.title} ${entry.links.join(" ")}`.toLocaleLowerCase().includes(query)) || atlas[0]; title.textContent = item.gene; connections.replaceChildren(); item.links.forEach((link) => { const row = document.createElement("li"); const arrow = document.createElement("b"); const name = document.createElement("strong"); const type = document.createElement("span"); const receipt = document.createElement("small"); arrow.textContent = "→"; name.textContent = link; type.textContent = "connected node"; receipt.textContent = "✓ receipt"; row.append(arrow, name, type, receipt); connections.append(row); }); results.hidden = false; results.scrollIntoView({ behavior: "smooth", block: "start" }); }
+form.addEventListener("submit", (event) => { event.preventDefault(); search(input.value); }); document.querySelectorAll("[data-query]").forEach((button) => button.addEventListener("click", () => { input.value = button.dataset.query; search(input.value); }));
