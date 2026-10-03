@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { AtlasShell, StateMessage } from "@/components/atlas-ui";
+import { LiveGraph } from "@/components/live-graph";
 import { clusters, diseases, edges } from "@/lib/atlas-data";
 
 const SITE = "https://gleam-artistic-page.lovable.app";
@@ -146,6 +147,14 @@ function Mechanisms() {
         <p className="mt-3 text-xs text-muted-foreground">
           Click a row to open that cluster on the map.
         </p>
+
+        <div className="mt-12 border-t border-border pt-10">
+          <LiveGraph
+            title="Live mechanism graph"
+            description="Mechanism nodes from the live database and everything they connect to, updating in real time as the data changes — a different, schema-driven view from the curated clusters above."
+            focusType="mechanism"
+          />
+        </div>
       </div>
     </AtlasShell>
   );
