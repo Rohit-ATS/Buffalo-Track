@@ -132,7 +132,16 @@ export const diseases: Disease[] = [
   {
     id: "stxbp1",
     name: "STXBP1 encephalopathy",
-    synonyms: ["STXBP1 disorder", "Munc18-1 encephalopathy", "DEE4"],
+    synonyms: [
+      "STXBP1 disorder",
+      "Munc18-1 encephalopathy",
+      "DEE4",
+      // STXBP1 was first identified in Ohtahara syndrome (Saitsu et al., 2008).
+      // VERIFY against your own data pull before the demo, per the plan's rule
+      // on named facts.
+      "Ohtahara syndrome",
+      "Early infantile epileptic encephalopathy",
+    ],
     gene: "STXBP1",
     mechanism: "loss of function",
     pathway: "Presynaptic vesicle release",
@@ -451,7 +460,9 @@ export const edges: Edge[] = [
     "stxbp1",
     "snap25",
     "shared symptoms",
-    "reported",
+    // Computed from HPO annotation overlap, so this is inferred, not reported:
+    // there is no source sentence to quote.
+    "inferred",
     "Both disorders commonly cause early epilepsy and developmental delay.",
     "hpo",
     0.74,

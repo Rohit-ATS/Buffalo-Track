@@ -151,7 +151,10 @@ create index if not exists atlas_assets_kind_idx on atlas_assets (kind);
 
 -- ----------------------------------------------------------------- trials
 create table if not exists atlas_trials (
-  id           text primary key,          -- NCT number when known
+  id           text primary key,
+  -- Null until the record is matched to a real ClinicalTrials.gov entry. Never
+  -- render a placeholder as an NCT number.
+  nct_id       text,
   name         text not null,
   status       text,
   study_type   text,                      -- observational studies are assets too
@@ -325,3 +328,24 @@ begin
     );
   end loop;
 end $$;
+
+-- ----------------------------------------------------------------- realtime
+-- Same access model as 20261003000002_public_read_realtime.sql: clients
+-- subscribe and Realtime honours the select policies above. Re-runnable, since
+-- adding a table already in the publication raises.
+do $$
+declare t text;
+begin
+  foreach t in array array['atlas_diseases', 'atlas_edges', 'atlas_metrics'] loop
+    if not exists (
+      select 1 from pg_publication_tables
+      where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t
+    ) then
+      execute format('alter publication supabase_realtime add table %I', t);
+    end if;
+  end loop;
+end $$;
+
+-- DELETE events need the full old row to identify what went away.
+alter table atlas_diseases replica identity full;
+alter table atlas_edges    replica identity full;
