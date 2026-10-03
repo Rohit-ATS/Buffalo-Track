@@ -24,7 +24,7 @@ Needs Node.js (or Bun). From this directory:
 
 ```sh
 bun install          # or: npm install
-cp .env.example .env # SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY
+cp .env.example .env # BACKEND_URL
 bun run dev          # http://localhost:8080
 ```
 
@@ -55,4 +55,4 @@ Open your project in the [Lovable editor](https://lovable.dev) and keep building
 - TypeScript
 - React
 - Tailwind CSS
-- Supabase (server-side reads via a TanStack Start server function)
+- FastAPI backend (server-side reads from Supabase)

@@ -6,6 +6,7 @@ A graph-backed rare-disease atlas. Two halves:
 | ----------- | ----------------------------------------------------------------------------- |
 | `supabase/` | Postgres schema: `nodes`, `edges`, `evidence` (with pgvector embeddings)      |
 | `frontend/` | TanStack Start app — search-first landing page, research workspace, dashboard |
+| `backend/` | FastAPI graph-search service, ready for deployment to Render |
 
 Searching a gene, mechanism, or disorder on the landing page walks the graph: it
 finds the matching node, lists its edges with the number of evidence rows behind
@@ -18,9 +19,17 @@ each one, and shows the evidence receipts themselves.
 # 2. Frontend
 cd frontend
 bun install          # or: npm install
-cp .env.example .env # fill in SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY
+cp .env.example .env # set BACKEND_URL after starting the API below
 bun run dev          # http://localhost:8080
 ```
+
+## Backend API
+
+The production search API lives in [`backend/`](backend/README.md). It exposes
+`POST /api/v1/search`, `/healthz`, and `/readyz`; `render.yaml` deploys it as a
+Render web service. Copy `backend/.env.example` to `backend/.env` locally, then
+set `BACKEND_URL` in `frontend/.env` to connect the frontend. The service-role
+key stays in the backend environment and must never use a `VITE_` prefix.
 
 Without `.env`, the app still runs — search reports that the live atlas is not
 connected and the curated sample path on the page carries the demo.
@@ -59,13 +68,14 @@ Seeded queries worth trying on the landing page: `STXBP1`, `STX1B`, `CACNA1A`,
 ## How the frontend reads the graph
 
 Because RLS blocks the anon key, the browser never queries Supabase directly.
-The lookup runs in a TanStack Start **server function**:
+The lookup runs through the FastAPI backend; the TanStack Start **server function**
+forwards the browser request to it:
 
-- `frontend/src/lib/supabase.server.ts` — service-role client, server-only, returns
-  `null` when credentials are absent.
-- `frontend/src/lib/atlas-search.ts` — the server function the browser calls over RPC.
-- `frontend/src/lib/atlas-graph.ts` — matches nodes in three passes (exact → prefix →
-  substring), then loads edges, neighbours, and evidence counts.
+- `backend/app/atlas.py` — matches nodes in three passes (exact → prefix →
+  substring), then loads edges, neighbours, and evidence counts with the
+  server-only service-role key.
+- `frontend/src/lib/atlas-search.ts` — the server function the browser calls over RPC;
+  it forwards the request to `BACKEND_URL`.
 - `frontend/src/components/atlas-results.tsx` — renders the match, its connections,
   and the evidence receipts.
 
@@ -74,8 +84,8 @@ The research views (`/dashboard`, `/disease/$id`, `/compare`, `/mechanisms`,
 `frontend/src/lib/atlas-data.ts`, not the database. Only the landing-page search
 is live.
 
-Keep `SUPABASE_SERVICE_ROLE_KEY` unprefixed: anything named `VITE_*` is bundled
-into client JavaScript.
+Set `SUPABASE_SERVICE_ROLE_KEY` only in `backend/.env` or Render. It must never
+be prefixed with `VITE_`, which would bundle it into client JavaScript.
 
 ## Frontend commands
 
