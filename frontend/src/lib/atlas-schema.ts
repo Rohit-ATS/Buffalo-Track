@@ -68,6 +68,8 @@ export type EdgeReceipt = {
   retrievedAt: string;
   confidence: number;
   rule: string;
+  /** Direct clinical evidence, deliberately separate from the evidence tier. */
+  clinicalProof: boolean;
   contradicting: string | null;
   method: string | null;
   source: SourceRef | null;

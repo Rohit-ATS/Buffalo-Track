@@ -17,11 +17,16 @@ export interface Edge {
   tier: Tier;
   sentence: string;
   source: string;
+  sourceRecordId?: string | undefined;
+  sourceUrl?: string | undefined;
   quote?: string | undefined;
   retrieved: string;
   confidence: number;
   rule: string;
   contradicting?: string | undefined;
+  /** Direct clinical evidence, deliberately separate from evidence tier. */
+  clinicalProof: boolean;
+  method: string;
 }
 export interface Asset {
   kind: "registry" | "natural history study" | "trial" | "model";
@@ -415,6 +420,8 @@ const e = (
   rule: string,
   quote?: string,
   contradicting?: string,
+  clinicalProof = false,
+  sourceRecordId?: string,
 ): Edge => ({
   id,
   from,
@@ -423,10 +430,14 @@ const e = (
   tier,
   sentence,
   source,
+  sourceRecordId,
+  sourceUrl: sourceById(source).url,
   confidence,
   rule,
   quote,
   contradicting,
+  clinicalProof,
+  method: "curated snapshot v1",
   retrieved: sourceById(source).pulled,
 });
 
@@ -503,6 +514,9 @@ export const edges: Edge[] = [
     0.88,
     "Pathogenic variants in both genes curated for the same phenotype",
     "Pathogenic variants associated with developmental and epileptic encephalopathy.",
+    undefined,
+    true,
+    "ClinVar:SCV000000000",
   ),
   e(
     "e7",
