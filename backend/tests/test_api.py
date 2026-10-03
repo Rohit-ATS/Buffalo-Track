@@ -1,5 +1,9 @@
+import asyncio
+
+import httpx
 from fastapi.testclient import TestClient
 
+from app.atlas import AtlasRepository
 from app.config import Settings
 from app.main import create_app
 
@@ -35,3 +39,50 @@ def test_cors_allows_configured_frontend_only() -> None:
         blocked = api.options("/api/v1/search", headers={"Origin": "https://other.example.org", "Access-Control-Request-Method": "POST"})
     assert allowed.headers["access-control-allow-origin"] == "https://atlas.example.org"
     assert blocked.status_code == 400
+
+
+def test_search_returns_live_graph_data_from_supabase() -> None:
+    calls: list[httpx.Request] = []
+
+    def supabase(request: httpx.Request) -> httpx.Response:
+        calls.append(request)
+        params = request.url.params
+        if request.url.path.endswith("/nodes") and "or" in params:
+            return httpx.Response(200, json=[
+                {"id": "n1", "type": "gene", "name": "STXBP1"},
+                {"id": "n4", "type": "disorder", "name": "STXBP1-related disorder"},
+            ])
+        if request.url.path.endswith("/edges"):
+            return httpx.Response(200, json=[
+                {"id": "e1", "source_id": "n1", "target_id": "n2", "type": "acts_in", "weight": 0.95},
+                {"id": "e2", "source_id": "n3", "target_id": "n1", "type": "shares_mechanism", "weight": 0.8},
+            ])
+        if request.url.path.endswith("/nodes"):
+            return httpx.Response(200, json=[
+                {"id": "n2", "type": "mechanism", "name": "Presynaptic vesicle fusion"},
+                {"id": "n3", "type": "disorder", "name": "STX1B-related epilepsy"},
+            ])
+        if request.url.path.endswith("/evidence") and "node_id" in params:
+            return httpx.Response(200, json=[
+                {"id": "ev1", "content": "Source-backed statement.", "source_url": "https://example.org/paper", "confidence": 0.9},
+            ])
+        return httpx.Response(200, json=[{"edge_id": "e1"}, {"edge_id": "e1"}, {"edge_id": "e2"}])
+
+    async def run() -> object:
+        transport = httpx.MockTransport(supabase)
+        async with httpx.AsyncClient(transport=transport) as http:
+            repo = AtlasRepository(
+                Settings(supabase_url="https://project.supabase.co", supabase_service_role_key="secret"),
+                http,
+            )
+            return await repo.search(" STXBP1 ")
+
+    result = asyncio.run(run())
+    assert result.status == "ok"
+    assert result.query == "STXBP1"
+    assert result.match is not None
+    assert result.match.node.name == "STXBP1"
+    assert result.match.connections[0].evidenceCount == 2
+    assert result.match.connections[1].direction == "incoming"
+    assert str(result.match.evidence[0].sourceUrl) == "https://example.org/paper"
+    assert calls[0].headers["apikey"] == "secret"
