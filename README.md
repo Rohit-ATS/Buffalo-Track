@@ -7,6 +7,7 @@ A graph-backed rare-disease atlas. Two halves:
 | `supabase/` | Postgres schema: `nodes`, `edges`, `evidence` (with pgvector embeddings)      |
 | `frontend/` | TanStack Start app — search-first landing page, research workspace, dashboard |
 | `backend/` | FastAPI graph-search service, ready for deployment to Render |
+| `pages/` | Static public project preview, deployed through GitHub Pages |
 
 Searching a gene, mechanism, or disorder on the landing page walks the graph: it
 finds the matching node, lists its edges with the number of evidence rows behind
@@ -34,6 +35,19 @@ Before production deployment, follow the [Render checklist](backend/RENDER_DEPLO
 
 Without `.env`, the app still runs — search reports that the live atlas is not
 connected and the curated sample path on the page carries the demo.
+
+## Public project preview (GitHub Pages)
+
+[`pages/`](pages/) is a dependency-free public landing page. It describes the
+project and includes an in-browser search over a small curated demo sample; it
+does not call the API or contain any credentials. This keeps the public preview
+safe to host on GitHub Pages while the complete application continues to use
+the FastAPI service described above.
+
+The workflow in [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)
+publishes `pages/` on pushes to `main`. After the first push, enable **Settings
+→ Pages → Build and deployment → Source → GitHub Actions** in the repository.
+GitHub then shows the published URL on the completed workflow run.
 
 ## Database setup
 
