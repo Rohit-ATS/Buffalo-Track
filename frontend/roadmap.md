@@ -6,5 +6,6 @@
 - [x] Verify desktop and mobile presentation, interactions, and diagnostics.
 - [x] Redesign the footer with a glowing editorial Atlas centerpiece.
 - [x] Add a pencil-drawn opening animation that resolves into the landing page.
-
-- [x] Move the app under `Buffalo-Track/frontend` and wire search to the Supabase graph.
+- [x] Build a responsive Atlas research dashboard from the supplied reference.
+- [x] Verify dashboard controls, desktop/mobile layout, and diagnostics.- [x] Spec build: shared header search/persona/evidence key/footer, disease page (4 tabs, drawer, brief, no-route), /compare, /mechanisms, /researchers, /methods
+- [ ] Replace placeholder Methods numbers, coverage figures, and GitHub link (waiting on real values from user)
