@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
-import { getSupabaseBrowser } from "@/lib/supabase.client";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 export type GraphNode = {
   id: string;
@@ -21,10 +21,7 @@ export type GraphEdge = {
 
 export type RealtimeGraphStatus =
   /** VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY aren't set in this build. */
-  | "unconfigured"
-  | "loading"
-  | "live"
-  | "error";
+  "unconfigured" | "loading" | "live" | "error";
 
 export type RealtimeGraph = {
   status: RealtimeGraphStatus;
