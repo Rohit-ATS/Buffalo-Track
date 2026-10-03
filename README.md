@@ -84,3 +84,41 @@ Run from `frontend/`:
 | `bun run lint`     | ESLint                            |
 | `bun run format`   | Prettier write                    |
 | `bunx tsc --noEmit`| Typecheck                         |
+
+## Access model (hackathon)
+
+No authentication. The graph is **publicly readable**; writes go through the
+backend using the service-role key.
+
+- `anon` key → `SELECT` on `nodes`, `edges`, `evidence`. Nothing else.
+- `service_role` key → full access (bypasses RLS). Server-side only — never
+  ship it to the browser.
+- Realtime is enabled on all three tables, and honours the read policies.
+
+⚠️ The anon key is visible to anyone who opens your site, so treat everything
+in these tables as public. Fine for demo data; don't load anything sensitive.
+
+### Subscribing to live updates
+
+```js
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+)
+
+// initial load
+const { data: nodes } = await supabase.from('nodes').select('*')
+const { data: edges } = await supabase.from('edges').select('*')
+
+// live patches
+supabase
+  .channel('graph')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'nodes' }, applyNodeChange)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'edges' }, applyEdgeChange)
+  .subscribe()
+```
+
+`payload.eventType` is `INSERT` / `UPDATE` / `DELETE`; `payload.new` holds the
+row (and `payload.old` the previous one, for `nodes` and `edges`).
