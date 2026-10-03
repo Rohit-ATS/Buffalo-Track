@@ -100,6 +100,7 @@ def _handler(request: httpx.Request) -> httpx.Response:
 @pytest.fixture
 def settings() -> Settings:
     return Settings(
+        _env_file=None,
         supabase_url="https://example.supabase.co",
         supabase_service_role_key="test-key",
         bright_data_api_key="test-bright-data",
