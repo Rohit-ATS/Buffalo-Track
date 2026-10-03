@@ -8,7 +8,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
  * but not write. This client uses the service-role key instead, which
  * bypasses RLS entirely — hence server-only. This module must never be
  * imported from a component that ships to the browser. For client-side reads
- * (e.g. live graph updates), use src/lib/supabase.client.ts, which uses the
+ * (e.g. live graph updates), use src/lib/supabase-browser.ts, which uses the
  * anon key and is safe to ship.
  */
 
