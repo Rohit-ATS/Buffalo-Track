@@ -52,7 +52,7 @@ jobs:
           test -f frontend/.output/public/dashboard/index.html
           test -f frontend/.output/public/disease/stxbp1/index.html
       - name: Configure Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Upload prerendered frontend
         uses: actions/upload-pages-artifact@v4
         with:
