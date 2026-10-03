@@ -6,7 +6,7 @@ Graph-backed tracking store: `nodes`, `edges`, and `evidence` (with pgvector emb
 
 1. Create a project at https://supabase.com/dashboard, then copy `.env.example` to `.env` and fill it in
    from **Settings → API** and **Settings → Database**.
-2. Apply the schema, either via the dashboard SQL Editor (paste `supabase/migrations/0001_init.sql`)
+2. Apply the schema, either via the dashboard SQL Editor (paste `supabase/migrations/20261003000001_init.sql`)
    or with the CLI:
 
    ```bash
