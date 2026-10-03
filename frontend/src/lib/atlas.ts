@@ -34,7 +34,7 @@ export type AtlasSearchResult =
   /** Database reachable, nothing matched the query. */
   | { status: "empty"; query: string }
   | { status: "error"; query: string; message: string }
-  | { status: "ok"; query: string; match: AtlasMatch; alsoMatched: AtlasNodeRef[] };
+  | { status: "ok"; query: string; match: AtlasMatch; alsoMatched: AtlasNodeRef[] | null };
 
 /** Strip characters that carry meaning inside a PostgREST filter expression. */
 export function sanitizeQuery(raw: string): string {

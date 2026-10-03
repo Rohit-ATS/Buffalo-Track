@@ -93,4 +93,17 @@ describe("AtlasResults", () => {
     render(<AtlasResults result={undefined} isPending />);
     expect(screen.getByText(/following the biology/i)).toBeInTheDocument();
   });
+
+  it("handles an API response that omits alternate matches", () => {
+    const result: AtlasSearchResult = {
+      status: "ok",
+      query: "STXBP1",
+      match: { node: { id: "n1", type: "gene", name: "STXBP1" }, connections: [], evidence: [] },
+      alsoMatched: null,
+    };
+
+    render(<AtlasResults result={result} isPending={false} />);
+    expect(screen.getByRole("heading", { name: "STXBP1" })).toBeInTheDocument();
+    expect(screen.queryByText("Also matched")).not.toBeInTheDocument();
+  });
 });

@@ -61,6 +61,13 @@ async function searchBackend(
       body: JSON.stringify({ query }),
       signal: AbortSignal.timeout(12_000),
     });
+    if (response.status === 429) {
+      return {
+        status: "error",
+        query,
+        message: "The atlas is handling many searches. Please try again shortly.",
+      };
+    }
     if (!response.ok) throw new Error(`Backend returned ${response.status}`);
     return (await response.json()) as AtlasSearchResult;
   } catch (error) {
