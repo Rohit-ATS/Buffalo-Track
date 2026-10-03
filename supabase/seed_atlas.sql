@@ -12,13 +12,20 @@ insert into atlas_sources (id, name, url, pulled_at, record_count) values
   ('pubmed', 'PubMed', 'https://pubmed.ncbi.nlm.nih.gov/', '2026-10-02', 1240),
   ('ctgov', 'ClinicalTrials.gov', 'https://clinicaltrials.gov/', '2026-09-30', 58),
   ('hpo', 'Human Phenotype Ontology', 'https://hpo.jax.org/', '2026-09-29', 930)
-on conflict (id) do nothing;
+on conflict (id) do update set
+  name = excluded.name,
+  url = excluded.url,
+  pulled_at = excluded.pulled_at,
+  record_count = excluded.record_count;
 
 insert into atlas_clusters (id, name, pathway, color) values
   ('snare', 'SNARE vesicle fusion', 'Presynaptic vesicle release', 'var(--primary)'),
   ('channel', 'Ion channel excitability', 'Neuronal excitability', 'var(--highlight)'),
   ('calcium', 'P/Q calcium channel', 'Calcium signaling', 'var(--risk)')
-on conflict (id) do nothing;
+on conflict (id) do update set
+  name = excluded.name,
+  pathway = excluded.pathway,
+  color = excluded.color;
 
 insert into atlas_diseases (id, name, gene, effect_class, pathway, cluster_id, importance, no_route) values
   ('stxbp1', 'STXBP1 encephalopathy', 'STXBP1', 'loss-of-function', 'Presynaptic vesicle release', 'snare', 10, false),
@@ -30,7 +37,14 @@ insert into atlas_diseases (id, name, gene, effect_class, pathway, cluster_id, i
   ('cacna1a-ea2', 'Episodic ataxia type 2', 'CACNA1A', 'loss-of-function', 'Calcium signaling', 'calcium', 5, false),
   ('cacna1a-fhm1', 'Familial hemiplegic migraine type 1', 'CACNA1A', 'gain-of-function', 'Calcium signaling', 'calcium', 4, false),
   ('vamp2', 'VAMP2-related neurodevelopmental disorder', 'VAMP2', 'loss-of-function', 'Presynaptic vesicle release', 'snare', 2, true)
-on conflict (id) do nothing;
+on conflict (id) do update set
+  name = excluded.name,
+  gene = excluded.gene,
+  effect_class = excluded.effect_class,
+  pathway = excluded.pathway,
+  cluster_id = excluded.cluster_id,
+  importance = excluded.importance,
+  no_route = excluded.no_route;
 
 insert into atlas_synonyms (disease_id, synonym) values
   ('stxbp1', 'STXBP1 disorder'),
@@ -94,7 +108,10 @@ insert into atlas_open_questions (disease_id, question, position) values
   ('vamp2', 'No patient group', 0),
   ('vamp2', 'No shared asset', 1),
   ('vamp2', 'Too few published cases', 2)
-on conflict (id) do nothing;
+on conflict (id) do update set
+  disease_id = excluded.disease_id,
+  question = excluded.question,
+  position = excluded.position;
 
 insert into atlas_organizations (id, name, kind, url, source_id) values
   ('stxbp1-foundation', 'STXBP1 Foundation', 'patient group', 'https://www.orpha.net/', 'orphanet'),
@@ -103,7 +120,11 @@ insert into atlas_organizations (id, name, kind, url, source_id) values
   ('familiescn2a', 'FamilieSCN2A', 'patient group', 'https://www.orpha.net/', 'orphanet'),
   ('kcnq2-cure-alliance', 'KCNQ2 Cure Alliance', 'patient group', 'https://www.orpha.net/', 'orphanet'),
   ('cacna1a-foundation', 'CACNA1A Foundation', 'patient group', 'https://www.orpha.net/', 'orphanet')
-on conflict (id) do nothing;
+on conflict (id) do update set
+  name = excluded.name,
+  kind = excluded.kind,
+  url = excluded.url,
+  source_id = excluded.source_id;
 
 insert into atlas_disease_organizations (disease_id, organization_id, relevance) values
   ('stxbp1', 'stxbp1-foundation', 'Supports STXBP1 encephalopathy (STXBP1 loss-of-function)'),
@@ -113,7 +134,8 @@ insert into atlas_disease_organizations (disease_id, organization_id, relevance)
   ('kcnq2', 'kcnq2-cure-alliance', 'Supports KCNQ2 encephalopathy (KCNQ2 loss-of-function)'),
   ('cacna1a-ea2', 'cacna1a-foundation', 'Supports Episodic ataxia type 2 (CACNA1A loss-of-function)'),
   ('cacna1a-fhm1', 'cacna1a-foundation', 'Supports Familial hemiplegic migraine type 1 (CACNA1A gain-of-function)')
-on conflict (disease_id, organization_id) do nothing;
+on conflict (disease_id, organization_id) do update set
+  relevance = excluded.relevance;
 
 insert into atlas_assets (id, disease_id, kind, name, owner, url, reusable_because) values
   ('stxbp1-natural-history-study-0', 'stxbp1', 'natural history study', 'STXBP1 Natural History Study', 'STXBP1 Foundation', 'https://clinicaltrials.gov/', 'Built for STXBP1 encephalopathy; may transfer to units sharing Presynaptic vesicle release'),
@@ -129,14 +151,26 @@ insert into atlas_assets (id, disease_id, kind, name, owner, url, reusable_becau
   ('cacna1a-ea2-registry-0', 'cacna1a-ea2', 'registry', 'CACNA1A registry', 'CACNA1A Foundation', 'https://www.orpha.net/', 'Built for Episodic ataxia type 2; may transfer to units sharing Calcium signaling'),
   ('cacna1a-fhm1-registry-0', 'cacna1a-fhm1', 'registry', 'CACNA1A registry', 'CACNA1A Foundation', 'https://www.orpha.net/', 'Built for Familial hemiplegic migraine type 1; may transfer to units sharing Calcium signaling'),
   ('cacna1a-fhm1-model-1', 'cacna1a-fhm1', 'model', 'FHM1 knock-in mouse', 'Academic lab', 'https://pubmed.ncbi.nlm.nih.gov/', 'Built for Familial hemiplegic migraine type 1; may transfer to units sharing Calcium signaling')
-on conflict (id) do nothing;
+on conflict (id) do update set
+  disease_id = excluded.disease_id,
+  kind = excluded.kind,
+  name = excluded.name,
+  owner = excluded.owner,
+  url = excluded.url,
+  reusable_because = excluded.reusable_because;
 
 insert into atlas_trials (id, nct_id, name, status, study_type, sponsor, url) values
   ('stxbp1-natural-history-study-0', null, 'STXBP1 Natural History Study', 'unknown', 'observational', 'STXBP1 Foundation', 'https://clinicaltrials.gov/'),
   ('snap25-natural-history-study-1', null, 'SNARE natural history pilot', 'unknown', 'observational', 'SNAP25 Families', 'https://clinicaltrials.gov/'),
   ('scn2a-trial-0', null, 'Antisense oligonucleotide trial', 'unknown', 'interventional', 'Biotech sponsor', 'https://clinicaltrials.gov/'),
   ('kcnq2-natural-history-study-0', null, 'KCNQ2 natural history', 'unknown', 'observational', 'KCNQ2 Cure Alliance', 'https://clinicaltrials.gov/')
-on conflict (id) do nothing;
+on conflict (id) do update set
+  nct_id = excluded.nct_id,
+  name = excluded.name,
+  status = excluded.status,
+  study_type = excluded.study_type,
+  sponsor = excluded.sponsor,
+  url = excluded.url;
 
 insert into atlas_trial_diseases (trial_id, disease_id) values
   ('stxbp1-natural-history-study-0', 'stxbp1'),
@@ -156,7 +190,13 @@ insert into atlas_contacts (disease_id, role, name, org, source_id, url) values
   ('kcnq2', 'patient group', 'KCNQ2 Cure Alliance', 'Family foundation', 'orphanet', 'https://www.orpha.net/'),
   ('cacna1a-ea2', 'patient group', 'CACNA1A Foundation', 'Family foundation', 'orphanet', 'https://www.orpha.net/'),
   ('cacna1a-fhm1', 'patient group', 'CACNA1A Foundation', 'Family foundation', 'orphanet', 'https://www.orpha.net/')
-on conflict (id) do nothing;
+on conflict (id) do update set
+  disease_id = excluded.disease_id,
+  role = excluded.role,
+  name = excluded.name,
+  org = excluded.org,
+  source_id = excluded.source_id,
+  url = excluded.url;
 
 insert into atlas_researchers (id, name, institution, orcid, unresolved, pathway, publications, trials, grants) values
   ('dr-a-lindqvist', 'Dr. A. Lindqvist', 'Karolinska Institutet', null, true, 'Presynaptic vesicle release', 1, 0, 0),
@@ -164,7 +204,15 @@ insert into atlas_researchers (id, name, institution, orcid, unresolved, pathway
   ('dr-r-chen', 'Dr. R. Chen', 'Stanford University', null, true, 'Presynaptic vesicle release', 1, 0, 0),
   ('dr-p-haddad', 'Dr. P. Haddad', 'Boston Children''s Hospital', null, true, 'Neuronal excitability', 1, 1, 0),
   ('dr-s-bianchi', 'Dr. S. Bianchi', 'University of Milan', null, true, 'Neuronal excitability', 1, 1, 0)
-on conflict (id) do nothing;
+on conflict (id) do update set
+  name = excluded.name,
+  institution = excluded.institution,
+  orcid = excluded.orcid,
+  unresolved = excluded.unresolved,
+  pathway = excluded.pathway,
+  publications = excluded.publications,
+  trials = excluded.trials,
+  grants = excluded.grants;
 
 insert into atlas_researcher_diseases (researcher_id, disease_id, basis) values
   ('dr-a-lindqvist', 'stxbp1', 'authored'),
@@ -183,7 +231,20 @@ insert into atlas_edges (id, from_id, to_id, type, tier, sentence, source_id, qu
   ('e6', 'scn2a', 'kcnq2', 'shared mechanism', 'observed', 'Both are neuronal ion channels causing early-onset epilepsy.', 'clinvar', 'Pathogenic variants associated with developmental and epileptic encephalopathy.', '2026-10-02', 0.88, 'Pathogenic variants in both genes curated for the same phenotype', null, false, 'curated snapshot'),
   ('e7', 'cacna1a-ea2', 'cacna1a-fhm1', 'same gene', 'observed', 'Same gene, opposite variant effects: kept in separate clusters.', 'clinvar', 'Loss-of-function variants cause EA2; gain-of-function variants cause FHM1.', '2026-10-02', 0.95, 'Loss vs gain of function annotations disagree', null, false, 'curated snapshot'),
   ('e8', 'stx1b', 'vamp2', 'shared mechanism', 'inferred', 'VAMP2 is the third SNARE partner, but no community or asset exists yet.', 'pubmed', null, '2026-10-02', 0.41, 'Pathway proximity only', null, false, 'curated snapshot')
-on conflict (id) do nothing;
+on conflict (id) do update set
+  from_id = excluded.from_id,
+  to_id = excluded.to_id,
+  type = excluded.type,
+  tier = excluded.tier,
+  sentence = excluded.sentence,
+  source_id = excluded.source_id,
+  quote = excluded.quote,
+  retrieved_at = excluded.retrieved_at,
+  confidence = excluded.confidence,
+  rule = excluded.rule,
+  contradicting = excluded.contradicting,
+  quote_verified = excluded.quote_verified,
+  method = excluded.method;
 
 insert into atlas_similarity (a_id, b_id, mechanism_score, phenotype_score, combined_score, shared_pathways, shared_phenotypes, blocked_reason) values
   ('stxbp1', 'stx1b', 1, 0.6667, 0.8667, array['Presynaptic vesicle release']::text[], array['epilepsy', 'developmental delay']::text[], null),
@@ -258,11 +319,21 @@ insert into atlas_similarity (a_id, b_id, mechanism_score, phenotype_score, comb
   ('vamp2', 'kcnq2', 0.4, 0.5, 0.44, '{}', array['developmental delay']::text[], null),
   ('vamp2', 'cacna1a-ea2', 0.4, 0, 0.24, '{}', '{}', null),
   ('vamp2', 'cacna1a-fhm1', 0.1, 0, 0.06, '{}', '{}', null)
-on conflict (a_id, b_id) do nothing;
+on conflict (a_id, b_id) do update set
+  mechanism_score = excluded.mechanism_score,
+  phenotype_score = excluded.phenotype_score,
+  combined_score = excluded.combined_score,
+  shared_pathways = excluded.shared_pathways,
+  shared_phenotypes = excluded.shared_phenotypes,
+  blocked_reason = excluded.blocked_reason;
 
 insert into atlas_metrics (key, label, value, unit, detail) values
   ('quote_coverage', 'Reported edges carrying a verbatim quote', 1, 'ratio', '1 of 1 reported edges'),
   ('quote_verified', 'Quotes checked verbatim against source text', 0, 'ratio', 'Requires the extraction pipeline; snapshot quotes are hand-entered and not yet machine-verified'),
   ('contradiction_coverage', 'Edges recording contradicting evidence', 0.125, 'ratio', '1 of 8 edges'),
   ('observed_share', 'Share of edges at the observed tier', 0.375, 'ratio', 'Structured database records rather than extracted claims')
-on conflict (key) do nothing;
+on conflict (key) do update set
+  label = excluded.label,
+  value = excluded.value,
+  unit = excluded.unit,
+  detail = excluded.detail;
