@@ -432,9 +432,16 @@ function EvidenceLab({ focus }: { focus: string }) {
             <h3 className="font-display text-xl">
               {diseaseById(sel.from)!.gene} ↔ {diseaseById(sel.to)!.gene}
             </h3>
-            <span className="text-xs">
-              Confidence <strong>{Math.round(sel.confidence * 100)}%</strong>
-            </span>
+            <div className="text-right text-xs">
+              <span>
+                Confidence <strong>{Math.round(sel.confidence * 100)}%</strong>
+              </span>
+              <span
+                className={`ml-2 font-semibold ${sel.clinicalProof ? "text-primary" : "text-muted-foreground"}`}
+              >
+                {sel.clinicalProof ? "Clinical proof" : "No clinical proof"}
+              </span>
+            </div>
           </div>
           <div className="h-1.5 rounded-full bg-background">
             <div
@@ -499,7 +506,7 @@ function EvidenceLab({ focus }: { focus: string }) {
             <dt className="text-muted-foreground">Retrieved</dt>
             <dd>{prov.retrieved}</dd>
             <dt className="text-muted-foreground">Method</dt>
-            <dd>{prov.method}</dd>
+            <dd>{sel.method}</dd>
             <dt className="text-muted-foreground">Version</dt>
             <dd>{prov.version}</dd>
           </dl>

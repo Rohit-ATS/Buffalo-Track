@@ -222,15 +222,15 @@ insert into atlas_researcher_diseases (researcher_id, disease_id, basis) values
   ('dr-s-bianchi', 'scn2a', 'authored')
 on conflict (researcher_id, disease_id, basis) do nothing;
 
-insert into atlas_edges (id, from_id, to_id, type, tier, sentence, source_id, quote, retrieved_at, confidence, rule, contradicting, quote_verified, method) values
-  ('e1', 'stx1b', 'stxbp1', 'shared mechanism', 'observed', 'STX1B and STXBP1 proteins bind directly to release neurotransmitter.', 'pubmed', 'Munc18-1 binds syntaxin-1 to orchestrate SNARE complex assembly.', '2026-10-02', 0.92, 'Direct binding reported in 2+ independent experimental papers', null, false, 'curated snapshot'),
-  ('e2', 'stx1b', 'snap25', 'shared mechanism', 'reported', 'Both genes encode parts of the same SNARE complex.', 'orphanet', 'SNAP25 and syntaxin-1 form the core of the neuronal SNARE complex.', '2026-10-01', 0.81, 'Curated database lists both in the same pathway', null, false, 'curated snapshot'),
-  ('e3', 'stxbp1', 'snap25', 'shared symptoms', 'inferred', 'Both disorders commonly cause early epilepsy and developmental delay.', 'hpo', null, '2026-09-29', 0.74, '≥60% phenotype overlap in HPO annotations', null, false, 'curated snapshot'),
-  ('e4', 'snap25', 'syt1', 'shared mechanism', 'inferred', 'SYT1 is the calcium sensor that triggers SNARE fusion; cohorts may overlap.', 'pubmed', null, '2026-10-02', 0.58, 'Pathway proximity model, not yet confirmed in patients', 'One case series reports distinct movement phenotypes.', false, 'curated snapshot'),
-  ('e5', 'stxbp1', 'scn2a', 'bridge', 'inferred', 'Both communities run epilepsy natural history studies with similar endpoints.', 'ctgov', null, '2026-09-30', 0.52, 'Matched endpoint terms across trial records', null, false, 'curated snapshot'),
-  ('e6', 'scn2a', 'kcnq2', 'shared mechanism', 'observed', 'Both are neuronal ion channels causing early-onset epilepsy.', 'clinvar', 'Pathogenic variants associated with developmental and epileptic encephalopathy.', '2026-10-02', 0.88, 'Pathogenic variants in both genes curated for the same phenotype', null, false, 'curated snapshot'),
-  ('e7', 'cacna1a-ea2', 'cacna1a-fhm1', 'same gene', 'observed', 'Same gene, opposite variant effects: kept in separate clusters.', 'clinvar', 'Loss-of-function variants cause EA2; gain-of-function variants cause FHM1.', '2026-10-02', 0.95, 'Loss vs gain of function annotations disagree', null, false, 'curated snapshot'),
-  ('e8', 'stx1b', 'vamp2', 'shared mechanism', 'inferred', 'VAMP2 is the third SNARE partner, but no community or asset exists yet.', 'pubmed', null, '2026-10-02', 0.41, 'Pathway proximity only', null, false, 'curated snapshot')
+insert into atlas_edges (id, from_id, to_id, type, tier, sentence, source_id, record_id, url, quote, retrieved_at, confidence, rule, clinical_proof, contradicting, quote_verified, method) values
+  ('e1', 'stx1b', 'stxbp1', 'shared mechanism', 'observed', 'STX1B and STXBP1 proteins bind directly to release neurotransmitter.', 'pubmed', null, 'https://pubmed.ncbi.nlm.nih.gov/', 'Munc18-1 binds syntaxin-1 to orchestrate SNARE complex assembly.', '2026-10-02', 0.92, 'Direct binding reported in 2+ independent experimental papers', false, null, false, 'curated snapshot v1'),
+  ('e2', 'stx1b', 'snap25', 'shared mechanism', 'reported', 'Both genes encode parts of the same SNARE complex.', 'orphanet', null, 'https://www.orpha.net/', 'SNAP25 and syntaxin-1 form the core of the neuronal SNARE complex.', '2026-10-01', 0.81, 'Curated database lists both in the same pathway', false, null, false, 'curated snapshot v1'),
+  ('e3', 'stxbp1', 'snap25', 'shared symptoms', 'inferred', 'Both disorders commonly cause early epilepsy and developmental delay.', 'hpo', null, 'https://hpo.jax.org/', null, '2026-09-29', 0.74, '≥60% phenotype overlap in HPO annotations', false, null, false, 'curated snapshot v1'),
+  ('e4', 'snap25', 'syt1', 'shared mechanism', 'inferred', 'SYT1 is the calcium sensor that triggers SNARE fusion; cohorts may overlap.', 'pubmed', null, 'https://pubmed.ncbi.nlm.nih.gov/', null, '2026-10-02', 0.58, 'Pathway proximity model, not yet confirmed in patients', false, 'One case series reports distinct movement phenotypes.', false, 'curated snapshot v1'),
+  ('e5', 'stxbp1', 'scn2a', 'bridge', 'inferred', 'Both communities run epilepsy natural history studies with similar endpoints.', 'ctgov', null, 'https://clinicaltrials.gov/', null, '2026-09-30', 0.52, 'Matched endpoint terms across trial records', false, null, false, 'curated snapshot v1'),
+  ('e6', 'scn2a', 'kcnq2', 'shared mechanism', 'observed', 'Both are neuronal ion channels causing early-onset epilepsy.', 'clinvar', 'ClinVar:SCV000000000', 'https://www.ncbi.nlm.nih.gov/clinvar/', 'Pathogenic variants associated with developmental and epileptic encephalopathy.', '2026-10-02', 0.88, 'Pathogenic variants in both genes curated for the same phenotype', true, null, false, 'curated snapshot v1'),
+  ('e7', 'cacna1a-ea2', 'cacna1a-fhm1', 'same gene', 'observed', 'Same gene, opposite variant effects: kept in separate clusters.', 'clinvar', null, 'https://www.ncbi.nlm.nih.gov/clinvar/', 'Loss-of-function variants cause EA2; gain-of-function variants cause FHM1.', '2026-10-02', 0.95, 'Loss vs gain of function annotations disagree', false, null, false, 'curated snapshot v1'),
+  ('e8', 'stx1b', 'vamp2', 'shared mechanism', 'inferred', 'VAMP2 is the third SNARE partner, but no community or asset exists yet.', 'pubmed', null, 'https://pubmed.ncbi.nlm.nih.gov/', null, '2026-10-02', 0.41, 'Pathway proximity only', false, null, false, 'curated snapshot v1')
 on conflict (id) do update set
   from_id = excluded.from_id,
   to_id = excluded.to_id,
@@ -238,10 +238,13 @@ on conflict (id) do update set
   tier = excluded.tier,
   sentence = excluded.sentence,
   source_id = excluded.source_id,
+  record_id = excluded.record_id,
+  url = excluded.url,
   quote = excluded.quote,
   retrieved_at = excluded.retrieved_at,
   confidence = excluded.confidence,
   rule = excluded.rule,
+  clinical_proof = excluded.clinical_proof,
   contradicting = excluded.contradicting,
   quote_verified = excluded.quote_verified,
   method = excluded.method;
