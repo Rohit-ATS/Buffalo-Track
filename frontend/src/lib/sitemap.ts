@@ -42,14 +42,17 @@ export function sitemapPathForLocation(
   location: Pick<ParsedLocation, "pathname" | "publicHref">,
   routeId: string,
 ): string | undefined {
-  if (!isSafeSitemapPath(location.pathname) || !isSafeSitemapPath(location.publicHref)) return undefined;
+  if (!isSafeSitemapPath(location.pathname) || !isSafeSitemapPath(location.publicHref))
+    return undefined;
 
   const result = router.getMatchedRoutes(location.pathname) as RouteMatch;
   const [params, foundRoute] = Array.isArray(result)
     ? [result[1], result[2]]
     : [result.routeParams, result.parseError ? undefined : result.foundRoute];
 
-  return params["**"] === undefined && foundRoute?.id === routeId && isSitemapRouteIncluded(foundRoute)
+  return params["**"] === undefined &&
+    foundRoute?.id === routeId &&
+    isSitemapRouteIncluded(foundRoute)
     ? location.publicHref
     : undefined;
 }
@@ -60,7 +63,8 @@ export interface SitemapEntry {
 }
 
 function isSafeSitemapPath(pathname: string): boolean {
-  if (!pathname.startsWith("/") || pathname.startsWith("//") || /[?#\\]/.test(pathname)) return false;
+  if (!pathname.startsWith("/") || pathname.startsWith("//") || /[?#\\]/.test(pathname))
+    return false;
   try {
     return decodeURI(new URL(pathname, "https://sitemap.invalid").pathname) === decodeURI(pathname);
   } catch {
@@ -84,7 +88,13 @@ export function sitemapXML(baseURL: string, entries: SitemapEntry[]): string {
     value.replace(
       /[&<>"']/g,
       (character) =>
-        ({ "&": "\u0026amp;", "<": "\u0026lt;", ">": "\u0026gt;", '"': "\u0026quot;", "'": "\u0026apos;" })[character]!,
+        ({
+          "&": "\u0026amp;",
+          "<": "\u0026lt;",
+          ">": "\u0026gt;",
+          '"': "\u0026quot;",
+          "'": "\u0026apos;",
+        })[character]!,
     );
   const seen = new Set<string>();
   const urls: string[] = [];

@@ -3,6 +3,7 @@
 The landing page stays as it is (it already has the search-first parts: headline, search, three examples, coverage line, evidence key, notice). Every working tool goes into the dashboard, which becomes the research workspace.
 
 ## Already built — upgrade, don't rebuild
+
 - **Search**: add search by symptom, pathway/mechanism and patient group; MONDO ID matching; a short loading shimmer; a clear "You searched X, showing Y" banner with the matched synonym highlighted; recent searches; keyboard navigation.
 - **Disease journey**: each step shows evidence type, a confidence meter and source availability ("2 sources / 1 quote verified").
 - **Edge drawer**: add supporting vs contradicting columns, quote verification badge, "Why connected" and "Why NOT connected" panels.
@@ -11,6 +12,7 @@ The landing page stays as it is (it already has the search-first parts: headline
 - **Persona switch**: dashboard content reorders by persona (Maria sees groups and trials first, Priya mechanisms, Dr. Osei researchers and bridges).
 
 ## New on the dashboard
+
 1. **Disease resolution card** — canonical name, MONDO ID, alternative names, gene, cross references (OMIM, Orphanet, GARD).
 2. **Mechanism units** — gene + effect class (e.g. CACNA1A loss vs gain of function) with pathway, biological process, phenotypes, related diseases.
 3. **Related disease discovery with similarity breakdown** — overall % split into mechanism, pathway, phenotype and gene bars, plus "why they were connected".
@@ -26,6 +28,7 @@ The landing page stays as it is (it already has the search-first parts: headline
 Dashboard gets tabs/sections: Overview, Search & resolve, Mechanisms, Related, Evidence, Trials & assets, Action, Coverage. All data remains clearly marked sample data. Mobile layout checked.
 
 ## Technical details
+
 - Extend `src/lib/atlas-data.ts`: mondoId, xrefs, phenotypes, mechanism units (gene+effect), similarity components, trials, orgs, assets, provenance, quote source passages.
 - New components under `src/components/dashboard/` used by `src/routes/dashboard.tsx`; reuse AtlasShell pieces (TierBadge, EvidenceDrawer, BriefDialog).
 - AI explanation requires enabling Lovable Cloud; a server function calls the AI gateway with only the edge's stored evidence. If Cloud is declined, fall back to a templated explanation.

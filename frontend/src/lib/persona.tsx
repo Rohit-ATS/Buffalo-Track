@@ -8,7 +8,10 @@ export const personas = [
 ] as const;
 export type PersonaId = (typeof personas)[number]["id"];
 
-const Ctx = createContext<{ persona: PersonaId; setPersona: (p: PersonaId) => void }>({ persona: "maria", setPersona: () => {} });
+const Ctx = createContext<{ persona: PersonaId; setPersona: (p: PersonaId) => void }>({
+  persona: "maria",
+  setPersona: () => {},
+});
 
 export function PersonaProvider({ children }: { children: ReactNode }) {
   const [persona, setP] = useState<PersonaId>("maria");
@@ -16,7 +19,10 @@ export function PersonaProvider({ children }: { children: ReactNode }) {
     const saved = window.localStorage.getItem("atlas-persona");
     if (saved && personas.some((p) => p.id === saved)) setP(saved as PersonaId);
   }, []);
-  const setPersona = (p: PersonaId) => { setP(p); window.localStorage.setItem("atlas-persona", p); };
+  const setPersona = (p: PersonaId) => {
+    setP(p);
+    window.localStorage.setItem("atlas-persona", p);
+  };
   return <Ctx.Provider value={{ persona, setPersona }}>{children}</Ctx.Provider>;
 }
 export const usePersona = () => useContext(Ctx);
