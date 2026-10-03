@@ -33,17 +33,18 @@ class Settings(BaseSettings):
     # requests in one run, so a loop cannot drain the credit balance.
     bright_data_max_requests: int = 200
 
-    # Extraction model. Claims are rejected unless their quote verifies, so a
-    # cheap tier is fine for bulk work.
-    openai_api_key: str | None = Field(default=None, min_length=1)
-    openai_extract_model: str = "gpt-4.1-mini"
-    openai_prompt_version: str = "extract-v1"
+    # Extraction model. The model only reads and copies, and anything it
+    # invents is discarded by the verifier, so the cheapest current tier is the
+    # right one: Claude Haiku 4.5 at $1/$5 per MTok.
+    anthropic_api_key: str | None = Field(default=None, min_length=1)
+    anthropic_extract_model: str = "claude-haiku-4-5"
+    anthropic_prompt_version: str = "extract-v1"
 
     @field_validator(
         "supabase_url",
         "supabase_service_role_key",
         "bright_data_api_key",
-        "openai_api_key",
+        "anthropic_api_key",
         mode="before",
     )
     @classmethod
@@ -118,8 +119,8 @@ class Settings(BaseSettings):
         return self.bright_data_api_key is not None
 
     @property
-    def openai_configured(self) -> bool:
-        return self.openai_api_key is not None
+    def anthropic_configured(self) -> bool:
+        return self.anthropic_api_key is not None
 
 
 @lru_cache
