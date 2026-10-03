@@ -33,6 +33,33 @@ class Settings(BaseSettings):
     openai_extract_model: str = "gpt-4.1-mini"
     openai_prompt_version: str = "extract-v1"
 
+    @field_validator(
+        "supabase_url",
+        "supabase_service_role_key",
+        "bright_data_api_key",
+        "openai_api_key",
+        mode="before",
+    )
+    @classmethod
+    def blank_is_unset(cls, value: object) -> object:
+        """Treat an empty or placeholder value as absent.
+
+        `cp .env.example .env` leaves `OPENAI_API_KEY=` and
+        `SUPABASE_URL=https://<project-ref>.supabase.co` behind. Those are not
+        configuration, they are a to-do list, and min_length=1 rejected them
+        with a validation error instead of letting the pipeline report which
+        credential is missing.
+        """
+        if not isinstance(value, str):
+            return value
+        cleaned = value.strip()
+        if not cleaned:
+            return None
+        # Unfilled placeholder from .env.example, e.g. <project-ref>.
+        if "<" in cleaned and ">" in cleaned:
+            return None
+        return cleaned
+
     @field_validator("supabase_url", mode="before")
     @classmethod
     def normalize_supabase_url(cls, value: object) -> object:
