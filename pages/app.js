@@ -1,9 +1,0 @@
-const atlas = [
-  { gene: "STXBP1", title: "STXBP1 encephalopathy", links: ["Presynaptic vesicle release", "STX1B-related disorder", "STXBP1 Foundation"] },
-  { gene: "CACNA1A", title: "CACNA1A-related disorder", links: ["Calcium signaling", "Loss of function", "Gain of function"] },
-  { gene: "STX1B", title: "STX1B-related disorder", links: ["Presynaptic vesicle release", "STXBP1 encephalopathy", "Natural history study"] },
-  { gene: "VAMP2", title: "VAMP2 disorder", links: ["SNARE vesicle fusion", "Evidence gap", "Rare disease community"] },
-];
-const form = document.querySelector("#atlas-search"); const input = document.querySelector("#search-input"); const results = document.querySelector("#atlas-results"); const title = document.querySelector("#result-title"); const connections = document.querySelector("#connections");
-function search(value) { const query = value.trim().toLocaleLowerCase(); if (!query) return; const item = atlas.find((entry) => `${entry.gene} ${entry.title} ${entry.links.join(" ")}`.toLocaleLowerCase().includes(query)) || atlas[0]; title.textContent = item.gene; connections.replaceChildren(); item.links.forEach((link) => { const row = document.createElement("li"); const arrow = document.createElement("b"); const name = document.createElement("strong"); const type = document.createElement("span"); const receipt = document.createElement("small"); arrow.textContent = "→"; name.textContent = link; type.textContent = "connected node"; receipt.textContent = "✓ receipt"; row.append(arrow, name, type, receipt); connections.append(row); }); results.hidden = false; results.scrollIntoView({ behavior: "smooth", block: "start" }); }
-form.addEventListener("submit", (event) => { event.preventDefault(); search(input.value); }); document.querySelectorAll("[data-query]").forEach((button) => button.addEventListener("click", () => { input.value = button.dataset.query; search(input.value); }));

@@ -7,7 +7,6 @@ A graph-backed rare-disease atlas. Two halves:
 | `supabase/` | Postgres schema: `nodes`, `edges`, `evidence` (with pgvector embeddings)      |
 | `frontend/` | TanStack Start app — search-first landing page, research workspace, dashboard |
 | `backend/` | FastAPI graph-search service, ready for deployment to Render |
-| `pages/` | Static public project preview, deployed through GitHub Pages |
 
 Searching a gene, mechanism, or disorder on the landing page walks the graph: it
 finds the matching node, lists its edges with the number of evidence rows behind
@@ -38,14 +37,18 @@ connected and the curated sample path on the page carries the demo.
 
 ## Public project preview (GitHub Pages)
 
-[`pages/`](pages/) is a dependency-free public landing page. It describes the
-project and includes an in-browser search over a small curated demo sample; it
-does not call the API or contain any credentials. This keeps the public preview
-safe to host on GitHub Pages while the complete application continues to use
-the FastAPI service described above.
+GitHub Pages builds the actual [`frontend/`](frontend/) application in a static
+mode and prerenders its public routes: the landing page, research workspace,
+comparison, methods, mechanisms, researchers, and every seeded disease page.
+It uses the same components, styles, assets, and client-side interactions as
+the deployed frontend. The Pages artifact contains no credentials.
+
+GitHub Pages cannot run FastAPI or TanStack Start server functions. Therefore,
+the graph-backed landing-page search remains available on the Render deployment;
+all sample-data research views are fully available in the static preview.
 
 The workflow in [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)
-publishes `pages/` on pushes to `main`. After the first push, enable **Settings
+builds `frontend/.output/public` on pushes to `main`. After the first push, enable **Settings
 → Pages → Build and deployment → Source → GitHub Actions** in the repository.
 GitHub then shows the published URL on the completed workflow run.
 
