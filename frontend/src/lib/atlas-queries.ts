@@ -37,7 +37,7 @@ const DISEASE_SELECT = `
 
 const EDGE_SELECT = `
   id, from_id, to_id, type, tier, sentence, quote, quote_verified, record_id, url,
-  retrieved_at, confidence, rule, contradicting, method,
+  retrieved_at, confidence, rule, clinical_proof, contradicting, method,
   atlas_sources ( id, name, url, pulled_at, record_count ),
   from_disease:atlas_diseases!atlas_edges_from_id_fkey ( id, name ),
   to_disease:atlas_diseases!atlas_edges_to_id_fkey ( id, name )
@@ -69,6 +69,7 @@ type EdgeRow = {
   retrieved_at: string;
   confidence: number;
   rule: string;
+  clinical_proof: boolean;
   contradicting: string | null;
   method: string | null;
   atlas_sources?: SourceRowShape | null;
@@ -138,6 +139,7 @@ function toEdge(row: EdgeRow): EdgeReceipt {
     retrievedAt: row.retrieved_at,
     confidence: row.confidence,
     rule: row.rule,
+    clinicalProof: row.clinical_proof,
     contradicting: row.contradicting,
     method: row.method,
     source: toSource(row.atlas_sources),

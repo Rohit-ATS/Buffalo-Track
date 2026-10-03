@@ -24,6 +24,14 @@ The API is then available at `http://localhost:8000/docs`.
 
 Run the tests with `uv run pytest`.
 
+## External-data loaders and discovery
+
+[LOADERS.md](LOADERS.md) resolves/enriches the curated genes and mechanism
+units against official sources (Monarch, HPO, ClinVar, ClinGen, Gene2Phenotype,
+Reactome/GO, ClinicalTrials.gov, NIH RePORTER, Europe PMC). [DISCOVERY.md](DISCOVERY.md)
+covers what those don't: patient organizations and the research
+infrastructure they've built, via Bright Data web search and extraction.
+
 ## Render
 
 The root `render.yaml` defines the service. Create a Render Blueprint from this
