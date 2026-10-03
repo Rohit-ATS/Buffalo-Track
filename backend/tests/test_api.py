@@ -79,7 +79,7 @@ def test_search_concurrency_limit_rejects_before_database_work() -> None:
         app.state.search_limiter.in_flight = 0
 
 
-def test_search_rate_limit_uses_valid_frontend_signed_browser_identity() -> None:
+def test_search_rate_limit_enforces_ip_quota_when_browser_identity_rotates() -> None:
     secret = "a" * 32
     settings = Settings(
         supabase_url="https://project.supabase.co",
@@ -89,18 +89,23 @@ def test_search_rate_limit_uses_valid_frontend_signed_browser_identity() -> None
     )
     signature = hmac.digest(secret.encode(), b"123e4567-e89b-12d3-a456-426614174000", "sha256").hex()
     response = SearchResponse(status="empty", query="STXBP1")
-    headers = {
+    first_identity = {
         "x-buffalo-client-id": "123e4567-e89b-12d3-a456-426614174000",
         "x-buffalo-client-signature": signature,
     }
+    second_identity = {
+        "x-buffalo-client-id": "123e4567-e89b-12d3-a456-426614174001",
+        "x-buffalo-client-signature": hmac.digest(secret.encode(), b"123e4567-e89b-12d3-a456-426614174001", "sha256").hex(),
+    }
     with patch("app.main.AtlasRepository.search", new_callable=AsyncMock, return_value=response) as search:
         with TestClient(create_app(settings)) as api:
-            first = api.post("/api/v1/search", json={"query": "STXBP1"}, headers=headers)
-            second = api.post("/api/v1/search", json={"query": "STXBP1"}, headers=headers)
-            other = api.post("/api/v1/search", json={"query": "STXBP1"})
+            first = api.post("/api/v1/search", json={"query": "STXBP1"}, headers=first_identity)
+            rotated = api.post("/api/v1/search", json={"query": "STXBP1"}, headers=second_identity)
+        with TestClient(create_app(settings), client=("198.51.100.2", 50000)) as other_api:
+            other = other_api.post("/api/v1/search", json={"query": "STXBP1"})
 
     assert first.status_code == 200
-    assert second.status_code == 429
+    assert rotated.status_code == 429
     assert other.status_code == 200
     assert search.await_count == 2
 
