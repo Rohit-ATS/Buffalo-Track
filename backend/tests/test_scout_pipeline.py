@@ -1,0 +1,242 @@
+"""End-to-end pipeline test with Bright Data and OpenAI mocked.
+
+Exercises the real stages -- SERP parsing, the classifier, markdown fetching,
+extraction parsing, the verifier, rule-based scoring -- against a fake
+transport, so the whole chain is covered without spending a credit.
+
+Set ATLAS_TEST_DB_URL to also write into a real Postgres (see
+supabase/README.md for the local stack); without it the store is stubbed and
+everything upstream still runs.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import json
+from typing import Any
+
+import httpx
+import pytest
+
+from app.config import Settings
+from app.discovery.classify import classify
+from app.discovery.scout import AssetScout
+from app.llm.verify import verify_quote
+
+FOUNDATION_PAGE = """
+# STX1B Family Alliance
+
+## Research programmes
+
+The Alliance maintains the STX1B Patient Registry, which has enrolled 214
+families across eleven countries since 2019.
+
+We also fund the STX1B Natural History Study at a partner children's hospital,
+led by Dr. A. Rivera, open to anyone with a confirmed STX1B variant.
+"""
+
+# One real quote, one paraphrase the verifier must reject.
+MODEL_CLAIMS = {
+    "claims": [
+        {
+            "subject_type": "organization",
+            "subject_name": "STX1B Family Alliance",
+            "predicate": "maintains",
+            "object_type": "registry",
+            "object_name": "STX1B Patient Registry",
+            "quote": "maintains the STX1B Patient Registry, which has enrolled 214 families across eleven countries since 2019",
+            "gene": "STX1B",
+            "eligibility": None,
+            "investigator": None,
+            "participants": 214,
+        },
+        {
+            "subject_type": "organization",
+            "subject_name": "STX1B Family Alliance",
+            "predicate": "funds",
+            "object_type": "natural history study",
+            "object_name": "STX1B Natural History Study",
+            # Deliberately paraphrased: the page says "open to anyone with a
+            # confirmed STX1B variant", not this.
+            "quote": "The Alliance sponsors a natural history study that accepts all STX1B patients nationwide",
+            "gene": "STX1B",
+            "eligibility": "confirmed STX1B variant",
+            "investigator": "Dr. A. Rivera",
+            "participants": None,
+        },
+    ]
+}
+
+SERP_PAYLOAD = {
+    "organic": [
+        {"link": "https://stx1b-alliance.org/research", "title": "Research", "rank": 1},
+        # Must be skipped: official API available.
+        {"link": "https://clinicaltrials.gov/study/NCT00000000", "title": "A trial", "rank": 2},
+        # Must be skipped: social.
+        {"link": "https://www.facebook.com/groups/stx1b", "title": "Group", "rank": 3},
+    ]
+}
+
+
+def _handler(request: httpx.Request) -> httpx.Response:
+    url = str(request.url)
+
+    if url.startswith("https://api.brightdata.com/request"):
+        payload: dict[str, Any] = json.loads(request.content)
+        target = str(payload.get("url", ""))
+        if "google.com/search" in target:
+            return httpx.Response(200, json=SERP_PAYLOAD)
+        return httpx.Response(200, text=FOUNDATION_PAGE)
+
+    if url.startswith("https://api.openai.com/"):
+        return httpx.Response(
+            200,
+            json={"choices": [{"message": {"content": json.dumps(MODEL_CLAIMS)}}]},
+        )
+
+    raise AssertionError(f"unexpected request to {url}")
+
+
+@pytest.fixture
+def settings() -> Settings:
+    return Settings(
+        supabase_url="https://example.supabase.co",
+        supabase_service_role_key="test-key",
+        bright_data_api_key="test-bright-data",
+        openai_api_key="test-openai",
+    )
+
+
+class StubStore:
+    """Captures writes so the pipeline can be asserted without a database."""
+
+    def __init__(self) -> None:
+        self.serp: list[dict[str, Any]] = []
+        self.pages: list[dict[str, Any]] = []
+        self.claims: list[dict[str, Any]] = []
+        self.assets: list[dict[str, Any]] = []
+        self.finished = False
+
+    async def start_run(self, seed_term, *, disease_id, dry_run):  # noqa: ANN001
+        return "00000000-0000-4000-8000-000000000001"
+
+    async def save_serp(self, run_id, hits):  # noqa: ANN001
+        self.serp.extend(hits)
+
+    async def save_page(self, run_id, page):  # noqa: ANN001
+        self.pages.append(page)
+        return f"page-{len(self.pages)}"
+
+    async def save_claims(self, run_id, claims):  # noqa: ANN001
+        stored = [{**c, "id": f"claim-{i}"} for i, c in enumerate(claims)]
+        self.claims.extend(stored)
+        return stored
+
+    async def save_assets(self, assets):  # noqa: ANN001
+        self.assets.extend(assets)
+
+    async def finish_run(self, run_id, counters, *, notes=None):  # noqa: ANN001
+        self.finished = True
+
+
+@pytest.fixture
+def stubbed_scout(monkeypatch, settings):  # noqa: ANN001
+    store = StubStore()
+    monkeypatch.setattr("app.discovery.scout.DiscoveryStore", lambda *a, **k: store)
+    client = httpx.AsyncClient(transport=httpx.MockTransport(_handler))
+    return AssetScout(settings, client), store, client
+
+
+def test_pipeline_keeps_only_the_verified_claim(stubbed_scout):  # noqa: ANN001
+    scout, store, client = stubbed_scout
+
+    async def go():
+        try:
+            return await scout.run("STX1B", disease_id="stx1b", max_pages=4)
+        finally:
+            await client.aclose()
+
+    report = asyncio.run(go())
+
+    # SERP returned three candidates; only the foundation is fetchable.
+    assert report.counters.urls_found == 3
+    assert report.counters.pages_fetched == 1
+    assert len(store.pages) == 1
+    assert store.pages[0]["kind"] == "patient organization"
+
+    # Both claims are stored; only the verbatim one is verified.
+    assert report.counters.claims_extracted == 2
+    assert report.counters.claims_verified == 1
+    assert report.counters.claims_rejected == 1
+    assert report.tally.rejection_rate == 0.5
+
+    verified = [c for c in store.claims if c["status"] == "verified"]
+    rejected = [c for c in store.claims if c["status"] == "rejected"]
+    assert len(verified) == 1 and len(rejected) == 1
+    assert verified[0]["object_name"] == "STX1B Patient Registry"
+
+    # The verified claim carries a score and the rule behind it, which the
+    # schema's check constraint also requires.
+    assert 0 < verified[0]["confidence"] <= 0.95
+    assert "verified quote" in verified[0]["rule"]
+    # The rejected one explains itself instead of vanishing.
+    assert "does not appear" in rejected[0]["reject_reason"]
+    assert "confidence" not in rejected[0]
+
+    # Only the verified claim is promoted to an asset.
+    assert len(store.assets) == 1
+    assert store.assets[0]["kind"] == "registry"
+    assert store.assets[0]["participants"] == 214
+    assert store.finished
+
+
+def test_skipped_urls_are_recorded_with_reasons(stubbed_scout):  # noqa: ANN001
+    scout, store, client = stubbed_scout
+
+    async def go():
+        try:
+            return await scout.run("STX1B", max_pages=4)
+        finally:
+            await client.aclose()
+
+    report = asyncio.run(go())
+
+    skipped = {url: reason for url, reason in report.skipped_urls}
+    assert any("clinicaltrials.gov" in url for url in skipped)
+    assert any("official API" in reason for reason in skipped.values())
+    assert any("facebook.com" in url for url in skipped)
+
+    # Every candidate is persisted with its verdict, accepted or not.
+    assert len(store.serp) == 3
+    assert sum(1 for row in store.serp if row["accepted"]) == 1
+
+
+def test_run_refuses_without_credentials(settings):
+    bare = settings.model_copy(update={"bright_data_api_key": None})
+    client = httpx.AsyncClient(transport=httpx.MockTransport(_handler))
+
+    async def go():
+        try:
+            return await AssetScout(bare, client).run("STX1B")
+        finally:
+            await client.aclose()
+
+    report = asyncio.run(go())
+
+    assert report.stopped_early is not None
+    assert "BRIGHT_DATA_API_KEY" in report.stopped_early
+    assert report.counters.pages_fetched == 0
+
+
+def test_the_paraphrase_really_is_absent_from_the_page():
+    """Guards the fixture itself: if the page ever contains the paraphrase,
+    the rejection assertions above would pass for the wrong reason."""
+    claims = MODEL_CLAIMS["claims"]
+    assert verify_quote(claims[0]["quote"], FOUNDATION_PAGE).ok
+    assert not verify_quote(claims[1]["quote"], FOUNDATION_PAGE).ok
+
+
+def test_classifier_decisions_for_the_fixture_urls():
+    assert classify("https://stx1b-alliance.org/research").accepted
+    assert not classify("https://clinicaltrials.gov/study/NCT00000000").accepted
+    assert not classify("https://www.facebook.com/groups/stx1b").accepted
