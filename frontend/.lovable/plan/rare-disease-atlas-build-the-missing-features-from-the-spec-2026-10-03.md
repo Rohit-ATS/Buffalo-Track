@@ -3,6 +3,7 @@
 Existing pages stay as they are: the landing page, the STXBP1 page, the dashboard, the opening animation and the glowing footer. Everything new uses a small built-in sample dataset of about 10 diseases (STXBP1, STX1B, SNAP25, CACNA1A episodic ataxia, CACNA1A hemiplegic migraine, and a few more). No login and no real backend. Every connection in the sample data has a source, a quote, a date, and a confidence number.
 
 ## Shared across every page
+
 - **Search box in the header**, with suggestions that show the type of each match (disease, gene, symptom, patient group, mechanism)
 - **"Viewing as" switch** for Maria (default), Devon, Priya and Dr. Osei, remembered on this device. It changes the order of the pages and what each one focuses on.
 - **Evidence key** used everywhere: Observed (solid), Reported (outlined), Inferred (dashed)
@@ -11,12 +12,14 @@ Existing pages stay as they are: the landing page, the STXBP1 page, the dashboar
 - Works on phones
 
 ## Landing page (existing, small additions only)
+
 - Hook the hero search up to the new suggestions, and send matches to their disease page
 - Point the three example buttons to: Maria's journey (STXBP1), the counterexample (/compare), and the gap (a disease with no route)
 - Add a live coverage line, e.g. "10 diseases, 34 sourced connections, updated Oct 3"
 - The current story sections stay, as you asked, even though the spec says "no marketing sections"
 
 ## New pages
+
 1. **Disease page `/disease/$id`**: synonym banner, disease name, gene, mechanism (loss or gain of function), cluster, and three counts. It has four tabs:
    - **Journey:** a row of steps whose connecting lines are styled by evidence tier, a plain-language sentence for each step with clickable citation chips, a list of closest diseases with mechanism and symptom scores, and a "Why not connected" link
    - **Action:** columns for reuse, differs and expert review; asset cards; contacts; bridge people; a flag for duplicated effort; timeline bars with their assumptions; a "Generate collaboration brief" button
@@ -31,9 +34,11 @@ Existing pages stay as they are: the landing page, the STXBP1 page, the dashboar
 7. **`/methods`**: counts for each source with the date pulled, basic vs deep coverage, the quote-checker rejection rate, accuracy from the 50-connection hand check, clustering stability, where OpenAI is used, and known limits
 
 ## Things to confirm later
+
 The numbers on the Methods page, the GitHub link and the coverage figures will be clearly labeled placeholders until you send the real ones.
 
 ## Technical details
+
 - `src/lib/atlas-data.ts`: typed sample dataset (diseases, edges, sources, assets, contacts, researchers, clusters) with search and lookup helpers
 - `src/lib/persona.tsx`: a context that stores the selected persona in localStorage (read after hydration)
 - Shared components: `SiteHeader`, `SearchBox` (autocomplete), `EvidenceKey`, `TierBadge`, `EvidenceDrawer` (shadcn Sheet), `BriefDialog`, `SiteFooterLinks`, `StateMessage`
