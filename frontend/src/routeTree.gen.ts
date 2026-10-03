@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as GraphRouteImport } from './routes/graph'
 import { Route as MechanismsRouteImport } from './routes/mechanisms'
 import { Route as MethodsRouteImport } from './routes/methods'
 import { Route as ResearchersRouteImport } from './routes/researchers'
@@ -33,11 +32,6 @@ const CompareRoute = CompareRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GraphRoute = GraphRouteImport.update({
-  id: '/graph',
-  path: '/graph',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MechanismsRoute = MechanismsRouteImport.update({
@@ -75,7 +69,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
-  '/graph': typeof GraphRoute
   '/mechanisms': typeof MechanismsRoute
   '/methods': typeof MethodsRoute
   '/researchers': typeof ResearchersRoute
@@ -87,7 +80,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
-  '/graph': typeof GraphRoute
   '/mechanisms': typeof MechanismsRoute
   '/methods': typeof MethodsRoute
   '/researchers': typeof ResearchersRoute
@@ -100,7 +92,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
-  '/graph': typeof GraphRoute
   '/mechanisms': typeof MechanismsRoute
   '/methods': typeof MethodsRoute
   '/researchers': typeof ResearchersRoute
@@ -114,7 +105,6 @@ export interface FileRouteTypes {
     | '/'
     | '/compare'
     | '/dashboard'
-    | '/graph'
     | '/mechanisms'
     | '/methods'
     | '/researchers'
@@ -126,7 +116,6 @@ export interface FileRouteTypes {
     | '/'
     | '/compare'
     | '/dashboard'
-    | '/graph'
     | '/mechanisms'
     | '/methods'
     | '/researchers'
@@ -138,7 +127,6 @@ export interface FileRouteTypes {
     | '/'
     | '/compare'
     | '/dashboard'
-    | '/graph'
     | '/mechanisms'
     | '/methods'
     | '/researchers'
@@ -151,7 +139,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CompareRoute: typeof CompareRoute
   DashboardRoute: typeof DashboardRoute
-  GraphRoute: typeof GraphRoute
   MechanismsRoute: typeof MechanismsRoute
   MethodsRoute: typeof MethodsRoute
   ResearchersRoute: typeof ResearchersRoute
@@ -181,13 +168,6 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/graph': {
-      id: '/graph'
-      path: '/graph'
-      fullPath: '/graph'
-      preLoaderRoute: typeof GraphRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mechanisms': {
@@ -239,7 +219,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CompareRoute: CompareRoute,
   DashboardRoute: DashboardRoute,
-  GraphRoute: GraphRoute,
   MechanismsRoute: MechanismsRoute,
   MethodsRoute: MethodsRoute,
   ResearchersRoute: ResearchersRoute,
