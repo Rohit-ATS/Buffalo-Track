@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Buffalo Track is an open rare-disease atlas that connects genes, mechanisms, evidence, and research communities." />
+    <meta name="theme-color" content="#123b36" />
+    <title>Buffalo Track — Rare Disease Atlas</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="Buffalo Track home">
+        <span class="brand-mark" aria-hidden="true">B</span>
+        <span>Buffalo Track</span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="#demo">Try the atlas</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="https://github.com/Rohit-ATS/Buffalo-Track" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Open rare-disease research workspace</p>
+          <h1>Follow the evidence.<br /><em>Find the connection.</em></h1>
+          <p class="hero-description">Buffalo Track turns a fragmented rare-disease landscape into a navigable atlas of genes, mechanisms, evidence, and research communities.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#demo">Explore the demo <span aria-hidden="true">↓</span></a>
+            <a class="button button-secondary" href="https://github.com/Rohit-ATS/Buffalo-Track#readme" target="_blank" rel="noreferrer">Read the project brief</a>
+          </div>
+          <p class="status"><span aria-hidden="true"></span> Static public preview · no patient data · no account required</p>
+        </div>
+        <div class="hero-art" aria-label="An illustration of connected research nodes">
+          <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+          <div class="line line-one"></div><div class="line line-two"></div><div class="line line-three"></div>
+          <div class="node node-main">STXBP1</div><div class="node node-a">evidence</div><div class="node node-b">pathway</div><div class="node node-c">community</div>
+        </div>
+      </section>
+
+      <section class="metrics" aria-label="Atlas highlights">
+        <div><strong>3</strong><span>connected discovery layers</span></div>
+        <div><strong>5</strong><span>public evidence sources in the demo</span></div>
+        <div><strong>1</strong><span>open repository to inspect and build on</span></div>
+      </section>
+
+      <section id="demo" class="demo-section">
+        <div class="section-intro">
+          <p class="eyebrow">A working preview</p>
+          <h2>Search the atlas</h2>
+          <p>This GitHub Pages version searches a small curated sample in your browser. The full application connects its landing-page search to the FastAPI graph service.</p>
+        </div>
+        <div class="search-panel">
+          <form id="atlas-search" novalidate>
+            <label for="search-input">Search by gene, mechanism, disease, or organization</label>
+            <div class="search-row">
+              <input id="search-input" name="query" type="search" autocomplete="off" placeholder="Try STXBP1, calcium, or epilepsy" />
+              <button class="button button-primary" type="submit">Search</button>
+            </div>
+          </form>
+          <div class="quick-searches" aria-label="Suggested searches">
+            <span>Try:</span>
+            <button type="button" data-query="STXBP1">STXBP1</button>
+            <button type="button" data-query="calcium">calcium</button>
+            <button type="button" data-query="epilepsy">epilepsy</button>
+            <button type="button" data-query="SNAP25">SNAP25</button>
+          </div>
+          <div id="search-status" class="search-status" aria-live="polite">Enter a query to explore the public sample.</div>
+          <div id="search-results" class="result-grid" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="how-it-works" class="workflow-section">
+        <div class="section-intro">
+          <p class="eyebrow">Designed for traceability</p>
+          <h2>From a question to an evidence trail</h2>
+        </div>
+        <ol class="workflow">
+          <li><span>01</span><h3>Start anywhere</h3><p>Search a gene, diagnosis, symptom, mechanism, or patient group.</p></li>
+          <li><span>02</span><h3>Walk the graph</h3><p>See connected nodes and relationships rather than isolated search results.</p></li>
+          <li><span>03</span><h3>Inspect receipts</h3><p>Follow each relationship back to its evidence and source record.</p></li>
+          <li><span>04</span><h3>Coordinate next steps</h3><p>Use shared pathways and organizations to find useful research connections.</p></li>
+        </ol>
+      </section>
+
+      <section class="architecture-section">
+        <div>
+          <p class="eyebrow">Open by design</p>
+          <h2>A public window into the project</h2>
+          <p>This landing page is static so it can be published safely from a public repository. The complete application keeps privileged database access on the server and makes its search request through a controlled API.</p>
+          <a class="text-link" href="https://github.com/Rohit-ATS/Buffalo-Track/blob/main/README.md#how-the-frontend-reads-the-graph" target="_blank" rel="noreferrer">See the architecture in the README <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="architecture" aria-label="Browser connects to FastAPI, then Supabase">
+          <div class="arch-card"><span>01</span><strong>Browser</strong><small>TanStack Start UI</small></div>
+          <i aria-hidden="true">→</i>
+          <div class="arch-card"><span>02</span><strong>FastAPI</strong><small>Graph search service</small></div>
+          <i aria-hidden="true">→</i>
+          <div class="arch-card"><span>03</span><strong>Supabase</strong><small>Postgres + pgvector</small></div>
+        </div>
+      </section>
+
+      <section class="cta-section">
+        <p class="eyebrow">Build with us</p>
+        <h2>Explore the code, data model, and deployment path.</h2>
+        <div class="hero-actions">
+          <a class="button button-primary" href="https://github.com/Rohit-ATS/Buffalo-Track" target="_blank" rel="noreferrer">View repository <span aria-hidden="true">↗</span></a>
+          <a class="button button-secondary" href="https://github.com/Rohit-ATS/Buffalo-Track/blob/main/backend/RENDER_DEPLOY.md" target="_blank" rel="noreferrer">Backend deployment guide</a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <a class="brand" href="./"><span class="brand-mark" aria-hidden="true">B</span><span>Buffalo Track</span></a>
+      <p>Open-source rare-disease atlas · Static project preview</p>
+      <a href="https://github.com/Rohit-ATS/Buffalo-Track" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </footer>
+    <script src="./app.js"></script>
+  </body>
+</html>
