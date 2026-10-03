@@ -272,7 +272,7 @@ function Mechanisms({ focus }: { focus: string }) {
           <Card key={u.gene + u.effect} className={mine ? "border-primary" : ""}>
             <div className="flex items-center justify-between">
               <strong className="font-mono text-sm">
-                {u.gene} + {u.effect === "loss of function" ? "LoF" : "GoF"}
+                {u.gene} + {u.effect === "loss-of-function" ? "LoF" : "GoF"}
               </strong>
               {mine && (
                 <span className="text-[10px] font-semibold uppercase text-primary">Focus</span>
