@@ -1,0 +1,17 @@
+# Env
+.env
+.env.local
+.env.*.local
+
+# Supabase
+supabase/.branches
+supabase/.temp
+.supabase
+
+# Node
+node_modules/
+dist/
+*.log
+
+# macOS
+.DS_Store
