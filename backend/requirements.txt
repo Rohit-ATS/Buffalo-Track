@@ -1,5 +1,5 @@
 anthropic==1.11.0
-fastapi==0.116.1
+fastapi==0.142.2
 httpx==0.28.1
 pydantic-settings==2.10.1
 uvicorn[standard]==0.35.0
