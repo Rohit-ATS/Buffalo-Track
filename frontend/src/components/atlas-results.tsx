@@ -88,7 +88,7 @@ export function AtlasResults({
       <Shell tag="Live atlas not connected">
         <Note
           title="The curated sample path below still works."
-          body="This build has no SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY, so searches cannot reach the graph. Apply supabase/migrations/0001_init.sql, load supabase/seed.sql, fill in frontend/.env, and the same search returns live nodes, edges, and evidence."
+          body="This build has no SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY, so searches cannot reach the graph. Apply supabase/migrations/20261003000001_init.sql, load supabase/seed.sql, fill in frontend/.env, and the same search returns live nodes, edges, and evidence."
         />
       </Shell>
     );
