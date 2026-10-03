@@ -8,7 +8,7 @@
 export type Tier = "observed" | "reported" | "inferred";
 
 export type EffectClass =
-  "loss of function" | "gain of function" | "dominant negative" | "repeat expansion" | "unknown";
+  "loss-of-function" | "gain-of-function" | "dominant-negative" | "repeat expansion" | "unknown";
 
 export type MatchType = "disease" | "gene" | "synonym" | "symptom" | "patient group" | "mechanism";
 
