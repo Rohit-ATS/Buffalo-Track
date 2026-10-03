@@ -24,15 +24,17 @@ class SearchLimiter:
         self.max_concurrency = max_concurrency
         self.in_flight = 0
 
-    def consume(self, client: str) -> int | None:
+    def consume(self, identities: list[str]) -> int | None:
         now = time.monotonic()
-        timestamps = self.requests[client]
         cutoff = now - self.window_seconds
-        while timestamps and timestamps[0] <= cutoff:
-            timestamps.popleft()
-        if len(timestamps) >= self.limit:
-            return max(1, int(self.window_seconds - (now - timestamps[0])) + 1)
-        timestamps.append(now)
+        timestamps_by_identity = [self.requests[identity] for identity in dict.fromkeys(identities)]
+        for timestamps in timestamps_by_identity:
+            while timestamps and timestamps[0] <= cutoff:
+                timestamps.popleft()
+            if len(timestamps) >= self.limit:
+                return max(1, int(self.window_seconds - (now - timestamps[0])) + 1)
+        for timestamps in timestamps_by_identity:
+            timestamps.append(now)
         return None
 
     def acquire_slot(self) -> bool:
@@ -46,8 +48,9 @@ class SearchLimiter:
         self.in_flight -= 1
 
 
-def rate_limit_identity(request: Request, proxy_secret: str | None) -> str:
-    """Use a frontend-signed browser identity; fall back to direct caller IP."""
+def rate_limit_identities(request: Request, proxy_secret: str | None) -> list[str]:
+    """Always enforce an IP quota; add a verified browser quota when present."""
+    identities = [f"ip:{request.client.host if request.client else 'unknown'}"]
     client_id = request.headers.get("x-buffalo-client-id", "")
     signature = request.headers.get("x-buffalo-client-signature", "")
     if proxy_secret and len(client_id) == 36 and signature:
@@ -58,8 +61,8 @@ def rate_limit_identity(request: Request, proxy_secret: str | None) -> str:
         else:
             expected = hmac.digest(proxy_secret.encode(), client_id.encode(), "sha256").hex()
             if hmac.compare_digest(expected, signature):
-                return f"browser:{client_id}"
-    return f"ip:{request.client.host if request.client else 'unknown'}"
+                identities.append(f"browser:{client_id}")
+    return identities
 
 
 @asynccontextmanager
@@ -114,7 +117,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             return SearchResponse(status="unconfigured", query=payload.query)
 
         limiter: SearchLimiter = request.app.state.search_limiter
-        retry_after = limiter.consume(rate_limit_identity(request, settings.backend_proxy_secret))
+        retry_after = limiter.consume(rate_limit_identities(request, settings.backend_proxy_secret))
         if retry_after is not None:
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
