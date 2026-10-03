@@ -4,7 +4,9 @@ on:
   push:
     branches: [main]
     paths:
-      - "pages/**"
+      - "frontend/**"
+      - "bun.lock"
+      - "package.json"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
@@ -26,12 +28,35 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.11"
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+      - name: Install locked frontend dependencies
+        run: bun ci
+      - name: Build and prerender frontend for Pages
+        working-directory: frontend
+        env:
+          GITHUB_PAGES: "true"
+          GITHUB_PAGES_BASE_PATH: /${{ github.event.repository.name }}
+        run: node ./node_modules/vite/bin/vite.js build
+      - name: Add Pages fallback and disable Jekyll
+        run: |
+          cp frontend/.output/public/index.html frontend/.output/public/404.html
+          touch frontend/.output/public/.nojekyll
+          test -f frontend/.output/public/index.html
+          test -f frontend/.output/public/dashboard/index.html
+          test -f frontend/.output/public/disease/stxbp1/index.html
       - name: Configure Pages
         uses: actions/configure-pages@v5
-      - name: Upload static site
+      - name: Upload prerendered frontend
         uses: actions/upload-pages-artifact@v4
         with:
-          path: pages
+          path: frontend/.output/public
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
