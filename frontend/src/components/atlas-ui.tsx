@@ -22,6 +22,15 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -366,21 +375,36 @@ export function SearchBox({
 export function PersonaSwitch({ compact = false }: { compact?: boolean }) {
   const { persona, setPersona } = usePersona();
   return (
-    <label className="flex min-w-0 items-center gap-2 text-xs">
+    <div className="flex min-w-0 items-center gap-2 text-xs">
       {!compact && <span className="hidden text-muted-foreground lg:inline">Viewing as</span>}
-      <select
-        value={persona}
-        onChange={(e) => setPersona(e.target.value as PersonaId)}
-        className={`h-9 min-w-0 rounded-full border border-border bg-background px-3 text-xs font-semibold text-foreground outline-none transition focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 ${compact ? "w-[10.75rem] bg-transparent pr-7 sm:w-[12.5rem]" : ""}`}
-        aria-label={compact ? "Preview the site as" : "Viewing as"}
-      >
-        {personas.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.name} · {p.role}
-          </option>
-        ))}
-      </select>
-    </label>
+      <Select value={persona} onValueChange={(value) => setPersona(value as PersonaId)}>
+        <SelectTrigger
+          className={`h-9 min-w-0 rounded-full px-3 text-xs font-semibold text-foreground outline-none transition focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 ${compact ? "w-[10.75rem] border-transparent bg-transparent pr-3 shadow-none hover:bg-background/70 sm:w-[12.5rem]" : "w-[12.5rem] bg-background"}`}
+          aria-label={compact ? "Preview the site as" : "Viewing as"}
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent
+          sideOffset={8}
+          className="z-[60] min-w-[var(--radix-select-trigger-width)] rounded-2xl border-border bg-background/98 p-1.5 shadow-xl backdrop-blur data-[state=closed]:duration-150 data-[state=open]:duration-200"
+        >
+          <SelectGroup>
+            <SelectLabel className="px-3 pb-1 pt-2 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+              Preview role
+            </SelectLabel>
+            {personas.map((p) => (
+              <SelectItem
+                key={p.id}
+                value={p.id}
+                className="rounded-xl py-2.5 pl-8 pr-3 text-sm font-medium focus:bg-primary focus:text-primary-foreground"
+              >
+                {p.name} · {p.role}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    </div>
   );
 }
 

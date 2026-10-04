@@ -588,7 +588,15 @@
   pointer-events: none;
   background: var(--contrast);
   color: var(--contrast-foreground);
+}
+/* Departure: sweep up to cover, hold, lift away. */
+.atlas-transition-wipe {
   animation: transition-veil 0.76s cubic-bezier(0.7, 0, 0.2, 1) forwards;
+}
+/* Arrival after a hard navigation: the page is already painted, so only the
+   lift half plays. Covering it first would read as a backwards flash. */
+.atlas-transition-reveal {
+  animation: transition-lift 0.76s cubic-bezier(0.7, 0, 0.2, 1) forwards;
 }
 .atlas-transition-grid {
   position: absolute;
@@ -609,7 +617,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+.atlas-transition-wipe .atlas-transition-center {
   animation: transition-content 0.76s ease both;
+}
+.atlas-transition-reveal .atlas-transition-center {
+  animation: transition-content-out 0.76s ease both;
 }
 .atlas-transition-mark {
   width: 3.25rem;
@@ -660,6 +673,28 @@
     transform: none;
   }
   78%,
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* Arrival: already covering, so lift away without the cover half first. */
+@keyframes transition-lift {
+  0%,
+  26% {
+    clip-path: inset(0 0 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+@keyframes transition-content-out {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  46%,
   100% {
     opacity: 0;
     transform: translateY(-8px);
