@@ -242,8 +242,8 @@ function Index() {
           <div className="flex items-center gap-2">
             <PersonaSwitch />
             <Button asChild size="sm" className="hidden sm:inline-flex">
-              <Link to="/family">
-                Family space <ArrowRight className="size-3.5" />
+              <Link to="/dashboard">
+                Dashboard <ArrowRight className="size-3.5" />
               </Link>
             </Button>
           </div>
