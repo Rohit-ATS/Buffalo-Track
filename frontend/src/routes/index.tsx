@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { trackDashboardClick } from "@/lib/track-dashboard-click";
 import {
   Constellation,
   Heart,
@@ -242,7 +243,7 @@ function Index() {
           <div className="flex items-center gap-2">
             <PersonaSwitch />
             <Button asChild size="sm" className="hidden sm:inline-flex">
-              <Link to="/dashboard">
+              <Link to="/dashboard" onClick={() => trackDashboardClick("landing_cta")}>
                 Dashboard <ArrowRight className="size-3.5" />
               </Link>
             </Button>

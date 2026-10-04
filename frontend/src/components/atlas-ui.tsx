@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
+import { trackDashboardClick } from "@/lib/track-dashboard-click";
 import {
   AlertCircle,
   ArrowRight,
@@ -417,7 +418,12 @@ const navByPersona: Record<PersonaId, NavItem[]> = {
       </Link>
     )),
     nav("Dashboard", (c, a) => (
-      <Link to="/dashboard" className={c} activeProps={a}>
+      <Link
+        to="/dashboard"
+        className={c}
+        activeProps={a}
+        onClick={() => trackDashboardClick("nav_devon")}
+      >
         Dashboard
       </Link>
     )),
