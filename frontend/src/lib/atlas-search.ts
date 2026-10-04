@@ -44,6 +44,16 @@ export async function searchAtlas({
 }): Promise<AtlasSearchResult> {
   const query = String(data?.query ?? "");
   const backendResult = await searchBackend(query);
+  if (backendResult && backendResult.status !== "empty") return backendResult;
+  const curatedMatches = searchCuratedAtlas(query);
+  if (curatedMatches.length > 0) {
+    return {
+      status: "fallback",
+      query,
+      message: "This route is available in the curated atlas while live records are being verified.",
+      matches: curatedMatches,
+    };
+  }
   if (backendResult) return backendResult;
   return {
     status: "fallback",

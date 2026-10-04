@@ -13,7 +13,7 @@ describe("frontend to backend atlas search", () => {
       new Response(
         JSON.stringify({
           status: "empty",
-          query: "STXBP1",
+          query: "UNSEEDED",
           message: null,
           match: null,
           alsoMatched: null,
@@ -22,17 +22,31 @@ describe("frontend to backend atlas search", () => {
       ),
     );
 
-    await expect(searchAtlas({ data: { query: "STXBP1" } })).resolves.toMatchObject({
+    await expect(searchAtlas({ data: { query: "UNSEEDED" } })).resolves.toMatchObject({
       status: "empty",
-      query: "STXBP1",
+      query: "UNSEEDED",
     });
 
     expect(fetch).toHaveBeenCalledWith(
       "https://api.example.org/api/v1/search",
-      expect.objectContaining({ method: "POST", body: JSON.stringify({ query: "STXBP1" }) }),
+      expect.objectContaining({ method: "POST", body: JSON.stringify({ query: "UNSEEDED" }) }),
     );
     const headers = vi.mocked(fetch).mock.calls[0]?.[1]?.headers as Record<string, string>;
     expect(headers["content-type"]).toBe("application/json");
+  });
+
+  it("uses a curated route when the live database has not seeded it yet", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ status: "empty", query: "SCN1A" }), { status: 200 }),
+    );
+
+    await expect(searchAtlas({ data: { query: "SCN1A" } })).resolves.toMatchObject({
+      status: "fallback",
+      query: "SCN1A",
+      matches: expect.arrayContaining([
+        expect.objectContaining({ diseaseId: "scn1a", type: "gene" }),
+      ]),
+    });
   });
 
   it("returns the documented fallback without calling the network when no backend URL exists", async () => {
