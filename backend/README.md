@@ -1,8 +1,8 @@
 # Buffalo Track backend
 
-FastAPI service for the live graph search. It reads the existing `nodes`,
-`edges`, and `evidence` tables in Supabase with the service-role key, which is
-kept only on the server.
+FastAPI service for the live public graph search. It reads `nodes` and `edges`
+in Supabase with the service-role key, which is kept only on the server.
+Generic evidence is reviewer-only and is never returned by the public endpoint.
 
 ## Local run
 
@@ -16,11 +16,11 @@ uv run uvicorn app.main:app --reload --port 8000
 
 The API is then available at `http://localhost:8000/docs`.
 
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /healthz` | Process health, used by Render |
-| `GET /readyz` | Confirms that Supabase is reachable with the configured credentials |
-| `POST /api/v1/search` | Graph lookup, body: `{ "query": "STXBP1" }` |
+| Endpoint              | Purpose                                                             |
+| --------------------- | ------------------------------------------------------------------- |
+| `GET /healthz`        | Process health, used by Render                                      |
+| `GET /readyz`         | Confirms that Supabase is reachable with the configured credentials |
+| `POST /api/v1/search` | Graph lookup, body: `{ "query": "STXBP1" }`                         |
 
 Run the tests with `uv run pytest`.
 

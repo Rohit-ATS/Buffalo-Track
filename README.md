@@ -8,15 +8,18 @@ Bug reports and feature requests use the repository's issue forms. Read
 [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, required checks, migration
 guidance, and the rules for handling secrets and private data.
 
+Research data, seed sources, reproduction steps, and known limitations are in
+[docs/DATA_PROVENANCE.md](docs/DATA_PROVENANCE.md).
+
 | Path        | What it is                                                                    |
 | ----------- | ----------------------------------------------------------------------------- |
 | `supabase/` | Postgres schema: `nodes`, `edges`, `evidence` (with pgvector embeddings)      |
 | `frontend/` | TanStack Start app — search-first landing page, research workspace, dashboard |
 | `backend/` | FastAPI graph-search service, ready for deployment to Render |
 
-Searching a gene, mechanism, or disorder on the landing page walks the graph: it
-finds the matching node, lists its edges with the number of evidence rows behind
-each one, and shows the evidence receipts themselves.
+Searching a gene, mechanism, or disorder on the landing page walks the public
+graph and lists its matching nodes and connections. Reviewer-only evidence is
+kept out of the public search response.
 
 ## Quick start
 
@@ -96,12 +99,12 @@ The lookup runs through the FastAPI backend; the TanStack Start **server functio
 forwards the browser request to it:
 
 - `backend/app/atlas.py` — matches nodes in three passes (exact → prefix →
-  substring), then loads edges, neighbours, and evidence counts with the
-  server-only service-role key.
+  substring), then loads public graph edges and neighbours with the server-only
+  service-role key.
 - `frontend/src/lib/atlas-search.ts` — the server function the browser calls over RPC;
   it forwards the request to `BACKEND_URL`.
-- `frontend/src/components/atlas-results.tsx` — renders the match, its connections,
-  and the evidence receipts.
+- `frontend/src/components/atlas-results.tsx` — renders the match and its
+  connections, and explains when evidence is reviewer-only.
 
 The research views (`/dashboard`, `/disease/$id`, `/compare`, `/mechanisms`,
 `/researchers`, `/methods`) read the static sample dataset in
@@ -124,18 +127,14 @@ Run from `frontend/`:
 | `bun run format`   | Prettier write                    |
 | `bunx tsc --noEmit`| Typecheck                         |
 
-## Access model (hackathon)
+## Access model
 
-No authentication. The graph is **publicly readable**; writes go through the
-backend using the service-role key.
-
-- `anon` key → `SELECT` on `nodes`, `edges`, `evidence`. Nothing else.
-- `service_role` key → full access (bypasses RLS). Server-side only — never
-  ship it to the browser.
-- Realtime is enabled on all three tables, and honours the read policies.
-
-⚠️ The anon key is visible to anyone who opens your site, so treat everything
-in these tables as public. Fine for demo data; don't load anything sensitive.
+Public graph reads and authenticated family-space features use different
+Supabase RLS policies. Generic evidence is reviewer-only, while the FastAPI
+public search returns nodes and edges without evidence content. The service-role
+key bypasses RLS and stays server-side only; it must never use a `VITE_` prefix.
+See [docs/DATA_PROVENANCE.md](docs/DATA_PROVENANCE.md) and the final migration
+policies for the current access model.
 
 ### Subscribing to live updates
 

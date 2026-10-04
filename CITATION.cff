@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use Buffalo-Track, please cite this software."
+title: "Buffalo-Track"
+type: software
+authors:
+  - name: "Buffalo-Track contributors"
+version: 1.0.0
+date-released: 2026-10-03
+license: MIT
+url: "https://github.com/Rohit-ATS/Buffalo-Track"
