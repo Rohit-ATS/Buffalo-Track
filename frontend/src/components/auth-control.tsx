@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PersonaSwitch } from "@/components/atlas-ui";
 import { ROLE_LABELS, type FamilyRole } from "@/lib/access";
 import { currentRole } from "@/lib/social";
+import { playRouteTransition } from "@/lib/route-transition";
 import { trackDashboardClick } from "@/lib/track-dashboard-click";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
@@ -76,12 +77,24 @@ export function AuthControl() {
           variant="outline"
           className="hidden h-10 rounded-full border-border bg-background px-4 sm:inline-flex"
         >
-          <Link to="/dashboard" onClick={() => trackDashboardClick("landing_sign_in")}>
+          <Link
+            to="/dashboard"
+            onClick={() => {
+              trackDashboardClick("landing_sign_in");
+              playRouteTransition();
+            }}
+          >
             <LogIn className="size-4" aria-hidden="true" /> Sign in
           </Link>
         </Button>
         <Button asChild size="sm" className="h-10 rounded-full px-4 sm:px-5">
-          <Link to="/dashboard" onClick={() => trackDashboardClick("landing_cta")}>
+          <Link
+            to="/dashboard"
+            onClick={() => {
+              trackDashboardClick("landing_cta");
+              playRouteTransition();
+            }}
+          >
             Dashboard
           </Link>
         </Button>

@@ -575,6 +575,97 @@
   transform: rotate(6deg);
 }
 
+/* Route transition: a short wipe over the landing -> dashboard jump.
+   Decoration only -- pointer-events stay off so it can never swallow a
+   click, and it is removed on a timer by RouteTransition. */
+.atlas-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--contrast);
+  color: var(--contrast-foreground);
+  animation: transition-veil 0.76s cubic-bezier(0.7, 0, 0.2, 1) forwards;
+}
+.atlas-transition-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--primary) 12%, transparent) 1px, transparent 1px),
+    linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--primary) 12%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 44px 44px;
+  mask-image: radial-gradient(circle at center, black, transparent 70%);
+}
+.atlas-transition-center {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: transition-content 0.76s ease both;
+}
+.atlas-transition-mark {
+  width: 3.25rem;
+  color: var(--primary);
+}
+.atlas-transition-rule {
+  margin-top: 0.85rem;
+  width: 11rem;
+  height: 0.75rem;
+  color: color-mix(in oklab, var(--primary) 70%, transparent);
+}
+.atlas-transition-rule path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 0.62s cubic-bezier(0.6, 0.1, 0.2, 1) 0.08s forwards;
+}
+.atlas-transition-label {
+  margin-top: 0.7rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--contrast-foreground) 70%, transparent);
+}
+
+/* Sweeps up to cover, holds a beat, then lifts away to reveal the new page. */
+@keyframes transition-veil {
+  0% {
+    clip-path: inset(100% 0 0 0);
+  }
+  32%,
+  58% {
+    clip-path: inset(0 0 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+@keyframes transition-content {
+  0%,
+  18% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  38%,
+  56% {
+    opacity: 1;
+    transform: none;
+  }
+  78%,
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
 .atlas-footer {
   isolation: isolate;
 }
@@ -762,6 +853,11 @@
     transform: none;
   }
   .atlas-opening {
+    display: none;
+  }
+  /* playRouteTransition() already returns early here; this is the belt to
+     that braces, so a stray overlay can never sit over the page. */
+  .atlas-transition {
     display: none;
   }
   .atlas-footer-glow {
