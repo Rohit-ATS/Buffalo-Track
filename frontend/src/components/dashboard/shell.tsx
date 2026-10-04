@@ -164,7 +164,7 @@ export function DashboardShell({
   return (
     <main className="min-h-screen bg-secondary text-foreground">
       <header className="border-b border-border bg-background px-5 py-3 md:px-8">
-        <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3">
+        <div className="flex w-full flex-wrap items-center justify-between gap-3">
           <Link to="/" className="font-display text-lg">
             Rare Disease Atlas
           </Link>
@@ -198,7 +198,7 @@ export function DashboardShell({
         </div>
       </header>
 
-      <div className="mx-auto max-w-[1400px] px-5 py-6 md:px-8 md:py-10">
+      <div className="w-full px-5 py-6 md:px-8 md:py-10">
         <nav aria-label="Dashboard sections" className="mb-8 flex flex-wrap gap-2">
           {sections.map((item) => (
             <button
@@ -392,7 +392,7 @@ function SignedOut() {
   return (
     <main className="min-h-screen bg-secondary text-foreground">
       <header className="border-b border-border bg-background px-5 py-3 md:px-8">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3">
+        <div className="flex w-full items-center justify-between gap-3">
           <Link to="/" className="font-display text-lg">
             Rare Disease Atlas
           </Link>

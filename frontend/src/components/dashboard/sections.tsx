@@ -3,18 +3,17 @@ import * as React from "react";
 
 import { Button } from "@/components/ui/button";
 import { CircleList, Conversation } from "@/components/social";
+import { DirectMessages } from "@/components/social/DirectMessages";
 import { joinCircle } from "@/lib/family-network";
 import {
   decideJoin,
   loadCircles,
-  loadPrivateThreads,
   loadReports,
   pendingJoins,
   shortId,
   type Circle,
   type MemberReport,
   type PendingJoin,
-  type PrivateThread,
 } from "@/lib/social";
 
 /**
@@ -136,97 +135,16 @@ export function CirclesSection({ viewerId }: { viewerId: string | null }) {
 }
 
 // ---------------------------------------------------------------- messages
+/**
+ * The inbox. The list of threads, the open conversation and the people search
+ * all live in `DirectMessages`; this only gives it the full height of the
+ * section so it reads as a messaging app rather than a widget on a page.
+ */
 export function MessagesSection({ viewerId }: { viewerId: string | null }) {
-  const circles = useAsync<Circle[]>(loadCircles);
-  const threads = useAsync<PrivateThread[]>(loadPrivateThreads);
-  const [selected, setSelected] = React.useState<{
-    kind: "circle" | "private";
-    id: string;
-    title: string;
-  } | null>(null);
-
-  const myCircles = (circles.data ?? []).filter((c) => c.membership === "active");
-  const error = circles.error ?? threads.error;
-
   return (
-    <Panel
-      title="Messages"
-      blurb="Group conversations, and one-to-one threads opened by an accepted introduction."
-    >
-      {(circles.loading || threads.loading) && <Loading />}
-      {error && <Failed message={error} />}
-
-      <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
-        <nav aria-label="Conversations" className="grid content-start gap-4">
-          <div>
-            <p className="eyebrow">Groups</p>
-            {myCircles.length === 0 ? (
-              <p className="mt-2 text-sm text-muted-foreground">
-                None yet. Ask to join a circle under Groups.
-              </p>
-            ) : (
-              <ul className="mt-2 grid gap-1">
-                {myCircles.map((circle) => (
-                  <li key={circle.id}>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSelected({ kind: "circle", id: circle.id, title: circle.name })
-                      }
-                      className={`w-full rounded-[6px] px-3 py-2 text-left text-sm ${
-                        selected?.id === circle.id ? "bg-surface font-semibold" : "hover:bg-surface"
-                      }`}
-                    >
-                      {circle.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div>
-            <p className="eyebrow">Introductions</p>
-            {(threads.data ?? []).length === 0 ? (
-              <p className="mt-2 text-sm text-muted-foreground">
-                No one-to-one threads yet. One opens when an introduction is accepted.
-              </p>
-            ) : (
-              <ul className="mt-2 grid gap-1">
-                {(threads.data ?? []).map((thread) => (
-                  <li key={thread.conversation_id}>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSelected({
-                          kind: "private",
-                          id: thread.conversation_id,
-                          title: `Introduction ${shortId(thread.introduction_id)}`,
-                        })
-                      }
-                      className={`w-full rounded-[6px] px-3 py-2 text-left text-sm ${
-                        selected?.id === thread.conversation_id
-                          ? "bg-surface font-semibold"
-                          : "hover:bg-surface"
-                      }`}
-                    >
-                      Introduction {shortId(thread.introduction_id)}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </nav>
-
-        <Conversation
-          kind={selected?.kind ?? "circle"}
-          id={selected?.id ?? null}
-          title={selected?.title ?? "Conversation"}
-          viewerId={viewerId}
-        />
-      </div>
-    </Panel>
+    <div className="flex h-[calc(100vh-13rem)] min-h-[30rem] flex-col overflow-hidden rounded-[6px] border border-border bg-background">
+      <DirectMessages viewerId={viewerId} />
+    </div>
   );
 }
 
