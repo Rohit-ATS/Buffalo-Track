@@ -114,12 +114,16 @@ export function DashboardShell({
   if (state === "unconfigured") {
     return (
       <Centered>
-        This build has no Supabase credentials, so there is no account to sign in to. Set
-        VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY, or explore the public atlas from the{" "}
-        <Link to="/" className="text-primary underline">
-          landing page
-        </Link>
-        .
+        <span>
+          This build does not have Supabase configured, so account sign-in is unavailable. Add the
+          GitHub Actions secret{" "}
+          <code className="rounded bg-secondary px-1.5 py-0.5 text-xs">VITE_SUPABASE_ANON_KEY</code>{" "}
+          and rebuild Pages, or explore the public atlas from the{" "}
+          <Link to="/" className="text-primary underline">
+            landing page
+          </Link>
+          .
+        </span>
       </Centered>
     );
   }
@@ -289,8 +293,8 @@ function SectionBody({ section, viewerId }: { section: SectionId; viewerId: stri
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <main className="grid min-h-screen place-items-center bg-secondary p-6">
-      <p className="flex max-w-md items-center gap-2 rounded-[6px] border border-border bg-background px-5 py-4 text-sm">
+    <main className="grid min-h-screen place-items-center bg-secondary px-4 py-10 sm:px-6">
+      <p className="w-full max-w-2xl rounded-[6px] border border-border bg-background px-5 py-5 text-center text-sm leading-relaxed sm:px-8">
         {children}
       </p>
     </main>

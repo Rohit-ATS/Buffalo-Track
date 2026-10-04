@@ -46,7 +46,9 @@ jobs:
           VITE_BACKEND_URL: "https://buffalo-track-api.onrender.com"
           VITE_SUPABASE_URL: "https://jmeramxkgnjbnwmltygc.supabase.co"
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-        run: node ./node_modules/vite/bin/vite.js build
+        run: |
+          test -n "$VITE_SUPABASE_ANON_KEY"
+          node ./node_modules/vite/bin/vite.js build
       - name: Add Pages fallback and disable Jekyll
         run: |
           cp frontend/.output/public/index.html frontend/.output/public/404.html
