@@ -28,7 +28,11 @@ export function LiveDiscoveries({ diseaseId }: { diseaseId: string }) {
 
   React.useEffect(() => {
     let cancelled = false;
-    webAssets({ data: { diseaseId } })
+    // Server functions are unavailable on the static GitHub Pages build. Start
+    // the call in a promise so a synchronous client-runtime assertion becomes
+    // the same recoverable error as a failed request.
+    Promise.resolve()
+      .then(() => webAssets({ data: { diseaseId } }))
       .then((rows) => {
         if (!cancelled) setAssets(rows);
       })
