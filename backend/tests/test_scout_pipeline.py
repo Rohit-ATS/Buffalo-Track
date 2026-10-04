@@ -244,9 +244,8 @@ def test_skipped_urls_are_recorded_with_reasons(stubbed_scout):  # noqa: ANN001
 
     skipped = {url: reason for url, reason in report.skipped_urls}
     skipped_hosts = {urlparse(url).hostname for url in skipped}
-    assert "clinicaltrials.gov" in skipped_hosts
+    assert skipped_hosts == {"clinicaltrials.gov", "www.facebook.com"}
     assert any("official API" in reason for reason in skipped.values())
-    assert "www.facebook.com" in skipped_hosts
 
     # Every candidate is persisted with its verdict, accepted or not.
     assert len(store.serp) == 3
