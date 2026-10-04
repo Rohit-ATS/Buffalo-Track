@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Loader2, LockKeyhole, Mail, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, LockKeyhole, Mail, Sparkles } from "lucide-react";
 import * as React from "react";
 
 import {
@@ -22,7 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { SignedOutArt } from "@/components/signed-out-art";
 import { trackDashboardClick } from "@/lib/track-dashboard-click";
-import { FamilySpace } from "@/routes/family";
+import { InstagramDashboard } from "@/components/social/InstagramDashboard";
 import {
   ROLE_LABELS,
   resolveSection,
@@ -137,6 +137,32 @@ export function DashboardShell({
   const active = resolveSection(effective, requested);
   const sections = sectionsFor(effective);
 
+  /*
+   * The family space is the social network, and it takes the whole window.
+   *
+   * Wrapping it in this shell stacked two navigations on one screen: these
+   * section pills above the app's own sidebar, both claiming to be how you
+   * move around. The app's sidebar wins, because it is the one that also
+   * carries the feed, the reels and the condition tabs. Its "Add-ons" links
+   * call back into `navigate` here, so a steward or an admin still reaches
+   * moderation and operations.
+   */
+  if (active === "family") {
+    return (
+      <InstagramDashboard
+        role={effective}
+        viewerId={viewerId}
+        initialTab="home"
+        onOpenIntegration={(section) =>
+          void navigate({
+            to: "/dashboard",
+            search: preview ? { section, as: preview } : { section },
+          })
+        }
+      />
+    );
+  }
+
   return (
     <main className="min-h-screen bg-secondary text-foreground">
       <header className="border-b border-border bg-background px-5 py-3 md:px-8">
@@ -247,8 +273,6 @@ function SignOutButton() {
 
 function SectionBody({ section, viewerId }: { section: SectionId; viewerId: string | null }) {
   switch (section) {
-    case "family":
-      return <FamilySpace />;
     case "circles":
       return <CirclesSection viewerId={viewerId} />;
     case "messages":
@@ -348,7 +372,9 @@ function SignedOut() {
             Rare Disease Atlas
           </Link>
           <Button asChild size="sm" variant="outline">
-            <Link to="/">Public atlas</Link>
+            <Link to="/" aria-label="Back to the public atlas">
+              <ArrowLeft className="size-3.5" aria-hidden="true" /> Back to atlas
+            </Link>
           </Button>
         </div>
       </header>
