@@ -29,8 +29,15 @@ export type AtlasMatch = {
 };
 
 export type AtlasSearchResult =
-  /** No backend URL is configured — the page falls back to the curated demo. */
+  /** No backend URL is configured. */
   | { status: "unconfigured"; query: string }
+  /** The live API is unavailable — use the bundled curated atlas. */
+  | {
+      status: "fallback";
+      query: string;
+      message: string;
+      matches: Array<{ label: string; type: string; diseaseId: string; alias?: string }>;
+    }
   /** Database reachable, nothing matched the query. */
   | { status: "empty"; query: string }
   | { status: "error"; query: string; message: string }

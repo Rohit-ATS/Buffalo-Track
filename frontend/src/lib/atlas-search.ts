@@ -1,4 +1,5 @@
 import type { AtlasSearchResult } from "@/lib/atlas";
+import { searchAtlas as searchCuratedAtlas } from "@/lib/atlas-data";
 
 function getBackendUrl(): string | undefined {
   const value = import.meta.env["VITE_BACKEND_URL"];
@@ -24,10 +25,11 @@ async function searchBackend(query: string): Promise<AtlasSearchResult | null> {
       };
     }
     if (!response.ok) throw new Error(`Backend returned ${response.status}`);
-    return (await response.json()) as AtlasSearchResult;
+    const result = (await response.json()) as AtlasSearchResult;
+    return result.status === "error" ? null : result;
   } catch (error) {
     console.error("backend atlas search failed", error);
-    return { status: "error", query, message: "The atlas API is temporarily unavailable." };
+    return null;
   }
 }
 
@@ -42,5 +44,11 @@ export async function searchAtlas({
 }): Promise<AtlasSearchResult> {
   const query = String(data?.query ?? "");
   const backendResult = await searchBackend(query);
-  return backendResult ?? { status: "unconfigured", query };
+  if (backendResult) return backendResult;
+  return {
+    status: "fallback",
+    query,
+    message: "Live atlas is temporarily unavailable. Showing the bundled curated atlas instead.",
+    matches: searchCuratedAtlas(query),
+  };
 }

@@ -38,9 +38,10 @@ describe("frontend to backend atlas search", () => {
   it("returns the documented fallback without calling the network when no backend URL exists", async () => {
     vi.stubEnv("VITE_BACKEND_URL", "");
 
-    await expect(searchAtlas({ data: { query: "STXBP1" } })).resolves.toEqual({
-      status: "unconfigured",
+    await expect(searchAtlas({ data: { query: "STXBP1" } })).resolves.toMatchObject({
+      status: "fallback",
       query: "STXBP1",
+      matches: expect.any(Array),
     });
     expect(fetch).not.toHaveBeenCalled();
   });

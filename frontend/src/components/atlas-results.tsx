@@ -83,12 +83,39 @@ export function AtlasResults({
 
   if (!result) return null;
 
+  if (result.status === "fallback") {
+    return (
+      <Shell tag="Curated fallback · live atlas unavailable">
+        <Note title="You can keep exploring while the API is offline." body={result.message} />
+        {result.matches.length > 0 ? (
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {result.matches.map((match) => (
+              <a
+                key={`${match.type}-${match.diseaseId}-${match.label}`}
+                href={`${import.meta.env.BASE_URL}disease/${match.diseaseId}/?q=${encodeURIComponent(match.alias ?? match.label)}`}
+                className="rounded-[6px] border border-border bg-surface p-4 transition-colors hover:border-primary"
+              >
+                <span className="eyebrow">{match.type}</span>
+                <span className="mt-1 block font-display text-xl">{match.label}</span>
+              </a>
+            ))}
+          </div>
+        ) : (
+          <Note
+            title={`No curated match for “${result.query}”.`}
+            body="Try a gene, disorder, symptom, or mechanism from the sample atlas."
+          />
+        )}
+      </Shell>
+    );
+  }
+
   if (result.status === "unconfigured") {
     return (
-      <Shell tag="Live atlas not connected">
+      <Shell tag="Curated fallback">
         <Note
-          title="The curated sample path below still works."
-          body="This build has no VITE_BACKEND_URL, so searches cannot reach the graph. Deploy the FastAPI service, apply the migrations, load the atlas seed data, and set VITE_BACKEND_URL in the frontend build environment."
+          title="The live atlas is not configured for this build."
+          body="The curated sample path below still works while the live API connection is configured."
         />
       </Shell>
     );
