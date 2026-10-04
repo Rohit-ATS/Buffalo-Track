@@ -237,7 +237,7 @@ hits it records where it stopped rather than losing the work. → [backend/DISCO
 [`backend/`](backend/README.md) exposes `POST /api/v1/search`, `/healthz`, `/readyz`;
 `render.yaml` deploys it to Render. The Pages workflow sets the public
 `VITE_BACKEND_URL` to the Render API; set the exact Pages origin in Render's
-`CORS_ORIGINS`. Checklist:
+`CORS_ORIGINS`. Add the Supabase anon key as the repository Actions secret `VITE_SUPABASE_ANON_KEY` before the Pages workflow runs. Checklist:
 [backend/RENDER_DEPLOY.md](backend/RENDER_DEPLOY.md).
 
 [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) prerenders the public routes to GitHub
