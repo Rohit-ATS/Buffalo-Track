@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300" role="img" aria-label="The quote verifier: a claim becomes evidence only if its quote appears in the page">
+  <title>No match, no edge</title>
+  <desc>A model claim is kept only when its quote is found verbatim in the fetched page. A paraphrase is rejected and keeps its reason.</desc>
+
+  <defs>
+    <style>
+      .bg    { fill: #FDFCF8; }
+      .card  { fill: #F6F5EF; }
+      .ink   { fill: #11201A; }
+      .green { fill: #2D6A4F; }
+      .rust  { fill: #B5502F; }
+      .muted { fill: #5B6B63; }
+      .serif { font-family: "DM Serif Display", Georgia, serif; }
+      .sans  { font-family: "DM Sans", "Segoe UI", system-ui, sans-serif; }
+      .mono  { font-family: "SFMono-Regular", Consolas, monospace; }
+      .sketch{ font-family: "Caveat", "Bradley Hand", cursive; }
+    </style>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#5B6B63"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1200" height="300" rx="10"/>
+
+  <!-- the page -->
+  <g transform="translate(36,44)">
+    <rect class="card" width="300" height="190" rx="8"/>
+    <text class="sans muted" x="20" y="30" font-size="11" letter-spacing="1.4">THE FETCHED PAGE</text>
+    <text class="mono ink" x="20" y="60" font-size="11">The Foundation launched a</text>
+    <text class="mono ink" x="20" y="80" font-size="11">natural history study in 2021</text>
+    <text class="mono ink" x="20" y="100" font-size="11">to track developmental</text>
+    <text class="mono ink" x="20" y="120" font-size="11">outcomes across the STXBP1</text>
+    <text class="mono ink" x="20" y="140" font-size="11">patient population.</text>
+    <text class="sans muted" x="20" y="170" font-size="10">stxbp1disorders.org · retrieved today</text>
+  </g>
+
+  <path stroke="#5B6B63" stroke-width="1.6" fill="none" marker-end="url(#ar)" d="M348 140h58"/>
+
+  <!-- two claims -->
+  <g transform="translate(418,30)">
+    <rect class="card" width="330" height="104" rx="8"/>
+    <text class="sans muted" x="18" y="26" font-size="11" letter-spacing="1.4">MODEL CLAIM A</text>
+    <text class="mono ink" x="18" y="52" font-size="10.5">“launched a natural history</text>
+    <text class="mono ink" x="18" y="70" font-size="10.5">study in 2021 to track…”</text>
+    <text class="sans green" x="18" y="92" font-size="11">copied character-for-character</text>
+  </g>
+
+  <g transform="translate(418,160)">
+    <rect class="card" width="330" height="104" rx="8"/>
+    <text class="sans muted" x="18" y="26" font-size="11" letter-spacing="1.4">MODEL CLAIM B</text>
+    <text class="mono ink" x="18" y="52" font-size="10.5">“started a study in 2021 that</text>
+    <text class="mono ink" x="18" y="70" font-size="10.5">follows patient development”</text>
+    <text class="sans rust" x="18" y="92" font-size="11">true to the meaning, not the words</text>
+  </g>
+
+  <!-- verifier gate -->
+  <g transform="translate(788,98)">
+    <rect x="0" y="0" width="150" height="104" rx="52" fill="#11201A"/>
+    <text class="sans" x="75" y="44" font-size="12" fill="#FDFCF8" text-anchor="middle" letter-spacing="1">VERIFIER</text>
+    <text class="mono" x="75" y="68" font-size="10" fill="#9FB3A8" text-anchor="middle">quote in page?</text>
+  </g>
+  <path stroke="#5B6B63" stroke-width="1.6" fill="none" marker-end="url(#ar)" d="M756 82c22 0 24 58 26 62"/>
+  <path stroke="#5B6B63" stroke-width="1.6" fill="none" marker-end="url(#ar)" d="M756 212c22 0 24-58 26-62"/>
+
+  <!-- outcomes -->
+  <g transform="translate(968,44)">
+    <rect width="200" height="86" rx="8" fill="#2D6A4F"/>
+    <text class="serif" x="22" y="40" font-size="23" fill="#FDFCF8">Evidence</text>
+    <text class="sans" x="22" y="64" font-size="11.5" fill="#CFE3D7">scored by rule · 0.83</text>
+    <animateTransform attributeName="transform" type="translate" values="968,44; 968,38; 968,44" dur="3s" repeatCount="indefinite" additive="sum"/>
+  </g>
+
+  <g transform="translate(968,170)">
+    <rect width="200" height="86" rx="8" fill="#FDFCF8" stroke="#B5502F" stroke-width="2" stroke-dasharray="7 6"/>
+    <text class="serif rust" x="22" y="40" font-size="23">Rejected</text>
+    <text class="sans muted" x="22" y="64" font-size="11.5">kept, with its reason</text>
+  </g>
+
+  <text class="sketch green" x="600" y="288" font-size="22" text-anchor="middle">no match, no edge — 28% of real claims were thrown away</text>
+</svg>
