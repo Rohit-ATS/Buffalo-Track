@@ -20,6 +20,7 @@ import {
   ModerationSection,
 } from "@/components/dashboard/sections";
 import { Button } from "@/components/ui/button";
+import { SignedOutArt } from "@/components/signed-out-art";
 import { trackDashboardClick } from "@/lib/track-dashboard-click";
 import { FamilySpace } from "@/routes/family";
 import {
@@ -459,26 +460,7 @@ function SignedOut() {
           </p>
         </div>
 
-        {/* Decoration only. Positions are kept in separate bands so no mark
-            ever crosses the handwritten note -- the sketches should frame the
-            sentence, not scribble over it. */}
-        <div className="relative hidden min-h-[460px] lg:block" aria-hidden="true">
-          <Constellation className="absolute left-0 top-0 w-48 text-foreground/55" />
-          <Sparkle className="absolute right-10 top-4 w-8 spin-slow text-highlight" />
-          <Sparkle className="absolute left-56 top-24 w-4 float-fast text-primary" />
-
-          <p className="absolute right-0 top-[38%] max-w-[260px] rotate-[-4deg] font-sketch text-2xl leading-snug">
-            Your people are
-            <br />
-            already out there.
-            <br />
-            <em className="text-primary">Meet them at your pace.</em>
-          </p>
-
-          <Squiggle className="absolute left-2 top-[52%] w-28 text-primary/70" />
-          <Neuron className="absolute bottom-2 left-0 w-40 text-foreground/35 float-slow" />
-          <Heart className="absolute bottom-10 right-16 w-9 wiggle text-primary" />
-        </div>
+        <SignedOutArt />
       </div>
     </main>
   );
