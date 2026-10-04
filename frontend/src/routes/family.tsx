@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
+import { InstagramDashboard } from "@/components/social/InstagramDashboard";
 import {
   acceptIntroduction,
   blockProfile,
@@ -180,16 +181,56 @@ export function FamilySpace() {
       setNotice(e instanceof Error ? e.message : "That action could not be completed.");
     }
   }
-  // Unauthenticated visitors see the onboarding state only. No profile data or
-  // suggested people is rendered until Supabase Auth has established a session.
+  const [viewMode, setViewMode] = useState<"social" | "guided">("social");
   const cards = email ? (suggestions.length ? suggestions : preview) : [];
+
+  if (viewMode === "social") {
+    return (
+      <div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+              Live Social Network Mode
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Inspired by Instagram · Connected Peers & Stories
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setViewMode("guided")}
+              className="rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground hover:bg-surface hover:text-foreground"
+            >
+              Switch to Guided 3-Step View
+            </button>
+          </div>
+        </div>
+        <InstagramDashboard
+          role="family"
+          viewerId={email}
+          initialTab="home"
+        />
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <LockKeyhole className="size-3" aria-hidden="true" />
-          Private to you. Nothing here is visible to researchers or reviewers.
-        </span>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setViewMode("social")}
+            className="rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary hover:bg-primary/20"
+          >
+            ← Switch to Social Feed (Instagram View)
+          </button>
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <LockKeyhole className="size-3" aria-hidden="true" />
+            Private to you. Nothing here is visible to researchers or reviewers.
+          </span>
+        </div>
         {email ? (
           <span className="text-xs font-semibold">{email}</span>
         ) : (
