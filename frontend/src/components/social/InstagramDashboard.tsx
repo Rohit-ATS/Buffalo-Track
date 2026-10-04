@@ -19,6 +19,8 @@ import {
   User,
   Users,
   Video,
+  BookOpen,
+  Radar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StoriesTray } from "@/components/social/StoriesTray";
@@ -28,12 +30,24 @@ import { ReelsFeed } from "@/components/social/ReelsFeed";
 import { ExploreView } from "@/components/social/ExploreView";
 import { SocialProfileView } from "@/components/social/SocialProfileView";
 import {
+  addComment,
   fetchSocialPosts,
   publishPost,
-  subscribeToPosts,
+  subscribeToFeed,
+  toggleLike,
   type SocialPost,
   type StoryUser,
 } from "@/lib/social-feed";
+import { LearnView } from "@/components/social/LearnView";
+import { DiscoveriesView } from "@/components/social/DiscoveriesView";
+import {
+  isOpenTrial,
+  listConditions,
+  loadConditionInsight,
+  matchCondition,
+  type ConditionInsight,
+  type ConditionRef,
+} from "@/lib/condition-insight";
 import {
   loadProfile,
   loadSuggestions,
@@ -43,7 +57,7 @@ import {
 } from "@/lib/family-network";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { CirclesSection, MessagesSection } from "@/components/dashboard/sections";
-import { ROLE_LABELS, type FamilyRole } from "@/lib/access";
+import { ROLE_LABELS, canSee, type FamilyRole } from "@/lib/access";
 
 export function InstagramDashboard({
   role,
@@ -53,11 +67,12 @@ export function InstagramDashboard({
 }: {
   role: FamilyRole;
   viewerId: string | null;
-  initialTab?: "home" | "explore" | "reels" | "messages" | "circles" | "profile";
+  initialTab?:
+    "home" | "explore" | "reels" | "learn" | "discoveries" | "messages" | "circles" | "profile";
   onOpenIntegration?: (section: string) => void;
 }) {
   const [activeTab, setActiveTab] = React.useState<
-    "home" | "explore" | "reels" | "messages" | "circles" | "profile"
+    "home" | "explore" | "reels" | "learn" | "discoveries" | "messages" | "circles" | "profile"
   >(initialTab);
 
   const [posts, setPosts] = React.useState<SocialPost[]>([]);
@@ -76,6 +91,13 @@ export function InstagramDashboard({
     matching_opt_in: true,
   });
 
+  // The learning tabs: every condition in the atlas, plus the facts for the
+  // one being read. Loaded lazily so the feed is not held up by them.
+  const [conditions, setConditions] = React.useState<ConditionRef[]>([]);
+  const [conditionId, setConditionId] = React.useState<string | null>(null);
+  const [insight, setInsight] = React.useState<ConditionInsight | null>(null);
+  const [insightLoading, setInsightLoading] = React.useState(false);
+
   // Load feed and profile on mount
   React.useEffect(() => {
     void fetchSocialPosts().then(setPosts);
@@ -83,19 +105,73 @@ export function InstagramDashboard({
       if (p) {
         setProfile(p);
         setProfileDraft(p);
+      } else if (viewerId) {
+        // A signed-in account with no profile row yet. The editor opens once,
+        // because the condition typed here is what the matching queries and the
+        // Understand/Discoveries tabs key off -- without it they have nothing
+        // to look up.
+        setProfileEditModal(true);
       }
     });
     void loadSuggestions().then((s) => {
       if (s && s.length) setSuggestions(s);
     });
 
-    // Real-time listener for incoming posts from other peers
-    const unsubscribe = subscribeToPosts((newPost) => {
-      setPosts((current) => [newPost, ...current]);
+    // Other people's posts and comments, as they are written.
+    const unsubscribe = subscribeToFeed({
+      viewerId,
+      onNewPost: (newPost) => setPosts((current) => [newPost, ...current]),
+      onNewComment: (comment) =>
+        setPosts((current) =>
+          current.map((p) =>
+            p.id === comment.post_id
+              ? {
+                  ...p,
+                  comments_count: p.comments_count + 1,
+                  comments: [...(p.comments ?? []), comment],
+                }
+              : p,
+          ),
+        ),
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [viewerId]);
+
+  // Resolve the viewer's typed condition ("STXBP1 Encephalopathy") to an atlas
+  // record once, then let them browse any other condition from the picker.
+  React.useEffect(() => {
+    let cancelled = false;
+    void listConditions().then((list) => {
+      if (cancelled) return;
+      setConditions(list);
+      setConditionId((current) => {
+        if (current) return current;
+        return matchCondition(list, profile?.condition)?.id ?? list[0]?.id ?? null;
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [profile?.condition]);
+
+  React.useEffect(() => {
+    const condition = conditions.find((c) => c.id === conditionId);
+    if (!condition) return;
+
+    let cancelled = false;
+    setInsightLoading(true);
+    void loadConditionInsight(condition)
+      .then((result) => {
+        if (!cancelled) setInsight(result);
+      })
+      .finally(() => {
+        if (!cancelled) setInsightLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [conditionId, conditions]);
 
   const handlePublishPost = async (
     body: string,
@@ -107,9 +183,13 @@ export function InstagramDashboard({
     setPosts([created, ...posts]);
   };
 
-  const handleLikePost = (postId: string) => {
-    setPosts(
-      posts.map((p) =>
+  /** Optimistic locally, then stored, then reconciled with what was stored. */
+  const handleLikePost = async (postId: string) => {
+    const target = posts.find((p) => p.id === postId);
+    if (!target) return;
+
+    setPosts((current) =>
+      current.map((p) =>
         p.id === postId
           ? {
               ...p,
@@ -119,26 +199,27 @@ export function InstagramDashboard({
           : p,
       ),
     );
+
+    const stored = await toggleLike(postId, target.has_liked ?? false, target.likes_count);
+    setPosts((current) =>
+      current.map((p) =>
+        p.id === postId ? { ...p, has_liked: stored.liked, likes_count: stored.count } : p,
+      ),
+    );
   };
 
-  const handleCommentPost = (postId: string, text: string) => {
-    setPosts(
-      posts.map((p) => {
-        if (p.id !== postId) return p;
-        const newC = {
-          id: `c-${Date.now()}`,
-          post_id: postId,
-          user_id: viewerId || "me",
-          author_name: profile?.display_name || "You (Caregiver)",
-          body: text,
-          created_at: "Just now",
-        };
-        return {
-          ...p,
-          comments_count: p.comments_count + 1,
-          comments: [...(p.comments || []), newC],
-        };
-      }),
+  const handleCommentPost = async (postId: string, text: string) => {
+    const stored = await addComment(postId, text);
+    setPosts((current) =>
+      current.map((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              comments_count: p.comments_count + 1,
+              comments: [...(p.comments ?? []), stored],
+            }
+          : p,
+      ),
     );
   };
 
@@ -147,6 +228,9 @@ export function InstagramDashboard({
     setProfile(profileDraft);
     setProfileEditModal(false);
   };
+
+  const integrations = INTEGRATIONS.filter((item) => canSee(role, item.section));
+  const openTrialCount = insight?.trials.filter((t) => isOpenTrial(t.status)).length ?? 0;
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
@@ -170,138 +254,83 @@ export function InstagramDashboard({
 
           {/* Main Navigation */}
           <nav className="space-y-1">
-            <button
-              type="button"
+            <NavItem
+              icon={Home}
+              label="Feed"
+              active={activeTab === "home"}
               onClick={() => setActiveTab("home")}
-              className={`flex w-full items-center gap-3.5 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${
-                activeTab === "home"
-                  ? "bg-primary text-primary-foreground font-semibold"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
-            >
-              <Home className="size-5 shrink-0" />
-              <span className="hidden md:inline">Feed</span>
-            </button>
-
-            <button
-              type="button"
+            />
+            <NavItem
+              icon={Compass}
+              label="Explore & Matches"
+              active={activeTab === "explore"}
               onClick={() => setActiveTab("explore")}
-              className={`flex w-full items-center gap-3.5 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${
-                activeTab === "explore"
-                  ? "bg-primary text-primary-foreground font-semibold"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
-            >
-              <Compass className="size-5 shrink-0" />
-              <span className="hidden md:inline">Explore & Matches</span>
-            </button>
-
-            <button
-              type="button"
+            />
+            <NavItem
+              icon={Video}
+              label="Reels & Stories"
+              active={activeTab === "reels"}
               onClick={() => setActiveTab("reels")}
-              className={`flex w-full items-center gap-3.5 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${
-                activeTab === "reels"
-                  ? "bg-primary text-primary-foreground font-semibold"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
-            >
-              <Video className="size-5 shrink-0" />
-              <span className="hidden md:inline">Reels & Stories</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab("messages");
-                if (onOpenIntegration) onOpenIntegration("messages");
-              }}
-              className={`flex w-full items-center gap-3.5 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${
-                activeTab === "messages"
-                  ? "bg-primary text-primary-foreground font-semibold"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
-            >
-              <MessageCircle className="size-5 shrink-0" />
-              <span className="hidden md:inline">Direct Messages</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab("circles");
-                if (onOpenIntegration) onOpenIntegration("circles");
-              }}
-              className={`flex w-full items-center gap-3.5 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${
-                activeTab === "circles"
-                  ? "bg-primary text-primary-foreground font-semibold"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
-            >
-              <Users className="size-5 shrink-0" />
-              <span className="hidden md:inline">My Circles</span>
-            </button>
-
-            <button
-              type="button"
+            />
+            <NavItem
+              icon={BookOpen}
+              label="Understand it"
+              active={activeTab === "learn"}
+              onClick={() => setActiveTab("learn")}
+            />
+            <NavItem
+              icon={Radar}
+              label="Discoveries"
+              active={activeTab === "discoveries"}
+              onClick={() => setActiveTab("discoveries")}
+            />
+            <NavItem
+              icon={MessageCircle}
+              label="Direct Messages"
+              active={activeTab === "messages"}
+              onClick={() => setActiveTab("messages")}
+            />
+            <NavItem
+              icon={Users}
+              label="My Circles"
+              active={activeTab === "circles"}
+              onClick={() => setActiveTab("circles")}
+            />
+            <NavItem
+              icon={User}
+              label="Profile"
+              active={activeTab === "profile"}
               onClick={() => setActiveTab("profile")}
-              className={`flex w-full items-center gap-3.5 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${
-                activeTab === "profile"
-                  ? "bg-primary text-primary-foreground font-semibold"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
-            >
-              <User className="size-5 shrink-0" />
-              <span className="hidden md:inline">Profile</span>
-            </button>
+            />
           </nav>
 
-          {/* Add-ons & Integrations */}
-          <div className="pt-4 border-t border-border/70 hidden md:block">
-            <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
-              <Layers className="size-3 text-primary" /> Add-ons & Integrations
-            </p>
-            <div className="space-y-1">
-              <button
-                type="button"
-                onClick={() => onOpenIntegration?.("research")}
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-secondary hover:text-foreground"
-              >
-                <FlaskConical className="size-4 text-primary shrink-0" />
-                <span>Research Workspace</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onOpenIntegration?.("evidence")}
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-secondary hover:text-foreground"
-              >
-                <FileText className="size-4 text-primary shrink-0" />
-                <span>Evidence Review Layer</span>
-              </button>
-
-              {(role === "steward" || role === "admin") && (
-                <button
-                  type="button"
-                  onClick={() => onOpenIntegration?.("moderation")}
-                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-secondary hover:text-foreground"
-                >
-                  <ShieldAlert className="size-4 text-primary shrink-0" />
-                  <span>Steward Moderation</span>
-                </button>
-              )}
-
-              {role === "admin" && (
-                <button
-                  type="button"
-                  onClick={() => onOpenIntegration?.("operations")}
-                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-secondary hover:text-foreground"
-                >
-                  <ShieldCheck className="size-4 text-primary shrink-0" />
-                  <span>Operations & Pipeline</span>
-                </button>
-              )}
+          {/*
+            Add-ons the viewer may actually open.
+            `canSee` is the same table the dashboard nav uses, so a family
+            member is not offered the evidence layer or the research workspace
+            -- the RLS would refuse the queries, and listing them would imply
+            the product shares family data with reviewers. It does not.
+          */}
+          {integrations.length > 0 && (
+            <div className="hidden border-t border-border/70 pt-4 md:block">
+              <p className="mb-2 flex items-center gap-1.5 px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                <Layers className="size-3 text-primary" /> Add-ons & Integrations
+              </p>
+              <div className="space-y-1">
+                {integrations.map((item) => (
+                  <button
+                    key={item.section}
+                    type="button"
+                    onClick={() => onOpenIntegration?.(item.section)}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  >
+                    <item.icon className="size-4 shrink-0 text-primary" />
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* User Card & Sign Out */}
@@ -350,91 +379,103 @@ export function InstagramDashboard({
               </div>
             </div>
 
-            {/* Right Sidebar: Today's Radar & Connections */}
-            <aside className="hidden lg:block space-y-6">
-              {/* Today's 3 Key Steps Card */}
-              <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm space-y-3.5">
+            {/* Right rail: what the atlas actually knows about this condition. */}
+            <aside className="hidden space-y-6 lg:block">
+              <div className="space-y-3.5 rounded-2xl border border-border bg-surface p-5 shadow-sm">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
                   <Sparkles className="size-3.5" /> Caregiver Radar
                 </div>
-                <h3 className="font-display text-lg leading-tight">
-                  Good morning. Here are three things that may help today.
-                </h3>
-                <ul className="space-y-3 text-xs text-muted-foreground pt-1">
-                  <li className="flex items-start gap-2.5">
-                    <span className="size-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                    <span>
-                      <strong className="text-foreground">People:</strong> 2 caregivers navigating
-                      related seizure disorders are open to connecting.
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="size-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                    <span>
-                      <strong className="text-foreground">Community:</strong> STXBP1 Foundation
-                      hosts a parent-led monthly Circle.
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="size-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                    <span>
-                      <strong className="text-foreground">Research:</strong> A natural-history study
-                      on presynaptic vesicle measures is actively recruiting.
-                    </span>
-                  </li>
-                </ul>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setActiveTab("explore")}
-                  className="w-full text-xs rounded-full h-8 mt-1"
-                >
-                  Review Suggestions
-                </Button>
+
+                {insight ? (
+                  <>
+                    <h3 className="font-display text-lg leading-tight">{insight.condition.name}</h3>
+                    {/*
+                      Counts, not claims. Each one is a row count from the
+                      atlas, so the card cannot drift from the tabs it links to.
+                    */}
+                    <ul className="space-y-3 pt-1 text-xs text-muted-foreground">
+                      <RadarRow
+                        label="Studies open"
+                        value={`${openTrialCount} of ${insight.trials.length} registered studies are still accepting participants.`}
+                      />
+                      <RadarRow
+                        label="Signs recorded"
+                        value={`${insight.symptoms.length} symptoms are described in the literature for this condition.`}
+                      />
+                      <RadarRow
+                        label="Shared biology"
+                        value={
+                          insight.related.length
+                            ? `${insight.related.length} connections to other conditions, each with a source.`
+                            : "No connections to other conditions are recorded yet."
+                        }
+                      />
+                    </ul>
+                    <div className="flex gap-2 pt-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setActiveTab("discoveries")}
+                        className="h-8 flex-1 rounded-full text-xs"
+                      >
+                        Discoveries
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setActiveTab("learn")}
+                        className="h-8 flex-1 rounded-full text-xs"
+                      >
+                        Understand it
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    Add your condition to your profile and this panel will track the studies and
+                    findings recorded for it.
+                  </p>
+                )}
               </div>
 
-              {/* Suggested Connections */}
-              <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm space-y-3">
-                <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">
+              {/* Suggested connections, from the matching query -- not a fixture. */}
+              <div className="space-y-3 rounded-2xl border border-border bg-surface p-5 shadow-sm">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Suggested For You
                 </h4>
-                <div className="space-y-3 pt-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <div>
-                      <p className="font-semibold text-foreground">The SNARE Caregiver Circle</p>
-                      <p className="text-[11px] text-muted-foreground">14 caregivers • Moderated</p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setActiveTab("explore")}
-                      className="text-xs text-primary font-semibold h-7 px-2"
-                    >
-                      Join
-                    </Button>
+                {suggestions.length === 0 ? (
+                  <p className="text-[11px] leading-relaxed text-muted-foreground">
+                    Suggestions appear once your profile says what you are living with and what
+                    would help. Nothing is suggested from an empty profile.
+                  </p>
+                ) : (
+                  <div className="space-y-3 pt-1">
+                    {suggestions.slice(0, 3).map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between gap-2 text-xs"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-foreground">{item.title}</p>
+                          <p className="truncate text-[11px] text-muted-foreground">
+                            {item.detail}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setActiveTab("explore")}
+                          className="h-7 shrink-0 px-2 text-xs font-semibold text-primary"
+                        >
+                          {item.kind === "circle" ? "Join" : "View"}
+                        </Button>
+                      </div>
+                    ))}
                   </div>
-
-                  <div className="flex items-center justify-between text-xs">
-                    <div>
-                      <p className="font-semibold text-foreground">Marcus Vance</p>
-                      <p className="text-[11px] text-muted-foreground">
-                        Shares school-age seizure care
-                      </p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setActiveTab("explore")}
-                      className="text-xs text-primary font-semibold h-7 px-2"
-                    >
-                      Connect
-                    </Button>
-                  </div>
-                </div>
+                )}
               </div>
 
-              {/* Legal & Boundaries */}
-              <p className="text-[11px] leading-relaxed text-muted-foreground px-1">
+              <p className="px-1 text-[11px] leading-relaxed text-muted-foreground">
                 Peer support only — not medical advice. Connections are suggested by biology
                 receipts.
               </p>
@@ -449,6 +490,26 @@ export function InstagramDashboard({
 
         {/* Reels Tab */}
         {activeTab === "reels" && <ReelsFeed />}
+
+        {/* Understand the condition: symptoms, open questions, shared biology */}
+        {activeTab === "learn" && (
+          <LearnView
+            insight={insight}
+            conditions={conditions}
+            loading={insightLoading}
+            onPickCondition={setConditionId}
+          />
+        )}
+
+        {/* Upcoming discoveries: studies registered for this condition */}
+        {activeTab === "discoveries" && (
+          <DiscoveriesView
+            insight={insight}
+            conditions={conditions}
+            loading={insightLoading}
+            onPickCondition={setConditionId}
+          />
+        )}
 
         {/* Direct Messages Tab */}
         {activeTab === "messages" && (
@@ -579,5 +640,59 @@ export function InstagramDashboard({
         </div>
       )}
     </div>
+  );
+}
+
+/** One sidebar link. Eight near-identical buttons were eight places to drift. */
+function NavItem({
+  icon: Icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-current={active ? "page" : undefined}
+      title={label}
+      className={`flex w-full items-center gap-3.5 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${
+        active
+          ? "bg-primary font-semibold text-primary-foreground"
+          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+      }`}
+    >
+      <Icon className="size-5 shrink-0" />
+      <span className="hidden md:inline">{label}</span>
+    </button>
+  );
+}
+
+/**
+ * The other dashboards, for the roles that have them. `section` matches the
+ * SectionId in lib/access.ts, which is what gates them and what the shell
+ * navigates to.
+ */
+const INTEGRATIONS = [
+  { section: "research", label: "Research Workspace", icon: FlaskConical },
+  { section: "evidence", label: "Evidence Review Layer", icon: FileText },
+  { section: "moderation", label: "Steward Moderation", icon: ShieldAlert },
+  { section: "operations", label: "Operations & Pipeline", icon: ShieldCheck },
+] as const;
+
+/** One line of the radar card: a label and the count behind it. */
+function RadarRow({ label, value }: { label: string; value: string }) {
+  return (
+    <li className="flex items-start gap-2.5">
+      <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
+      <span>
+        <strong className="text-foreground">{label}:</strong> {value}
+      </span>
+    </li>
   );
 }

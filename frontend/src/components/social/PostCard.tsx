@@ -21,32 +21,30 @@ export function PostCard({
   onLike: (postId: string) => void;
   onComment: (postId: string, text: string) => void;
 }) {
-  const [liked, setLiked] = React.useState(post.has_liked ?? false);
-  const [likesCount, setLikesCount] = React.useState(post.likes_count);
   const [commentText, setCommentText] = React.useState("");
   const [showComments, setShowComments] = React.useState(false);
-  const [comments, setComments] = React.useState(post.comments ?? []);
   const [saved, setSaved] = React.useState(false);
 
-  const handleLike = () => {
-    setLiked(!liked);
-    setLikesCount(liked ? likesCount - 1 : likesCount + 1);
-    onLike(post.id);
-  };
+  /*
+   * The like count and the comment list are read from `post`, not copied into
+   * state here.
+   *
+   * They used to be copied, which was fine while both were make-believe. Now
+   * that a like is a row and the parent reconciles it with what the database
+   * actually stored, a local copy would keep showing the optimistic number
+   * after the write failed -- and would miss a comment that arrived over the
+   * realtime channel from someone else. One owner for the data, which is the
+   * parent.
+   */
+  const liked = post.has_liked ?? false;
+  const likesCount = post.likes_count;
+  const comments = post.comments ?? [];
 
   const handleAddComment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentText.trim()) return;
-    const newComment = {
-      id: `c-${Date.now()}`,
-      post_id: post.id,
-      user_id: "me",
-      author_name: "You (Caregiver)",
-      body: commentText.trim(),
-      created_at: "Just now",
-    };
-    setComments([...comments, newComment]);
-    onComment(post.id, commentText.trim());
+    const body = commentText.trim();
+    if (!body) return;
+    onComment(post.id, body);
     setCommentText("");
     setShowComments(true);
   };
@@ -149,7 +147,7 @@ export function PostCard({
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={handleLike}
+              onClick={() => onLike(post.id)}
               className={`flex items-center gap-1.5 text-sm transition-transform active:scale-125 ${
                 liked
                   ? "text-rose-500 font-semibold"

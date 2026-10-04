@@ -75,6 +75,31 @@ They are hosted Auth settings; `supabase db push` does not apply them.
 Supabase rate-limits sign-in attempts per IP (`sign_in_sign_ups`), and the
 frontend does not try to work around it.
 
+## Demo social content
+
+The family network reads posts, likes, comments and reels from Supabase
+(`20261003000018_social_feed.sql` plus `20261004000019_social_feed_demo_content.sql`).
+Until those migrations are applied the app falls back to the curated set
+compiled into `frontend/src/lib/social-feed.ts`, so the feed is never empty —
+but likes and comments are then local to one browser and nothing is delivered
+in real time.
+
+To exercise the real path:
+
+```bash
+supabase db push                 # applies 0018 and 0019
+psql "$DATABASE_URL" -f supabase/seed_social.sql
+```
+
+`seed_social.sql` inserts six community posts and six reels with no
+`author_id`: they belong to the community, not to an account. The RLS insert
+policies still require `author_id = auth.uid()`, so only the service role can
+write them — a browser cannot forge a community post.
+
+The reel video files are Pexels free-licence clips, each checked to return a
+real `video/mp4`. If a clip ever starts answering 403 the reel falls back to its
+poster image rather than showing a black rectangle.
+
 ## Run it locally instead
 
 ```bash
