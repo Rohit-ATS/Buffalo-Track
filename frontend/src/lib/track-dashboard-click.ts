@@ -17,11 +17,10 @@ export function trackDashboardClick(source: string, search?: Record<string, unkn
 
   try {
     void db
-      .from("atlas_dashboard_clicks")
-      .insert({
-        source,
-        from_path: window.location?.pathname ?? "/",
-        search: search ? new URLSearchParams(search as Record<string, string>).toString() : null,
+      .rpc("record_dashboard_click", {
+        p_source: source,
+        p_from_path: window.location?.pathname ?? "/",
+        p_search: search ? new URLSearchParams(search as Record<string, string>).toString() : null,
       })
       // The query builder is a PromiseLike, not a Promise, so it has no
       // .catch — the rejection handler is the second argument to .then.

@@ -129,11 +129,10 @@ export type PrivateMessage = { id: string; body: string; sender_id: string; crea
 export async function loadPrivateMessages(conversationId: string): Promise<PrivateMessage[]> {
   const client = getSupabaseBrowser();
   if (!client) return [];
-  const { data, error } = await client
-    .from("private_messages")
-    .select("id, body, sender_id, created_at")
-    .eq("conversation_id", conversationId)
-    .order("created_at");
+  const { data, error } = await client.rpc("load_private_messages", {
+    p_conversation_id: conversationId,
+    p_limit: 100,
+  });
   if (error) throw error;
   return (data ?? []) as PrivateMessage[];
 }
