@@ -363,16 +363,16 @@ export function SearchBox({
 }
 
 /* ---------- Persona switch ---------- */
-export function PersonaSwitch() {
+export function PersonaSwitch({ compact = false }: { compact?: boolean }) {
   const { persona, setPersona } = usePersona();
   return (
-    <label className="flex items-center gap-2 text-xs">
-      <span className="hidden text-muted-foreground lg:inline">Viewing as</span>
+    <label className="flex min-w-0 items-center gap-2 text-xs">
+      {!compact && <span className="hidden text-muted-foreground lg:inline">Viewing as</span>}
       <select
         value={persona}
         onChange={(e) => setPersona(e.target.value as PersonaId)}
-        className="h-9 rounded-full border border-border bg-background px-3 text-xs font-semibold"
-        aria-label="Viewing as"
+        className={`h-9 min-w-0 rounded-full border border-border bg-background px-3 text-xs font-semibold text-foreground outline-none transition focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 ${compact ? "w-[10.75rem] bg-transparent pr-7 sm:w-[12.5rem]" : ""}`}
+        aria-label={compact ? "Preview the site as" : "Viewing as"}
       >
         {personas.map((p) => (
           <option key={p.id} value={p.id}>

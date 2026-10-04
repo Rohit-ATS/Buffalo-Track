@@ -220,31 +220,68 @@ function Index() {
           every edge has a receipt
         </span>
       </div>
-      <header className="border-b border-border">
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-5 md:px-8">
+      <header className="sticky top-0 z-40 border-b border-border/90 bg-background/95 backdrop-blur-xl">
+        <div className="mx-auto flex min-h-[4.75rem] max-w-[1440px] items-center gap-4 px-5 py-3 md:px-8">
           <a
             href="#top"
-            className="flex items-center gap-2.5 font-display text-lg font-semibold"
+            className="flex shrink-0 items-center gap-2.5 font-display text-lg font-semibold tracking-[-0.02em]"
             aria-label="Rare Disease Atlas home"
           >
-            <AtlasMark className="w-9" />
-            Rare Disease Atlas
+            <span className="grid size-9 place-items-center rounded-xl border border-border bg-surface text-primary">
+              <AtlasMark className="w-7" />
+            </span>
+            <span className="hidden whitespace-nowrap sm:inline">Rare Disease Atlas</span>
           </a>
-          <nav className="hidden items-center gap-8 text-sm md:flex" aria-label="Main navigation">
-            <a className="hover:text-primary" href="#how-it-works">
+          <nav
+            className="mx-auto hidden items-center rounded-full border border-border bg-surface/60 p-1 text-sm lg:flex"
+            aria-label="Main navigation"
+          >
+            <a
+              className="rounded-full px-3.5 py-2 font-medium text-muted-foreground transition hover:bg-background hover:text-foreground"
+              href="#how-it-works"
+            >
               How it works
             </a>
-            <a className="hover:text-primary" href="#evidence">
+            <a
+              className="rounded-full px-3.5 py-2 font-medium text-muted-foreground transition hover:bg-background hover:text-foreground"
+              href="#evidence"
+            >
               Evidence
             </a>
-            <a className="hover:text-primary" href="#action">
+            <a
+              className="rounded-full px-3.5 py-2 font-medium text-muted-foreground transition hover:bg-background hover:text-foreground"
+              href="#action"
+            >
               Shared action
             </a>
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-2">
             <AuthControl />
           </div>
         </div>
+        <nav
+          className="flex gap-1 overflow-x-auto border-t border-border/70 px-5 py-2 text-sm lg:hidden md:px-8"
+          aria-label="Main navigation"
+        >
+          <a
+            className="shrink-0 rounded-full px-3 py-1.5 font-medium text-muted-foreground transition hover:bg-surface hover:text-foreground"
+            href="#how-it-works"
+          >
+            How it works
+          </a>
+          <a
+            className="shrink-0 rounded-full px-3 py-1.5 font-medium text-muted-foreground transition hover:bg-surface hover:text-foreground"
+            href="#evidence"
+          >
+            Evidence
+          </a>
+          <a
+            className="shrink-0 rounded-full px-3 py-1.5 font-medium text-muted-foreground transition hover:bg-surface hover:text-foreground"
+            href="#action"
+          >
+            Shared action
+          </a>
+        </nav>
       </header>
 
       <section id="top" className="mx-auto max-w-[1440px] px-5 pt-12 md:px-8 md:pt-16">

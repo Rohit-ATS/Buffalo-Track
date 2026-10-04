@@ -63,14 +63,24 @@ export function AuthControl() {
   // not flash a wrong identity on first paint.
   if (!checked || !email) {
     return (
-      <div className="flex items-center gap-2">
-        <PersonaSwitch />
-        <Button asChild size="sm" variant="outline" className="hidden sm:inline-flex">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+        <div className="hidden items-center gap-2 rounded-full border border-border bg-surface/70 py-1 pl-3 pr-1 md:flex">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            Preview
+          </span>
+          <PersonaSwitch compact />
+        </div>
+        <Button
+          asChild
+          size="sm"
+          variant="outline"
+          className="hidden h-10 rounded-full border-border bg-background px-4 sm:inline-flex"
+        >
           <Link to="/dashboard" onClick={() => trackDashboardClick("landing_sign_in")}>
-            <LogIn className="size-3.5" aria-hidden="true" /> Sign in
+            <LogIn className="size-4" aria-hidden="true" /> Sign in
           </Link>
         </Button>
-        <Button asChild size="sm" className="hidden sm:inline-flex">
+        <Button asChild size="sm" className="h-10 rounded-full px-4 sm:px-5">
           <Link to="/dashboard" onClick={() => trackDashboardClick("landing_cta")}>
             Dashboard
           </Link>
@@ -80,10 +90,10 @@ export function AuthControl() {
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="hidden items-center gap-2 text-xs md:flex">
-        <span className="text-muted-foreground">Signed in as</span>
-        <span className="font-semibold" title={email}>
+    <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+      <span className="hidden items-center gap-2 rounded-full border border-border bg-surface/70 px-3 py-2 text-xs lg:flex">
+        <span className="text-muted-foreground">Signed in</span>
+        <span className="max-w-40 truncate font-semibold" title={email}>
           {email}
         </span>
         {role && (
@@ -93,7 +103,7 @@ export function AuthControl() {
         )}
       </span>
 
-      <Button asChild size="sm">
+      <Button asChild size="sm" className="h-10 rounded-full px-4 sm:px-5">
         <Link to="/dashboard" onClick={() => trackDashboardClick("landing_cta_signed_in")}>
           Dashboard
         </Link>
@@ -103,6 +113,7 @@ export function AuthControl() {
         size="sm"
         variant="outline"
         aria-label="Sign out"
+        className="hidden h-10 rounded-full border-border px-4 lg:inline-flex"
         onClick={() => {
           void getSupabaseBrowser()?.auth.signOut();
         }}
