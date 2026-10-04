@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-router";
 import { AlertTriangle, ArrowRight, FileText, Users } from "lucide-react";
 import { useState } from "react";
+import { LiveDiscoveries } from "@/components/live-discoveries";
 import {
   AtlasShell,
   BriefDialog,
@@ -135,6 +136,9 @@ function DiseasePage() {
       ) : (
         <DiseaseView disease={disease} />
       )}
+      {/* Shown even on the no-route path: a unit with no mapped community is
+          exactly where a discovered organization matters most. */}
+      {disease && <LiveDiscoveries diseaseId={disease.id} />}
     </AtlasShell>
   );
 }
