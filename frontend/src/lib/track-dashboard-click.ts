@@ -23,9 +23,8 @@ export function trackDashboardClick(source: string, search?: Record<string, unkn
         from_path: window.location?.pathname ?? "/",
         search: search ? new URLSearchParams(search as Record<string, string>).toString() : null,
       })
-      // Two-argument .then, not .then().catch(): the builder resolves to a
-      // PromiseLike, which has no .catch. Same intent -- swallow a rejected
-      // insert so telemetry can never surface an error to someone navigating.
+      // The query builder is a PromiseLike, not a Promise, so it has no
+      // .catch — the rejection handler is the second argument to .then.
       .then(
         ({ error }) => {
           if (error) console.warn("trackDashboardClick failed:", error.message);
