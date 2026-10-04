@@ -27,15 +27,19 @@ import {
 } from "@/lib/family-network";
 
 export const Route = createFileRoute("/family")({
-  // Not a destination any more, so it stays out of the sitemap.
   staticData: { sitemap: false },
-  // The family space lives inside the dashboard now. This route stays so the
-  // magic-link redirect (emailRedirectTo: `${origin}/family`) and any shared
-  // link keep working.
-  beforeLoad: () => {
-    throw redirect({ to: "/dashboard", search: { section: "family" } });
-  },
+  component: FamilyRoutePage,
 });
+
+function FamilyRoutePage() {
+  return (
+    <main className="min-h-screen bg-secondary p-4 text-foreground md:p-8">
+      <div className="mx-auto max-w-[1400px]">
+        <FamilySpace />
+      </div>
+    </main>
+  );
+}
 
 const blank: FamilyProfile = {
   condition: "",
