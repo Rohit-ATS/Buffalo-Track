@@ -79,7 +79,7 @@ describe("AtlasResults", () => {
     expect(screen.getByRole("heading", { name: "STXBP1" })).toBeInTheDocument();
     expect(screen.getByText("Presynaptic vesicle fusion")).toBeInTheDocument();
     expect(screen.getByText("2 receipts")).toBeInTheDocument();
-    expect(screen.getByText("needs evidence")).toBeInTheDocument();
+    expect(screen.getByText("reviewer evidence")).toBeInTheDocument();
     expect(screen.getByText("1 of 2 carry a receipt")).toBeInTheDocument();
     expect(screen.getByText("90% confidence")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /source/i })).toHaveAttribute(

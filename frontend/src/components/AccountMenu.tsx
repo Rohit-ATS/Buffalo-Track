@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { LogOut, Settings } from "lucide-react";
+import { trackDashboardClick } from "@/lib/track-dashboard-click";
 
 export function AccountMenu() {
   const navigate = useNavigate();
@@ -23,7 +24,10 @@ export function AccountMenu() {
           </div>
           <button
             role="menuitem"
-            onClick={() => navigate({ to: "/dashboard" })}
+            onClick={() => {
+              trackDashboardClick("account_menu_settings");
+              navigate({ to: "/dashboard" });
+            }}
             className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-muted focus:bg-muted focus:outline-none"
           >
             <Settings className="size-4 text-muted-foreground" />

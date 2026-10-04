@@ -21,6 +21,7 @@ import {
   loadSuggestions,
   saveProfile,
   sendIntroduction,
+  INTRODUCTION_NOTE_MAX_LENGTH,
   type FamilyProfile,
   type FamilySuggestion,
 } from "@/lib/family-network";
@@ -501,6 +502,7 @@ function Request({ onClose, onSend }: { onClose: () => void; onSend: (note: stri
       <textarea
         value={note}
         onChange={(e) => setNote(e.target.value)}
+        maxLength={INTRODUCTION_NOTE_MAX_LENGTH}
         className="mt-4 min-h-28 w-full rounded-lg border bg-background p-3 text-sm"
       />
       <Button className="mt-4" onClick={() => onSend(note)}>

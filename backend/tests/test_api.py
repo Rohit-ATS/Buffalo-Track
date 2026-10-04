@@ -145,7 +145,7 @@ def test_production_with_database_requires_proxy_secret() -> None:
     assert settings.database_configured
 
 
-def test_search_returns_live_graph_data_from_supabase() -> None:
+def test_public_search_returns_live_graph_without_querying_reviewer_evidence() -> None:
     calls: list[httpx.Request] = []
 
     def supabase(request: httpx.Request) -> httpx.Response:
@@ -166,11 +166,9 @@ def test_search_returns_live_graph_data_from_supabase() -> None:
                 {"id": "n2", "type": "mechanism", "name": "Presynaptic vesicle fusion"},
                 {"id": "n3", "type": "disorder", "name": "STX1B-related epilepsy"},
             ])
-        if request.url.path.endswith("/evidence") and "node_id" in params:
-            return httpx.Response(200, json=[
-                {"id": "ev1", "content": "Source-backed statement.", "source_url": "https://example.org/paper", "confidence": 0.9},
-            ])
-        return httpx.Response(200, json=[{"edge_id": "e1"}, {"edge_id": "e1"}, {"edge_id": "e2"}])
+        if request.url.path.endswith("/evidence"):
+            pytest.fail("Public search must not query reviewer-only evidence")
+        raise AssertionError(f"Unexpected Supabase request: {request.url}")
 
     async def run() -> object:
         transport = httpx.MockTransport(supabase)
@@ -186,7 +184,8 @@ def test_search_returns_live_graph_data_from_supabase() -> None:
     assert result.query == "STXBP1"
     assert result.match is not None
     assert result.match.node.name == "STXBP1"
-    assert result.match.connections[0].evidenceCount == 2
+    assert result.match.connections[0].evidenceCount == 0
     assert result.match.connections[1].direction == "incoming"
-    assert str(result.match.evidence[0].sourceUrl) == "https://example.org/paper"
+    assert result.match.evidence == []
     assert calls[0].headers["apikey"] == "secret"
+    assert all(not call.url.path.endswith("/evidence") for call in calls)

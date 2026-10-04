@@ -10,6 +10,7 @@ import {
   ModerationSection,
 } from "@/components/dashboard/sections";
 import { Button } from "@/components/ui/button";
+import { trackDashboardClick } from "@/lib/track-dashboard-click";
 import { FamilySpace } from "@/routes/family";
 import {
   ROLE_LABELS,
@@ -165,12 +166,13 @@ export function DashboardShell({
               key={item.id}
               type="button"
               aria-current={item.id === active ? "page" : undefined}
-              onClick={() =>
+              onClick={() => {
+                trackDashboardClick(`dashboard_shell_section_${item.id}`, { section: item.id });
                 void navigate({
                   to: "/dashboard",
                   search: preview ? { section: item.id, as: preview } : { section: item.id },
-                })
-              }
+                });
+              }}
               className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
                 item.id === active
                   ? "border-foreground bg-foreground text-background"

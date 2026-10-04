@@ -55,7 +55,7 @@ function ConnectionRow({ connection }: { connection: AtlasConnection }) {
         ) : (
           <>
             <SearchX className="size-3.5" aria-hidden="true" />
-            needs evidence
+            reviewer evidence
           </>
         )}
       </span>
@@ -139,7 +139,9 @@ export function AtlasResults({
               </ul>
               <p className="mt-5 flex items-center gap-3 font-sketch text-lg text-muted-foreground">
                 <Squiggle className="w-20 text-primary" aria-hidden="true" />
-                {withEvidence} of {match.connections.length} carry a receipt
+                {withEvidence > 0
+                  ? `${withEvidence} of ${match.connections.length} carry a receipt`
+                  : "Evidence receipts require reviewer access"}
               </p>
             </>
           ) : (
@@ -176,7 +178,7 @@ export function AtlasResults({
             </ul>
           ) : (
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              No evidence rows attached to this node yet.
+              Evidence receipts are available to authorized reviewers.
             </p>
           )}
 

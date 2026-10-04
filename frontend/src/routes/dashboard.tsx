@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { NotificationsBell } from "@/components/NotificationsBell";
 import { AccountMenu } from "@/components/AccountMenu";
+import { trackDashboardClick } from "@/lib/track-dashboard-click";
 import {
   ArrowLeft,
   ArrowRight,
@@ -207,10 +208,18 @@ export function ResearchDashboard() {
               <span className="hidden sm:inline">Rare Disease Atlas</span>
             </Link>
             <nav className="dashboard-nav" aria-label="Workspace navigation">
-              <Link to="/dashboard" search={{ section: "family" }}>
+              <Link
+                to="/dashboard"
+                search={{ section: "family" }}
+                onClick={() => trackDashboardClick("nav_family_space", { section: "family" })}
+              >
                 <Users className="size-4" /> Family space
               </Link>
-              <Link to="/dashboard" activeProps={{ className: "is-active" }}>
+              <Link
+                to="/dashboard"
+                activeProps={{ className: "is-active" }}
+                onClick={() => trackDashboardClick("nav_overview")}
+              >
                 <LayoutDashboard className="size-4" /> Overview
               </Link>
               {hasEvidenceAccess && (
@@ -297,6 +306,9 @@ export function ResearchDashboard() {
               to="/dashboard"
               search={{ section: "family" }}
               className="ml-2 font-semibold text-primary underline"
+              onClick={() =>
+                trackDashboardClick("access_denied_family_space", { section: "family" })
+              }
             >
               Open your family space
             </Link>

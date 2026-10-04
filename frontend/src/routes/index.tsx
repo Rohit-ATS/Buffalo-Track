@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { trackDashboardClick } from "@/lib/track-dashboard-click";
 import {
   Constellation,
   Heart,
