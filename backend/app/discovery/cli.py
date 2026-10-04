@@ -6,8 +6,8 @@
     # Run it.
     python -m app.discovery.cli run STXBP1 --disease-id stxbp1 --max-pages 6
 
-    # Re-verify stored pages after changing the verifier. No fetching, no spend.
-    python -m app.discovery.cli reverify
+    # Check every credential and zone before paying for a real run.
+    python -m app.discovery.cli doctor
 
 `plan` is the default-safe verb: it is easy to run `run` across twenty genes by
 accident, so the cost of a run is one command away from being known.
@@ -24,6 +24,7 @@ import httpx
 
 from ..config import get_settings
 from .queries import estimate_requests
+from .doctor import run_doctor
 from .scout import AssetScout
 
 
@@ -110,6 +111,8 @@ def main(argv: list[str] | None = None) -> int:
     plan.add_argument("terms", nargs="+")
     plan.add_argument("--researchers", action="store_true")
 
+    sub.add_parser("doctor", help="verify credentials and zones (2 billable requests)")
+
     run = sub.add_parser("run", help="execute the pipeline (spends credits)")
     run.add_argument("terms", nargs="+")
     run.add_argument("--disease-id", default=None, help="link results to an atlas_diseases id")
@@ -119,6 +122,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     _configure_logging(args.verbose)
 
+    if args.command == "doctor":
+        return asyncio.run(run_doctor())
     if args.command == "plan":
         return asyncio.run(_plan(args.terms, args.researchers))
     return asyncio.run(_run(args.terms, args.disease_id, args.max_pages, args.researchers))
