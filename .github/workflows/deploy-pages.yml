@@ -43,6 +43,9 @@ jobs:
         env:
           GITHUB_PAGES: "true"
           GITHUB_PAGES_BASE_PATH: /${{ github.event.repository.name }}
+          BACKEND_URL: "https://buffalo-track-api.onrender.com"
+          VITE_SUPABASE_URL: "https://jmeramxkgnjbnwmltygc.supabase.co"
+          VITE_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImptZXJhbXhrZ25qYm53bWx0eWdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwNDE5MDUsImV4cCI6MjEwNjYxNzkwNX0.SyTZ7g49A6pcWhKCCccZXF0fMO5qjgfgVcnPd7xghZc"
         run: node ./node_modules/vite/bin/vite.js build
       - name: Add Pages fallback and disable Jekyll
         run: |
