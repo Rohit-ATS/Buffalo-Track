@@ -204,7 +204,9 @@ Primary Contact: Maria & Atlas Scientific Advisory Panel`,
                 className="h-8 rounded-full text-xs font-semibold"
                 onClick={() => {
                   handleCopy();
-                  alert("Proposal copied! You can now send this directly to the clinical team or save it to your records.");
+                  alert(
+                    "Proposal copied! You can now send this directly to the clinical team or save it to your records.",
+                  );
                 }}
               >
                 <Send className="size-3.5 mr-1" /> Send to Study PI
@@ -216,7 +218,8 @@ Primary Contact: Maria & Atlas Scientific Advisory Panel`,
         {/* Actionable Next Step for Maria */}
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5 text-xs text-foreground flex items-center justify-between">
           <span>
-            <strong>Maria's Next Step This Week:</strong> Send this proposal to the lead investigator to schedule a 15-minute protocol reuse review.
+            <strong>Maria's Next Step This Week:</strong> Send this proposal to the lead
+            investigator to schedule a 15-minute protocol reuse review.
           </span>
           <span className="text-[10px] uppercase font-bold text-primary tracking-wider shrink-0 ml-3">
             Ready to Act

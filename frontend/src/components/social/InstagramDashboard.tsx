@@ -61,6 +61,7 @@ import { ClusterActionDossier } from "@/components/ClusterActionDossier";
 import { MoonshotAcceleratorModal } from "@/components/MoonshotAcceleratorModal";
 import { OpenAIProposalModal } from "@/components/OpenAIProposalModal";
 import { ROLE_LABELS, canSee, type FamilyRole } from "@/lib/access";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 export function InstagramDashboard({
   role,

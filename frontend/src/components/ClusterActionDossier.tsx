@@ -82,7 +82,9 @@ export function ClusterActionDossier({
             Who shares our biology & what can we reuse this week?
           </h2>
           <p className="mt-1 text-xs text-muted-foreground max-w-2xl leading-relaxed">
-            Organizing knowledge by <strong>mechanism and phenotype</strong> reveals clinical assets, open protocols, and patient cohorts you can share instead of building from scratch.
+            Organizing knowledge by <strong>mechanism and phenotype</strong> reveals clinical
+            assets, open protocols, and patient cohorts you can share instead of building from
+            scratch.
           </p>
         </div>
 
@@ -159,7 +161,10 @@ export function ClusterActionDossier({
                   <span className="size-2 rounded-full bg-primary" title="Registry active" />
                 )}
                 {member.hasTrial && (
-                  <span className="size-2 rounded-full bg-highlight" title="Natural history active" />
+                  <span
+                    className="size-2 rounded-full bg-highlight"
+                    title="Natural history active"
+                  />
                 )}
               </div>
             </div>
@@ -172,7 +177,8 @@ export function ClusterActionDossier({
         <div className="flex items-center gap-2 text-muted-foreground">
           <HelpCircle className="size-4 text-primary shrink-0" />
           <span>
-            <strong>What still needs testing before combining cohorts?</strong> Whether seizure tracking endpoints validate across both STX1B and STXBP1 phenotypes.
+            <strong>What still needs testing before combining cohorts?</strong> Whether seizure
+            tracking endpoints validate across both STX1B and STXBP1 phenotypes.
           </span>
         </div>
         <Link

@@ -1,35 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const state = vi.hoisted(() => ({
-  handler: undefined as ((context: { data: { query: string } }) => Promise<unknown>) | undefined,
-  cookie: undefined as string | undefined,
-  setCookie: vi.fn(),
-}));
-
-vi.mock("@tanstack/react-start", () => ({
-  createServerFn: () => ({
-    validator: () => ({
-      handler: (handler: (context: { data: { query: string } }) => Promise<unknown>) => {
-        state.handler = handler;
-        return handler;
-      },
-    }),
-  }),
-}));
-
-vi.mock("@tanstack/react-start/server", () => ({
-  getCookie: () => state.cookie,
-  setCookie: state.setCookie,
-}));
-
 const { searchAtlas } = await import("@/lib/atlas-search");
 
 describe("frontend to backend atlas search", () => {
   beforeEach(() => {
-    process.env["BACKEND_URL"] = "https://api.example.org/";
-    process.env["BACKEND_PROXY_SECRET"] = "a".repeat(32);
-    state.cookie = undefined;
-    state.setCookie.mockClear();
+    vi.stubEnv("VITE_BACKEND_URL", "https://api.example.org/");
     vi.stubGlobal("fetch", vi.fn());
   });
 
@@ -58,13 +33,10 @@ describe("frontend to backend atlas search", () => {
     );
     const headers = vi.mocked(fetch).mock.calls[0]?.[1]?.headers as Record<string, string>;
     expect(headers["content-type"]).toBe("application/json");
-    expect(headers["x-buffalo-client-id"]).toMatch(/^[0-9a-f-]{36}$/);
-    expect(headers["x-buffalo-client-signature"]).toHaveLength(64);
-    expect(state.setCookie).toHaveBeenCalledOnce();
   });
 
   it("returns the documented fallback without calling the network when no backend URL exists", async () => {
-    delete process.env["BACKEND_URL"];
+    vi.stubEnv("VITE_BACKEND_URL", "");
 
     await expect(searchAtlas({ data: { query: "STXBP1" } })).resolves.toEqual({
       status: "unconfigured",

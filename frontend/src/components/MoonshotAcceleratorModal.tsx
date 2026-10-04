@@ -68,7 +68,8 @@ export function MoonshotAcceleratorModal({
     },
   ];
 
-  const current = milestones[selectedMilestone];
+  const current = milestones[selectedMilestone] ?? milestones[0];
+  if (!current) return null;
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-xs">
@@ -84,8 +85,8 @@ export function MoonshotAcceleratorModal({
               Accelerating Rare Disease Treatment by 10×
             </h2>
             <p className="text-xs text-muted-foreground">
-              Calculated comparison: Siloed single-disease research vs. Atlas Shared-Mechanism Model for{" "}
-              <strong className="text-foreground">{diseaseName}</strong>.
+              Calculated comparison: Siloed single-disease research vs. Atlas Shared-Mechanism Model
+              for <strong className="text-foreground">{diseaseName}</strong>.
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={onClose} className="rounded-full">
@@ -114,9 +115,7 @@ export function MoonshotAcceleratorModal({
                   {m.speedup}
                 </span>
               </div>
-              <p className="mt-1 text-xs font-semibold text-foreground line-clamp-2">
-                {m.title}
-              </p>
+              <p className="mt-1 text-xs font-semibold text-foreground line-clamp-2">{m.title}</p>
             </button>
           ))}
         </div>
@@ -202,11 +201,10 @@ export function MoonshotAcceleratorModal({
           <p className="font-semibold text-foreground flex items-center gap-1.5">
             <TrendingUp className="size-4 text-primary" /> Key Assumptions Behind 10× Acceleration
           </p>
-          <p className="text-muted-foreground leading-relaxed text-[11px]">
-            {current.assumption}
-          </p>
+          <p className="text-muted-foreground leading-relaxed text-[11px]">{current.assumption}</p>
           <p className="text-[10px] text-muted-foreground/80 italic pt-1 border-t border-border/50">
-            * Benchmark timelines derived from Rare Disease Moonshot, NIH NCATS Toolkit for Patient-Focused Therapy Development, and Orphanet rare epilepsy natural history studies.
+            * Benchmark timelines derived from Rare Disease Moonshot, NIH NCATS Toolkit for
+            Patient-Focused Therapy Development, and Orphanet rare epilepsy natural history studies.
           </p>
         </div>
       </div>

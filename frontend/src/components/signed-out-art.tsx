@@ -116,16 +116,12 @@ function Orbit({ className = "" }: { className?: string }) {
 
 export function SignedOutArt() {
   return (
-    <div
-      className="relative hidden min-h-[680px] w-full select-none lg:block"
-      aria-hidden="true"
-    >
+    <div className="relative hidden min-h-[680px] w-full select-none lg:block" aria-hidden="true">
       {/* Subtle organic graph paper grid texture blending directly into page */}
       <div
         className="pointer-events-none absolute inset-0 opacity-20"
         style={{
-          backgroundImage:
-            "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)",
+          backgroundImage: "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)",
           backgroundSize: "28px 28px",
           color: "var(--muted-foreground)",
         }}

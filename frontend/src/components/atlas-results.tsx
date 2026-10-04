@@ -88,7 +88,7 @@ export function AtlasResults({
       <Shell tag="Live atlas not connected">
         <Note
           title="The curated sample path below still works."
-          body="This build has no BACKEND_URL, so searches cannot reach the graph. Deploy the FastAPI service, apply the migration in supabase/migrations, load supabase/seed.sql, and set BACKEND_URL in frontend/.env. The same search will then return live nodes, edges, and evidence."
+          body="This build has no VITE_BACKEND_URL, so searches cannot reach the graph. Deploy the FastAPI service, apply the migrations, load the atlas seed data, and set VITE_BACKEND_URL in the frontend build environment."
         />
       </Shell>
     );

@@ -142,8 +142,8 @@ function Index() {
   const [hoveredNav, setHoveredNav] = useState<number | null>(null);
   const mainRef = useRef<HTMLElement>(null);
 
-  // Hits the graph through a server function: RLS blocks the anon key, so the
-  // lookup has to run server-side with the service-role key.
+  // The static GitHub Pages build calls the rate-limited backend directly.
+  // The service-role key remains exclusively on the backend.
   const atlasSearch = useMutation({
     mutationFn: (variables: { data: { query: string } }) => searchAtlas(variables),
   });

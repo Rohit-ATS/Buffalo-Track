@@ -35,7 +35,11 @@ class AtlasRepository:
         for pattern in (term, f"{term}%", f"%{term}%"):
             rows = await self._get(
                 "nodes",
-                {"select": "id,type,name", "or": f"name.ilike.{pattern},type.ilike.{pattern}", "limit": str(MAX_MATCHES)},
+                {
+                    "select": "id,type,name",
+                    "or": f"(name.ilike.{pattern},type.ilike.{pattern})",
+                    "limit": str(MAX_MATCHES),
+                },
             )
             if rows:
                 return rows

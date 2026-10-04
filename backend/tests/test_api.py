@@ -152,6 +152,8 @@ def test_public_search_returns_live_graph_without_querying_reviewer_evidence() -
         calls.append(request)
         params = request.url.params
         if request.url.path.endswith("/nodes") and "or" in params:
+            assert params["or"].startswith("(")
+            assert params["or"].endswith(")")
             return httpx.Response(200, json=[
                 {"id": "n1", "type": "gene", "name": "STXBP1"},
                 {"id": "n4", "type": "disorder", "name": "STXBP1-related disorder"},
