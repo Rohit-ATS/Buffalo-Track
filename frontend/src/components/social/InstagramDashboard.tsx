@@ -21,6 +21,7 @@ import {
   User,
   Users,
   Video,
+  X,
   BookOpen,
   Radar,
   Zap,
@@ -66,6 +67,12 @@ import { OpenAIProposalModal } from "@/components/OpenAIProposalModal";
 import { ROLE_LABELS, canSee, type FamilyRole } from "@/lib/access";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
+const PROFILE_FIELD_CLASS =
+  "h-12 w-full rounded-xl border border-border bg-surface/60 px-4 text-base text-foreground transition-[background-color,border-color,box-shadow] placeholder:text-muted-foreground hover:border-primary/40 focus:border-primary focus:bg-background focus:outline-none focus:ring-4 focus:ring-primary/10";
+
+const PROFILE_TEXTAREA_CLASS =
+  "min-h-32 w-full resize-y rounded-xl border border-border bg-surface/60 px-4 py-3 text-base text-foreground transition-[background-color,border-color,box-shadow] placeholder:text-muted-foreground hover:border-primary/40 focus:border-primary focus:bg-background focus:outline-none focus:ring-4 focus:ring-primary/10";
+
 export function InstagramDashboard({
   role,
   viewerId,
@@ -98,7 +105,7 @@ export function InstagramDashboard({
     timezone: "America/New_York",
     language: "English",
     help_needed: "Tracking seizure clusters, sleep routines, and communication devices.",
-    matching_opt_in: true,
+    matching_opt_in: false,
   });
 
   // The learning tabs: every condition in the atlas, plus the facts for the
@@ -645,78 +652,188 @@ export function InstagramDashboard({
 
       {/* Profile Edit Modal */}
       {profileEditModal && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-background p-6 shadow-xl space-y-4">
-            <h3 className="font-display text-2xl">Find your people, at your pace</h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Only share what you want Atlas to use. You decide who can contact you and whether to
-              join a group or meet one peer first.
-            </p>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-foreground/55 p-3 backdrop-blur-sm sm:p-6">
+          <div className="flex min-h-full items-center justify-center">
+            <section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="family-profile-title"
+              aria-describedby="family-profile-description"
+              className="my-auto w-full max-w-5xl overflow-hidden rounded-[2rem] border border-border/80 bg-background shadow-2xl"
+            >
+              <header className="border-b border-border/70 bg-surface/45 px-6 py-6 sm:px-8 md:px-10 md:py-8">
+                <div className="flex items-start justify-between gap-5">
+                  <div className="max-w-3xl">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-primary">
+                      <ShieldCheck className="size-3.5" aria-hidden="true" /> Private family profile
+                    </span>
+                    <h2
+                      id="family-profile-title"
+                      className="mt-4 font-display text-3xl leading-tight sm:text-4xl"
+                    >
+                      Find your people, at your pace
+                    </h2>
+                    <p
+                      id="family-profile-description"
+                      className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base"
+                    >
+                      Share only what helps Atlas surface relevant research, circles, and peers. You
+                      stay in control of who can contact you and what you update.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setProfileEditModal(false)}
+                    className="grid size-10 shrink-0 place-items-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    aria-label="Close profile editor"
+                    title="Close"
+                  >
+                    <X className="size-4" aria-hidden="true" />
+                  </button>
+                </div>
+              </header>
 
-            <div className="space-y-3 text-xs">
-              <label className="block space-y-1">
-                <span className="font-semibold text-foreground">Condition / Diagnosis</span>
-                <input
-                  type="text"
-                  value={profileDraft.condition || ""}
-                  onChange={(e) => setProfileDraft({ ...profileDraft, condition: e.target.value })}
-                  className="w-full rounded-lg border border-border bg-surface p-2.5 outline-none focus:ring-1 focus:ring-primary"
-                />
-              </label>
+              <form
+                className="px-6 py-6 sm:px-8 md:px-10 md:py-8"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void handleSaveProfile();
+                }}
+              >
+                <div className="grid gap-5 md:grid-cols-2 md:gap-x-6 md:gap-y-6">
+                  <label className="block space-y-2 md:col-span-2">
+                    <span className="flex items-center justify-between gap-3 text-sm font-semibold text-foreground">
+                      Condition / Diagnosis
+                      <span className="text-xs font-medium text-muted-foreground">Required</span>
+                    </span>
+                    <input
+                      type="text"
+                      required
+                      value={profileDraft.condition || ""}
+                      onChange={(e) =>
+                        setProfileDraft({ ...profileDraft, condition: e.target.value })
+                      }
+                      className={PROFILE_FIELD_CLASS}
+                      placeholder="e.g. STXBP1 Encephalopathy"
+                    />
+                  </label>
 
-              <label className="block space-y-1">
-                <span className="font-semibold text-foreground">Caregiver or Patient Role</span>
-                <input
-                  type="text"
-                  value={profileDraft.caregiver_role || ""}
-                  onChange={(e) =>
-                    setProfileDraft({ ...profileDraft, caregiver_role: e.target.value })
-                  }
-                  className="w-full rounded-lg border border-border bg-surface p-2.5 outline-none focus:ring-1 focus:ring-primary"
-                />
-              </label>
+                  <label className="block space-y-2">
+                    <span className="text-sm font-semibold text-foreground">
+                      Caregiver or patient role
+                    </span>
+                    <input
+                      type="text"
+                      value={profileDraft.caregiver_role || ""}
+                      onChange={(e) =>
+                        setProfileDraft({ ...profileDraft, caregiver_role: e.target.value })
+                      }
+                      className={PROFILE_FIELD_CLASS}
+                      placeholder="e.g. Parent / Caregiver"
+                    />
+                  </label>
 
-              <label className="block space-y-1">
-                <span className="font-semibold text-foreground">Age Band / Life Stage</span>
-                <input
-                  type="text"
-                  value={profileDraft.age_band || ""}
-                  onChange={(e) => setProfileDraft({ ...profileDraft, age_band: e.target.value })}
-                  className="w-full rounded-lg border border-border bg-surface p-2.5 outline-none focus:ring-1 focus:ring-primary"
-                />
-              </label>
+                  <label className="block space-y-2">
+                    <span className="text-sm font-semibold text-foreground">
+                      Age band / life stage
+                    </span>
+                    <input
+                      type="text"
+                      value={profileDraft.age_band || ""}
+                      onChange={(e) =>
+                        setProfileDraft({ ...profileDraft, age_band: e.target.value })
+                      }
+                      className={PROFILE_FIELD_CLASS}
+                      placeholder="e.g. School age (6–12)"
+                    />
+                  </label>
 
-              <label className="block space-y-1">
-                <span className="font-semibold text-foreground">Location / Time Zone</span>
-                <input
-                  type="text"
-                  value={profileDraft.timezone || ""}
-                  onChange={(e) => setProfileDraft({ ...profileDraft, timezone: e.target.value })}
-                  className="w-full rounded-lg border border-border bg-surface p-2.5 outline-none focus:ring-1 focus:ring-primary"
-                />
-              </label>
+                  <label className="block space-y-2">
+                    <span className="text-sm font-semibold text-foreground">
+                      Location / time zone
+                    </span>
+                    <input
+                      type="text"
+                      value={profileDraft.timezone || ""}
+                      onChange={(e) =>
+                        setProfileDraft({ ...profileDraft, timezone: e.target.value })
+                      }
+                      className={PROFILE_FIELD_CLASS}
+                      placeholder="e.g. America/New_York"
+                    />
+                  </label>
 
-              <label className="block space-y-1">
-                <span className="font-semibold text-foreground">What help would be useful?</span>
-                <textarea
-                  value={profileDraft.help_needed || ""}
-                  onChange={(e) =>
-                    setProfileDraft({ ...profileDraft, help_needed: e.target.value })
-                  }
-                  rows={3}
-                  className="w-full rounded-lg border border-border bg-surface p-2.5 outline-none focus:ring-1 focus:ring-primary"
-                />
-              </label>
-            </div>
+                  <label className="block space-y-2">
+                    <span className="text-sm font-semibold text-foreground">
+                      Preferred language
+                    </span>
+                    <input
+                      type="text"
+                      value={profileDraft.language || ""}
+                      onChange={(e) =>
+                        setProfileDraft({ ...profileDraft, language: e.target.value })
+                      }
+                      className={PROFILE_FIELD_CLASS}
+                      placeholder="e.g. English"
+                    />
+                  </label>
 
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="ghost" size="sm" onClick={() => setProfileEditModal(false)}>
-                Cancel
-              </Button>
-              <Button size="sm" onClick={handleSaveProfile}>
-                Save Profile
-              </Button>
-            </div>
+                  <label className="block space-y-2 md:col-span-2">
+                    <span className="text-sm font-semibold text-foreground">
+                      What help would be useful?
+                    </span>
+                    <textarea
+                      value={profileDraft.help_needed || ""}
+                      onChange={(e) =>
+                        setProfileDraft({ ...profileDraft, help_needed: e.target.value })
+                      }
+                      rows={4}
+                      className={PROFILE_TEXTAREA_CLASS}
+                      placeholder="For example: tracking symptoms, navigating a new diagnosis, or finding a study."
+                    />
+                  </label>
+
+                  <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4 transition-colors hover:bg-primary/10 md:col-span-2">
+                    <input
+                      type="checkbox"
+                      checked={profileDraft.matching_opt_in}
+                      onChange={(e) =>
+                        setProfileDraft({ ...profileDraft, matching_opt_in: e.target.checked })
+                      }
+                      className="mt-0.5 size-4 shrink-0 rounded border-border accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    />
+                    <span className="space-y-1">
+                      <span className="block text-sm font-semibold text-foreground">
+                        Include me in relevant peer and circle matches
+                      </span>
+                      <span className="block text-xs leading-relaxed text-muted-foreground">
+                        We will use the details above to suggest connections. You can turn this off
+                        at any time, and researchers cannot view this private profile.
+                      </span>
+                    </span>
+                  </label>
+                </div>
+
+                <footer className="mt-8 flex flex-col-reverse gap-4 border-t border-border/70 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    Your profile stays private and can be updated whenever your needs change.
+                  </p>
+                  <div className="flex items-center justify-end gap-3">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setProfileEditModal(false)}
+                      className="px-5"
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" className="min-w-40 px-7">
+                      Save profile
+                    </Button>
+                  </div>
+                </footer>
+              </form>
+            </section>
           </div>
         </div>
       )}
