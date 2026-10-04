@@ -54,21 +54,26 @@ VITE_SUPABASE_URL=https://<ref>.supabase.co
 VITE_SUPABASE_ANON_KEY=<anon key>
 ```
 
-## Production magic-link email
+## Production sign-in settings
 
-The built-in hosted Supabase email provider permits only two emails per hour for
-the entire project. That limit is appropriate for a fresh project, but it is
-too small for a shared demo or a family-facing sign-in flow.
+Sign-in is email and password (`frontend/src/lib/password-auth.ts`). It needs no
+email delivery at all, which is why it replaced the magic link: the hosted
+Supabase email provider permits only two emails per hour for a whole project,
+which is too little for a shared demo or a family-facing door.
 
-Before deploying, configure a verified custom SMTP provider (or a Send Email
-hook) in **Supabase Dashboard → Authentication → Email**. Then set a suitable
-email-send limit in **Authentication → Rate Limits**, and add your deployed
-`https://<domain>/family` URL to the Auth redirect allow-list. These are hosted
-Auth settings: `supabase db push` does not apply them.
+In **Supabase Dashboard → Authentication**, confirm these for a deployment.
+They are hosted Auth settings; `supabase db push` does not apply them.
 
-The frontend prevents accidental repeat sends for 60 seconds and tells people
-to use their newest link first, but it intentionally does not bypass Supabase's
-server-side protection.
+- **Providers → Email**: enabled, with signups allowed.
+- **Confirm email**: off, so creating an account returns a session immediately
+  and the person lands in their space. If you turn it on, the form still works
+  — it reports "confirm your email" instead of claiming a session — but you then
+  need working SMTP, so configure a verified custom provider first.
+- **Minimum password length**: 8, matching `MIN_PASSWORD_LENGTH` in
+  `password-auth.ts` and `minimum_password_length` in `config.toml`.
+
+Supabase rate-limits sign-in attempts per IP (`sign_in_sign_ups`), and the
+frontend does not try to work around it.
 
 ## Run it locally instead
 

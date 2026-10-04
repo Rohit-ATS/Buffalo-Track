@@ -10,7 +10,12 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { requestMagicLink, type MagicLinkRequestResult } from "@/lib/magic-link";
+import {
+  MIN_PASSWORD_LENGTH,
+  createAccountWithPassword,
+  signInWithPassword,
+  type PasswordAuthResult,
+} from "@/lib/password-auth";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { InstagramDashboard } from "@/components/social/InstagramDashboard";
 import {
@@ -132,14 +137,18 @@ export function FamilySpace() {
     });
     return () => data.subscription.unsubscribe();
   }, []);
-  async function magicLink(value: string) {
-    const result = await requestMagicLink({
-      client: getSupabaseBrowser(),
-      email: value,
-      emailRedirectTo: `${window.location.origin}/family`,
-    });
-    if (result.kind === "sent") {
-      setNotice("Check your inbox for a secure sign-in link.");
+  /**
+   * Signs in, or creates the account, against Supabase Auth. Either way the
+   * session is live when this resolves, so `onAuthStateChange` refreshes the
+   * space immediately and the modal can close on the spot.
+   */
+  async function authenticate(value: string, password: string, creating: boolean) {
+    const client = getSupabaseBrowser();
+    const result = creating
+      ? await createAccountWithPassword({ client, email: value, password })
+      : await signInWithPassword({ client, email: value, password });
+    if (result.kind === "signed-in") {
+      setNotice(creating ? "Your account is ready." : "You are signed in.");
       setModal(null);
     }
     return result;
@@ -206,11 +215,7 @@ export function FamilySpace() {
             </button>
           </div>
         </div>
-        <InstagramDashboard
-          role="family"
-          viewerId={email}
-          initialTab="home"
-        />
+        <InstagramDashboard role="family" viewerId={email} initialTab="home" />
       </div>
     );
   }
@@ -345,7 +350,7 @@ export function FamilySpace() {
           </aside>
         </div>
       </section>
-      {modal === "sign-in" && <SignIn onClose={() => setModal(null)} onSubmit={magicLink} />}{" "}
+      {modal === "sign-in" && <SignIn onClose={() => setModal(null)} onSubmit={authenticate} />}{" "}
       {modal === "profile" && (
         <ProfileForm profile={profile ?? blank} onClose={() => setModal(null)} onSave={persist} />
       )}{" "}
@@ -521,29 +526,43 @@ function SignIn({
   onSubmit,
 }: {
   onClose: () => void;
-  onSubmit: (email: string) => Promise<MagicLinkRequestResult>;
+  onSubmit: (email: string, password: string, creating: boolean) => Promise<PasswordAuthResult>;
 }) {
+  const [creating, setCreating] = useState(false);
   const [email, setEmail] = useState("");
-  const [sending, setSending] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
+  const [working, setWorking] = useState(false);
+  const [notice, setNotice] = useState<{ tone: "problem" | "pending"; message: string } | null>(
+    null,
+  );
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!email || sending) return;
+    if (!email || !password || working) return;
 
-    setSending(true);
-    setMessage(null);
-    const result = await onSubmit(email);
-    if (result.kind !== "sent") {
-      setMessage(result.message);
-      setSending(false);
+    setWorking(true);
+    setNotice(null);
+    const result = await onSubmit(email, password, creating);
+    if (result.kind !== "signed-in") {
+      // "Confirm your email" is not a failure, so it does not get the error
+      // styling -- the account exists and there is one step left.
+      setNotice({
+        tone: result.kind === "confirm-email" ? "pending" : "problem",
+        message: result.message,
+      });
+      setWorking(false);
+      // A failed attempt should not leave the password sitting in the field
+      // for the next person at this screen.
+      setPassword("");
     }
   }
 
   return (
-    <Modal title="Sign in privately" onClose={onClose}>
+    <Modal title={creating ? "Create your private account" : "Sign in privately"} onClose={onClose}>
       <p className="text-sm text-muted-foreground">
-        We’ll email a secure magic link—no password required.
+        {creating
+          ? `Your email and a password of at least ${MIN_PASSWORD_LENGTH} characters. You are in as soon as you submit.`
+          : "Your email and password. Nothing to wait for in your inbox."}
       </p>
       <form onSubmit={submit}>
         <input
@@ -555,15 +574,46 @@ function SignIn({
           className="mt-4 w-full rounded-lg border bg-background px-3 py-2"
           placeholder="you@example.com"
         />
-        <Button className="mt-4" type="submit" disabled={!email || sending}>
-          {sending ? "Sending…" : "Email me a magic link"}
+        <input
+          type="password"
+          autoComplete={creating ? "new-password" : "current-password"}
+          required
+          {...(creating ? { minLength: MIN_PASSWORD_LENGTH } : {})}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="mt-3 w-full rounded-lg border bg-background px-3 py-2"
+          placeholder={creating ? `At least ${MIN_PASSWORD_LENGTH} characters` : "Your password"}
+        />
+        <Button className="mt-4" type="submit" disabled={!email || !password || working}>
+          {working
+            ? creating
+              ? "Creating…"
+              : "Signing in…"
+            : creating
+              ? "Create account"
+              : "Sign in"}
         </Button>
-        {message && (
-          <p
-            className="mt-3 rounded-lg border border-risk/40 bg-background p-3 text-sm"
-            role="alert"
+        <p className="mt-3 text-sm text-muted-foreground">
+          {creating ? "Already have an account?" : "First time here?"}{" "}
+          <button
+            type="button"
+            onClick={() => {
+              setCreating(!creating);
+              setNotice(null);
+            }}
+            className="font-semibold text-primary underline-offset-4 hover:underline"
           >
-            {message}
+            {creating ? "Sign in" : "Create one"}
+          </button>
+        </p>
+        {notice && (
+          <p
+            className={`mt-3 rounded-lg border bg-background p-3 text-sm ${
+              notice.tone === "problem" ? "border-risk/40" : "border-primary/40"
+            }`}
+            role={notice.tone === "problem" ? "alert" : "status"}
+          >
+            {notice.message}
           </p>
         )}
       </form>

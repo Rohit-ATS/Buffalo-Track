@@ -31,7 +31,11 @@ import {
   type SectionId,
 } from "@/lib/access";
 import { currentRole } from "@/lib/social";
-import { requestMagicLink } from "@/lib/magic-link";
+import {
+  MIN_PASSWORD_LENGTH,
+  createAccountWithPassword,
+  signInWithPassword,
+} from "@/lib/password-auth";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 /**
@@ -277,38 +281,63 @@ function Centered({ children }: { children: React.ReactNode }) {
  *
  * It used to render the whole family space behind a small "Sign in" button,
  * which read as a dashboard you were locked out of rather than a way in. The
- * magic-link form is now the page: one field, one button, and the reassurance
- * that matters here -- no password, nothing shared, one-time link.
+ * sign-in form is now the page: email, password, one button.
+ *
+ * It takes a password rather than emailing a link. The link meant leaving for
+ * an inbox and waiting on a provider that rate-limits email; a password signs
+ * you in on submit, which is what people expect of a door. The same form
+ * creates an account, so a first visit and a tenth visit look alike.
  *
  * Visual language is the landing page's: display serif that rises word by
  * word, a drawn underline, handwritten notes, and sketch marks that drift.
  */
 function SignedOut() {
+  const [mode, setMode] = React.useState<"sign-in" | "sign-up">("sign-in");
   const [email, setEmail] = React.useState("");
-  const [status, setStatus] = React.useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [password, setPassword] = React.useState("");
+  const [status, setStatus] = React.useState<"idle" | "working" | "confirm" | "error">("idle");
   const [message, setMessage] = React.useState<string | null>(null);
-  const inputId = React.useId();
+  const emailId = React.useId();
+  const passwordId = React.useId();
 
-  async function sendLink(event: React.FormEvent) {
+  const creating = mode === "sign-up";
+
+  async function submit(event: React.FormEvent) {
     event.preventDefault();
     const value = email.trim();
-    if (!value || status === "sending") return;
+    if (!value || !password || status === "working") return;
 
-    setStatus("sending");
+    setStatus("working");
     setMessage(null);
-    const result = await requestMagicLink({
-      client: getSupabaseBrowser(),
-      email: value,
-      // Keep landing people in their family space, the way the previous
-      // modal did -- /family redirects into the dashboard's family section.
-      emailRedirectTo: `${window.location.origin}/family`,
-    });
-    if (result.kind !== "sent") {
+
+    const client = getSupabaseBrowser();
+    const result = creating
+      ? await createAccountWithPassword({ client, email: value, password })
+      : await signInWithPassword({ client, email: value, password });
+
+    if (result.kind === "confirm-email") {
+      setStatus("confirm");
+      setMessage(result.message);
+      setPassword("");
+      return;
+    }
+    if (result.kind !== "signed-in") {
       setStatus("error");
       setMessage(result.message);
       return;
     }
-    setStatus("sent");
+
+    // A session exists now. The shell's own `onAuthStateChange` listener
+    // swaps this page for the dashboard, so there is nothing to navigate to;
+    // clearing the password keeps it out of React state while that happens.
+    setPassword("");
+    setStatus("idle");
+  }
+
+  function switchMode() {
+    setMode(creating ? "sign-in" : "sign-up");
+    setStatus("idle");
+    setMessage(null);
   }
 
   return (
@@ -330,11 +359,11 @@ function SignedOut() {
         <div>
           <div className="mb-5 inline-flex animate-fade-in items-center gap-2 rounded-full border border-border px-3 py-1.5 text-xs font-semibold">
             <Sparkles className="size-3.5 spin-slow text-primary" aria-hidden="true" />
-            One-time link · no password
+            Email and password · you are in straight away
           </div>
 
           <h1 className="word-rise font-display text-[clamp(2.6rem,5.4vw,4.4rem)] font-medium leading-[.92]">
-            {["Sign", "in", "to", "your"].map((word, i) => (
+            {(creating ? ["Create", "your"] : ["Sign", "in", "to", "your"]).map((word, i) => (
               <span key={word} style={{ animationDelay: `${i * 0.08}s` }}>
                 {word}&nbsp;
               </span>
@@ -346,11 +375,12 @@ function SignedOut() {
           </h1>
 
           <p className="mt-8 max-w-md animate-fade-in text-base leading-relaxed text-muted-foreground [animation-delay:.5s] [animation-fill-mode:both]">
-            Groups and conversations open once you sign in. We email you a secure link — there is no
-            password to lose.
+            {creating
+              ? `Choose a password of at least ${MIN_PASSWORD_LENGTH} characters. Your account opens as soon as you submit — no email to wait for.`
+              : "Groups and conversations open once you sign in. Enter your email and password and you are through."}
           </p>
 
-          {status === "sent" ? (
+          {status === "confirm" ? (
             <div
               className="mt-8 max-w-md animate-fade-in rounded-2xl border border-primary/30 bg-background p-6"
               role="status"
@@ -358,36 +388,34 @@ function SignedOut() {
               <div className="flex items-start gap-3">
                 <PaperPlane className="mt-1 w-12 shrink-0 float-slow text-primary" />
                 <div>
-                  <p className="font-display text-2xl leading-tight">Check your inbox.</p>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    We sent a one-time sign-in link to <strong>{email.trim()}</strong>. It opens
-                    your private space directly.
-                  </p>
+                  <p className="font-display text-2xl leading-tight">One confirmation left.</p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{message}</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => {
+                  setMode("sign-in");
                   setStatus("idle");
                   setMessage(null);
                 }}
                 className="mt-4 font-sketch text-lg text-primary underline-offset-4 hover:underline"
               >
-                use a different email →
+                sign in instead →
               </button>
             </div>
           ) : (
             <form
-              onSubmit={sendLink}
+              onSubmit={submit}
               className="mt-8 max-w-md animate-fade-in [animation-delay:.65s] [animation-fill-mode:both]"
             >
-              <label htmlFor={inputId} className="sr-only">
+              <label htmlFor={emailId} className="sr-only">
                 Email address
               </label>
               <div className="flex min-h-16 items-center rounded-full border border-foreground bg-background p-1.5 pl-5 shadow-search focus-within:ring-2 focus-within:ring-ring">
                 <Mail className="mr-3 size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
                 <input
-                  id={inputId}
+                  id={emailId}
                   type="email"
                   required
                   autoComplete="email"
@@ -396,21 +424,48 @@ function SignedOut() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
                 />
+              </div>
+
+              <label htmlFor={passwordId} className="sr-only">
+                Password
+              </label>
+              <div className="mt-3 flex min-h-16 items-center rounded-full border border-foreground bg-background p-1.5 pl-5 shadow-search focus-within:ring-2 focus-within:ring-ring">
+                <LockKeyhole
+                  className="mr-3 size-5 shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <input
+                  id={passwordId}
+                  type="password"
+                  required
+                  // The browser needs to know which of the two this is, or it
+                  // offers a saved password where a new one belongs.
+                  autoComplete={creating ? "new-password" : "current-password"}
+                  {...(creating ? { minLength: MIN_PASSWORD_LENGTH } : {})}
+                  placeholder={
+                    creating ? `At least ${MIN_PASSWORD_LENGTH} characters` : "Your password"
+                  }
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
+                />
                 {/* Only disabled while in flight. Disabling on an empty field
                     made the page's one call to action look inert on arrival;
                     `required` already blocks an empty submit. */}
                 <Button
                   type="submit"
                   className="shrink-0 rounded-full"
-                  disabled={status === "sending"}
+                  disabled={status === "working"}
                 >
-                  {status === "sending" ? (
+                  {status === "working" ? (
                     <>
-                      <Loader2 className="size-4 animate-spin" aria-hidden="true" /> Sending
+                      <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                      {creating ? "Creating" : "Signing in"}
                     </>
                   ) : (
                     <>
-                      Email my link <ArrowRight className="size-4" aria-hidden="true" />
+                      {creating ? "Create account" : "Sign in"}{" "}
+                      <ArrowRight className="size-4" aria-hidden="true" />
                     </>
                   )}
                 </Button>
@@ -446,6 +501,17 @@ function SignedOut() {
                   {message}
                 </p>
               )}
+
+              <p className="mt-4 text-sm text-muted-foreground">
+                {creating ? "Already have an account?" : "First time here?"}{" "}
+                <button
+                  type="button"
+                  onClick={switchMode}
+                  className="font-semibold text-primary underline-offset-4 hover:underline"
+                >
+                  {creating ? "Sign in" : "Create an account"}
+                </button>
+              </p>
             </form>
           )}
 

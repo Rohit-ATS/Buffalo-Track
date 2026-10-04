@@ -11,7 +11,7 @@ No Bright Data or Supabase credentials are stored in this repository. Keep all k
 ## 2. Connect your teammate’s Supabase project
 
 1. In their Supabase SQL Editor, apply the migrations in `supabase/migrations/` in order, including `20261003000012_family_network.sql`.
-2. In Supabase Auth, enable email magic links. Add `http://localhost:8080/family` and the deployed `https://your-domain/family` to allowed redirect URLs.
+2. In Supabase Auth, keep the **Email** provider enabled with signups allowed, and leave **Confirm email** off so a new account signs in on submit. Set the minimum password length to 8 to match the form. No redirect URLs are needed: sign-in happens in the page, not through an emailed link.
 3. Put `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `frontend/.env` for browser sign-in only. Put `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `BRIGHT_DATA_API_KEY` in the backend/deployment environment. Never prefix service-role or Bright Data keys with `VITE_`.
 
 ## 3. Ingest a small real-time source set
@@ -30,6 +30,6 @@ No Bright Data or Supabase credentials are stored in this repository. Keep all k
 ## Before the demo
 
 - Confirm Bright Data spend cap and credit expiry.
-- Verify magic-link sign-in and `/family` redirect.
+- Verify email-and-password sign-in, and that creating an account lands straight in `/family`.
 - Have an evidence reviewer approve one live study record.
 - Verify every suggestion shows its source and why it was suggested.
