@@ -92,12 +92,30 @@ def _handler(request: httpx.Request) -> httpx.Response:
     raise AssertionError(f"unexpected request to {url}")
 
 
-def test_unreviewed_organization_like_domains_are_not_fetched() -> None:
-    assert not classify("https://attacker-foundation.example/registry").accepted
-    assert not classify("https://unreviewed-patient-group.org/registry").accepted
-    assert not classify("https://attacker.example.org/natural-history-registry").accepted
+def test_the_classifier_still_refuses_what_can_never_be_evidence() -> None:
+    """Social, wiki, API-backed and unsignalled domains are never fetched.
+
+    This used to assert an allowlist of two domains, which made the SERP layer
+    pointless: discovery could only re-fetch what someone had already approved.
+    The gate that keeps bad claims out is the quote verifier, not the domain
+    list, so a plausible non-profit is now fetched as a *candidate* and still
+    has to produce a quote that appears in the page.
+    """
+    # Never evidence, whatever the path says.
+    assert not classify("https://www.facebook.com/groups/stx1b").accepted
+    assert not classify("https://en.wikipedia.org/wiki/STX1B").accepted
+    # Has a real API: scraping it would be money burned.
+    assert not classify("https://clinicaltrials.gov/study/NCT1").accepted
+    assert not classify("https://pmc.ncbi.nlm.nih.gov/articles/PMC1/").accepted
+    # A .com with no signal stays out.
     assert not classify("https://foundation.example.com/research").accepted
+    assert not classify("https://dnalabsindia.com/test/stx1b").accepted
+
+    # Reviewed domains are accepted outright...
     assert classify("https://stx1b-alliance.org/research").accepted
+    # ...and a plausible non-profit or institution is accepted as a candidate.
+    assert classify("https://rarediseases.org/registry").accepted
+    assert classify("https://www.chop.edu/centers-programs/epilepsy").accepted
 
 
 @pytest.fixture

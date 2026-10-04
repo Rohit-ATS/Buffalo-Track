@@ -72,6 +72,26 @@ WIKI_HOSTS = {"wikipedia.org", "wikidata.org", "wikiwand.com"}
 # here only after a human has verified its ownership and publication role.
 TRUSTED_SOURCE_HOSTS = {"stx1b-alliance.org", "stxbp1disorders.org"}
 
+# Second tier. A domain matching these is fetched as a *candidate*: its claims
+# still have to survive the quote verifier before they become evidence, and
+# their confidence starts lower. Without this tier the allowlist can only
+# re-fetch domains someone already approved, which makes the SERP layer
+# pointless -- discovery that cannot discover.
+ORG_HOST_WORDS = (
+    "foundation", "trust", "alliance", "association", "society", "charity",
+    "advocacy", "families", "parents", "warriors", "cure", "patient", "syndrome",
+    "disorder", "disease", "registry",
+)
+
+INSTITUTION_HOST_WORDS = (
+    "hospital", "childrens", "children", "clinic", "medicine", "medical",
+    "health", "institute", "univ", "college", "school", "research",
+)
+
+LAB_PATH_WORDS = ("/lab", "/labs/", "/faculty", "/people/", "/profile", "/researcher")
+
+REGISTRY_PATH_WORDS = ("registry", "natural-history", "naturalhistory", "biobank", "study")
+
 
 def _host(url: str) -> str:
     host = (urlparse(url).hostname or "").lower()
@@ -102,7 +122,15 @@ def classify(url: str) -> Verdict:
     if base in WIKI_HOSTS:
         return Verdict("reference", False, "Wiki page: discovery signal only, not evidence")
 
+    # Match subdomains too: pmc.ncbi.nlm.nih.gov is PubMed Central, which has
+    # an API, and would otherwise fall through to the .gov branch and be
+    # scraped at full price.
     api_kind = API_BACKED_HOSTS.get(host) or API_BACKED_HOSTS.get(base)
+    if not api_kind:
+        api_kind = next(
+            (kind for known, kind in API_BACKED_HOSTS.items() if host.endswith("." + known)),
+            None,
+        )
     if api_kind:
         return Verdict(
             api_kind, False, f"{base} has an official API; fetch it there, not via scraping"
@@ -111,7 +139,28 @@ def classify(url: str) -> Verdict:
     if host in TRUSTED_SOURCE_HOSTS or base in TRUSTED_SOURCE_HOSTS:
         return Verdict("patient organization", True, "Reviewed organization domain")
 
-    return Verdict("unknown", False, "Domain requires review before it can become evidence")
+    path = (urlparse(url).path or "/").lower()
+    nonprofit = host.endswith((".org", ".ngo", ".charity"))
+    institutional = host.endswith((".edu", ".ac.uk")) or ".edu." in host
+
+    if nonprofit and any(word in host for word in ORG_HOST_WORDS):
+        return Verdict("patient organization", True, "Non-profit host names a disease community")
+
+    if host.endswith(".gov"):
+        return Verdict("government", True, "Government domain")
+
+    if institutional or (nonprofit and any(w in host for w in INSTITUTION_HOST_WORDS)):
+        if any(word in path for word in LAB_PATH_WORDS):
+            return Verdict("lab", True, "Institution domain with a lab or profile path")
+        return Verdict("research institution", True, "Research institution domain")
+
+    if nonprofit and any(word in path for word in REGISTRY_PATH_WORDS):
+        return Verdict("registry", True, "Non-profit path names a registry or study")
+
+    if nonprofit:
+        return Verdict("patient organization", True, "Non-profit domain")
+
+    return Verdict("unknown", False, "No signal that this is an official source")
 
 
 def accepted(urls: list[str]) -> list[str]:
