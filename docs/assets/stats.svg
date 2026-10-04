@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 220" width="1200" height="220" role="img" aria-label="Measured results: 709 URLs, 81 claims, 58 verified, 23 rejected, 37 assets">
+  <title>Counted from the database, not estimated</title>
+
+  <defs>
+    <style>
+      .sans   { font-family: "DM Sans", "Segoe UI", system-ui, sans-serif; }
+      .serif  { font-family: "DM Serif Display", Georgia, serif; }
+      .sketch { font-family: "Caveat", "Bradley Hand", cursive; }
+      .cap    { font-size: 10.5px; fill: #5B6B63; letter-spacing: 1.2px; }
+      .big    { font-size: 46px; fill: #11201A; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="220" rx="10" fill="#FDFCF8"/>
+
+  <!-- proportional bar: verified vs rejected, drawn on load -->
+  <g transform="translate(60,150)">
+    <rect width="1080" height="16" rx="8" fill="#F0EEE4"/>
+    <rect width="0" height="16" rx="8" fill="#2D6A4F">
+      <animate attributeName="width" from="0" to="774" dur="1.4s" begin="0.5s" fill="freeze"/>
+    </rect>
+    <rect x="774" width="0" height="16" rx="8" fill="#B5502F">
+      <animate attributeName="width" from="0" to="306" dur="0.9s" begin="1.8s" fill="freeze"/>
+    </rect>
+    <text class="sans" x="0" y="38" font-size="11.5" fill="#2D6A4F">58 verified — quote found in the fetched page</text>
+    <text class="sans" x="1080" y="38" font-size="11.5" fill="#B5502F" text-anchor="end">23 rejected — 28.4%</text>
+  </g>
+
+  <!-- counters -->
+  <g class="serif">
+    <g>
+      <text class="cap sans" x="60" y="42">CANDIDATE URLS</text>
+      <text class="big" x="60" y="92" opacity="0">709<animate attributeName="opacity" from="0" to="1" dur=".5s" begin="0.1s" fill="freeze"/></text>
+    </g>
+    <g>
+      <text class="cap sans" x="290" y="42">PAGES FETCHED</text>
+      <text class="big" x="290" y="92" opacity="0">30<animate attributeName="opacity" from="0" to="1" dur=".5s" begin="0.3s" fill="freeze"/></text>
+    </g>
+    <g>
+      <text class="cap sans" x="500" y="42">CLAIMS EXTRACTED</text>
+      <text class="big" x="500" y="92" opacity="0">81<animate attributeName="opacity" from="0" to="1" dur=".5s" begin="0.5s" fill="freeze"/></text>
+    </g>
+    <g>
+      <text class="cap sans" x="720" y="42">REJECTION RATE</text>
+      <text class="big" x="720" y="92" fill="#B5502F" opacity="0">28.4%<animate attributeName="opacity" from="0" to="1" dur=".5s" begin="0.7s" fill="freeze"/></text>
+    </g>
+    <g>
+      <text class="cap sans" x="980" y="42">ASSETS FOUND</text>
+      <text class="big" x="980" y="92" fill="#2D6A4F" opacity="0">37<animate attributeName="opacity" from="0" to="1" dur=".5s" begin="0.9s" fill="freeze"/>
+      </text>
+      <circle cx="1065" cy="78" r="6" fill="#2D6A4F">
+        <animate attributeName="opacity" values="1;.35;1" dur="2.2s" begin="1.4s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+  </g>
+
+  <text class="sketch" x="1140" y="206" font-size="17" fill="#2D6A4F" text-anchor="end">every number counted, none estimated</text>
+</svg>
