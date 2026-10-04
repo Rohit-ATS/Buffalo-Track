@@ -43,7 +43,10 @@ function fromDotenv(name: string): string | undefined {
         if (eq < 1) continue;
         const key = trimmed.slice(0, eq).trim();
         // Strip one layer of matching quotes, which .env files often carry.
-        const value = trimmed.slice(eq + 1).trim().replace(/^(['"])(.*)\1$/, "$2");
+        const value = trimmed
+          .slice(eq + 1)
+          .trim()
+          .replace(/^(['"])(.*)\1$/, "$2");
         if (value) dotenvCache[key] = value;
       }
     } catch {
