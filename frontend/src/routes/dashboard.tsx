@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { NotificationsBell } from "@/components/NotificationsBell";
 import { AccountMenu } from "@/components/AccountMenu";
 import {
@@ -21,7 +21,7 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   Constellation,
@@ -33,6 +33,10 @@ import {
 } from "@/components/sketches";
 import { Button } from "@/components/ui/button";
 import { ResearchWorkspace } from "@/components/dashboard/ResearchWorkspace";
+import { PersonaSwitch } from "@/components/atlas-ui";
+import { demoAccess, personas, usePersona } from "@/lib/persona";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
+import { currentUser, loadProfile, type FamilyProfile } from "@/lib/family-network";
 
 export const Route = createFileRoute("/dashboard")({
   staticData: { sitemap: true },
@@ -127,12 +131,36 @@ function MetricCard({
 }
 
 function DashboardPage() {
+  const navigate = useNavigate();
+  const { persona } = usePersona();
+  const [authChecked, setAuthChecked] = useState(false);
+  const [databaseRole, setDatabaseRole] = useState<FamilyProfile["role"] | null>(null);
+  const demoPerson = personas.find((item) => item.id === persona) ?? personas[0];
+  const access = { ...demoAccess[persona], role: databaseRole ?? demoAccess[persona].role };
+  const hasEvidenceAccess = access.role === "evidence_reviewer" || access.role === "admin";
   const [weekIndex, setWeekIndex] = useState(1);
   const [filter, setFilter] = useState<EvidenceFilter>("All");
   const [query, setQuery] = useState("");
   const [selectedDay, setSelectedDay] = useState(5);
   const currentWeek = weeks[weekIndex] ?? weeks[0];
   const filteredEvidence = useMemo(() => evidence[filter], [filter]);
+
+  useEffect(() => {
+    const client = getSupabaseBrowser();
+    // Without configured Supabase, retain the four-person hackathon demo mode.
+    if (!client) { setAuthChecked(true); return; }
+    void currentUser().then(async (user) => {
+      if (!user) { await navigate({ to: "/family" }); return; }
+      const profile = await loadProfile();
+      if (!profile) { await navigate({ to: "/family" }); return; }
+      setDatabaseRole(profile.role ?? "family");
+      setAuthChecked(true);
+    }).catch(() => { void navigate({ to: "/family" }); });
+  }, [navigate]);
+
+  if (getSupabaseBrowser() && !authChecked) {
+    return <main className="grid min-h-screen place-items-center bg-secondary p-6"><p className="rounded-xl border bg-background px-5 py-4 text-sm">Checking your private dashboard…</p></main>;
+  }
 
   return (
     <main className="min-h-screen bg-secondary p-2 text-foreground md:p-4">
@@ -148,30 +176,26 @@ function DashboardPage() {
               <span className="hidden sm:inline">Rare Disease Atlas</span>
             </Link>
             <nav className="dashboard-nav" aria-label="Workspace navigation">
+              <Link to="/family">
+                <Users className="size-4" /> Family space
+              </Link>
               <Link to="/dashboard" activeProps={{ className: "is-active" }}>
                 <LayoutDashboard className="size-4" /> Overview
               </Link>
-              <Link to="/stxbp1-disorder">
-                <FlaskConical className="size-4" /> Research
-              </Link>
-              <Link to="/compare">
-                <GitCompareArrows className="size-4" /> Compare
-              </Link>
-              <Link to="/mechanisms">
-                <Network className="size-4" /> Mechanisms
-              </Link>
-              <Link to="/researchers">
-                <Users className="size-4" /> Researchers
-              </Link>
-              <Link to="/methods">
-                <BookOpen className="size-4" /> Methods
-              </Link>
+              {hasEvidenceAccess && <>
+                <Link to="/stxbp1-disorder"><FlaskConical className="size-4" /> Research</Link>
+                <Link to="/compare"><GitCompareArrows className="size-4" /> Compare</Link>
+                <Link to="/mechanisms"><Network className="size-4" /> Mechanisms</Link>
+                <Link to="/researchers"><Users className="size-4" /> Researchers</Link>
+                <Link to="/methods"><BookOpen className="size-4" /> Methods</Link>
+              </>}
             </nav>
             <div className="flex shrink-0 items-center gap-2">
               <NotificationsBell />
+              <PersonaSwitch />
               <div className="hidden text-right md:block">
-                <p className="text-xs font-semibold">Research workspace</p>
-                <p className="text-[10px] text-muted-foreground">Demo atlas</p>
+                <p className="text-xs font-semibold">{demoPerson.name} · {access.role.replace("_", " ")}</p>
+                <p className="text-[10px] text-muted-foreground">{access.dashboard}</p>
               </div>
               <AccountMenu />
             </div>
@@ -181,8 +205,8 @@ function DashboardPage() {
         <section className="px-4 pb-5 pt-7 md:px-7 md:pb-7 md:pt-9">
           <div className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="relative">
-              <p className="eyebrow">Research command center</p>
-              <h1 className="mt-1 font-display text-4xl md:text-5xl">Good morning, explorer.</h1>
+              <p className="eyebrow">{access.role} dashboard</p>
+              <h1 className="mt-1 font-display text-4xl md:text-5xl">Good morning, {demoPerson.name}.</h1>
               <span className="ml-1 mt-1 hidden -rotate-2 font-sketch text-lg text-primary md:inline-block">
                 follow the evidence ↘
               </span>
@@ -211,6 +235,15 @@ function DashboardPage() {
               </Button>
             </div>
           </div>
+
+          <section className="mb-6 rounded-xl border border-primary/25 bg-example-mint px-4 py-3 text-sm">
+            <strong>{access.dashboard}.</strong>{" "}
+            {access.role === "family" && "Start in Family Space to manage your private profile, trusted introductions, and Circles."}
+            {access.role === "steward" && "Review member safety and Circle requests; detailed research receipts remain restricted."}
+            {access.role === "evidence_reviewer" && "Review source receipts and research signals; family identities and messages remain private."}
+            {access.role === "admin" && "Coordinate partner operations and safety controls; role changes belong in trusted admin workflows."}
+            <Link to="/family" className="ml-2 font-semibold text-primary underline">Open Family Space</Link>
+          </section>
 
           <div className="dashboard-grid">
             <div className="grid grid-cols-2 gap-3 lg:col-span-3">

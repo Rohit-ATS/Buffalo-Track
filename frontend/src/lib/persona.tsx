@@ -7,6 +7,15 @@ export const personas = [
   { id: "osei", name: "Dr. Osei", role: "Researcher", focus: "Who shares my mechanism" },
 ] as const;
 export type PersonaId = (typeof personas)[number]["id"];
+export type DemoAccessRole = "family" | "steward" | "evidence_reviewer" | "admin";
+
+/** Demo identities mirror the database roles assigned in `profiles.role`. */
+export const demoAccess: Record<PersonaId, { role: DemoAccessRole; dashboard: string }> = {
+  maria: { role: "family", dashboard: "Private family next steps" },
+  devon: { role: "steward", dashboard: "Circle moderation and member safety" },
+  osei: { role: "evidence_reviewer", dashboard: "Evidence review workspace" },
+  priya: { role: "admin", dashboard: "Partner and safety operations" },
+};
 
 const Ctx = createContext<{ persona: PersonaId; setPersona: (p: PersonaId) => void }>({
   persona: "maria",
