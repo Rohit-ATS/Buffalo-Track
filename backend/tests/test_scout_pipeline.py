@@ -14,6 +14,7 @@ from __future__ import annotations
 import asyncio
 import json
 from typing import Any
+from urllib.parse import urlparse
 
 import httpx
 import pytest
@@ -242,9 +243,10 @@ def test_skipped_urls_are_recorded_with_reasons(stubbed_scout):  # noqa: ANN001
     report = asyncio.run(go())
 
     skipped = {url: reason for url, reason in report.skipped_urls}
-    assert any("clinicaltrials.gov" in url for url in skipped)
+    skipped_hosts = {urlparse(url).hostname for url in skipped}
+    assert "clinicaltrials.gov" in skipped_hosts
     assert any("official API" in reason for reason in skipped.values())
-    assert any("facebook.com" in url for url in skipped)
+    assert "www.facebook.com" in skipped_hosts
 
     # Every candidate is persisted with its verdict, accepted or not.
     assert len(store.serp) == 3

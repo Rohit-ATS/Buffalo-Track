@@ -11,17 +11,27 @@ import { getSupabaseBrowser } from "@/lib/supabase-browser";
  * (e.g. "landing_cta", "nav_devon") so events are distinguishable per site.
  */
 export function trackDashboardClick(source: string, search?: Record<string, unknown>) {
+  if (typeof window === "undefined") return;
   const db = getSupabaseBrowser();
   if (!db) return;
 
-  void db
-    .from("atlas_dashboard_clicks")
-    .insert({
-      source,
-      from_path: window.location.pathname,
-      search: search ? new URLSearchParams(search as Record<string, string>).toString() : null,
-    })
-    .then(({ error }) => {
-      if (error) console.warn("trackDashboardClick failed:", error.message);
-    });
+  try {
+    void db
+      .from("atlas_dashboard_clicks")
+      .insert({
+        source,
+        from_path: window.location?.pathname ?? "/",
+        search: search ? new URLSearchParams(search as Record<string, string>).toString() : null,
+      })
+      // The query builder is a PromiseLike, not a Promise, so it has no
+      // .catch — the rejection handler is the second argument to .then.
+      .then(
+        ({ error }) => {
+          if (error) console.warn("trackDashboardClick failed:", error.message);
+        },
+        () => {},
+      );
+  } catch {
+    // Non-blocking telemetry
+  }
 }

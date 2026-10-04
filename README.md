@@ -1,162 +1,302 @@
-# Buffalo-Track
+<div align="center">
 
-A graph-backed rare-disease atlas. Two halves:
+<img src="docs/assets/hero.svg" alt="Rare Disease Atlas — start with a diagnosis, find a path" width="100%">
 
-## Contributing
+<a href="https://github.com/Rohit-ATS/Buffalo-Track">
+  <img src="https://readme-typing-svg.demolab.com?font=DM+Serif+Display&size=27&duration=2600&pause=700&color=2D6A4F&center=true&vCenter=true&width=900&lines=Different+names.+Shared+biology.+A+way+forward.;9%2C000+rare+diseases.+Under+5%25+have+a+treatment.;Every+edge+shows+its+source%2C+its+quote%2C+its+date.;A+diagnosis+should+not+come+with+a+research+job." alt="Rare Disease Atlas" />
+</a>
 
-Bug reports and feature requests use the repository's issue forms. Read
-[CONTRIBUTING.md](CONTRIBUTING.md) for local setup, required checks, migration
-guidance, and the rules for handling secrets and private data.
+<br>
 
-Research data, seed sources, reproduction steps, and known limitations are in
-[docs/DATA_PROVENANCE.md](docs/DATA_PROVENANCE.md).
+![React](https://img.shields.io/badge/React_19-11201A?style=flat-square&logo=react&logoColor=2D6A4F)
+![TypeScript](https://img.shields.io/badge/TypeScript-11201A?style=flat-square&logo=typescript&logoColor=2D6A4F)
+![TanStack](https://img.shields.io/badge/TanStack_Start-11201A?style=flat-square&logo=reactquery&logoColor=2D6A4F)
+![Tailwind](https://img.shields.io/badge/Tailwind_4-11201A?style=flat-square&logo=tailwindcss&logoColor=2D6A4F)
+![Python](https://img.shields.io/badge/Python-11201A?style=flat-square&logo=python&logoColor=2D6A4F)
+![FastAPI](https://img.shields.io/badge/FastAPI-11201A?style=flat-square&logo=fastapi&logoColor=2D6A4F)
+![Supabase](https://img.shields.io/badge/Supabase-11201A?style=flat-square&logo=supabase&logoColor=2D6A4F)
+![Postgres](https://img.shields.io/badge/Postgres-11201A?style=flat-square&logo=postgresql&logoColor=2D6A4F)
+![Anthropic](https://img.shields.io/badge/Claude_Haiku_4.5-11201A?style=flat-square&logo=anthropic&logoColor=2D6A4F)
+![Bright Data](https://img.shields.io/badge/Bright_Data-11201A?style=flat-square&logo=databricks&logoColor=2D6A4F)
 
-| Path        | What it is                                                                    |
-| ----------- | ----------------------------------------------------------------------------- |
-| `supabase/` | Postgres schema: `nodes`, `edges`, `evidence` (with pgvector embeddings)      |
-| `frontend/` | TanStack Start app — search-first landing page, research workspace, dashboard |
-| `backend/` | FastAPI graph-search service, ready for deployment to Render |
+<br>
 
-Searching a gene, mechanism, or disorder on the landing page walks the public
-graph and lists its matching nodes and connections. Reviewer-only evidence is
-kept out of the public search response.
+![rejected](https://img.shields.io/badge/quote_verifier-28.4%25_rejected-B5502F?style=for-the-badge)
+![assets](https://img.shields.io/badge/assets_discovered-37-2D6A4F?style=for-the-badge)
+![realtime](https://img.shields.io/badge/realtime-6_streams-11201A?style=for-the-badge)
+![advice](https://img.shields.io/badge/not_medical_advice-C8941A?style=for-the-badge)
 
-## Quick start
+</div>
+
+<img src="docs/assets/divider.svg" width="100%" alt="">
+
+<div align="center">
+
+<img src="docs/assets/shots/landing.png" width="92%" alt="The Rare Disease Atlas landing page">
+
+<sub><i>The real app. Search a gene, follow the biology, inspect every receipt.</i></sub>
+
+</div>
+
+<img src="docs/assets/divider.svg" width="100%" alt="">
+
+## <img src="https://img.shields.io/badge/01-2D6A4F?style=flat-square" alt=""> One search, one continuous path
+
+<img src="docs/assets/journey.svg" width="100%" alt="Six steps from diagnosis to a sourced collaboration brief">
+
+> The node we cluster on is a **mechanism unit** — `gene × effect class`.
+> `CACNA1A` loss-of-function and gain-of-function are two different things, never merged.
+> That is the difference between a useful map and a persuasive one.
+
+<img src="docs/assets/divider.svg" width="100%" alt="">
+
+## <img src="https://img.shields.io/badge/02-2D6A4F?style=flat-square" alt=""> Every edge declares how it is known
+
+<img src="docs/assets/tiers.svg" width="100%" alt="Observed, reported and inferred evidence tiers">
+
+<div align="center"><sub>Nothing scraped from the open web is ever <code>observed</code>.</sub></div>
+
+<img src="docs/assets/divider.svg" width="100%" alt="">
+
+## <img src="https://img.shields.io/badge/03-B5502F?style=flat-square" alt=""> The verifier is the whole point
+
+<img src="docs/assets/verifier.svg" width="100%" alt="A claim becomes evidence only if its quote appears in the fetched page">
+
+```text
+normalise whitespace + case, strip inline markdown
+is the quote a substring of the page we actually fetched?
+    yes → evidence, scored by rule
+    no  → rejected, reason kept
+```
+
+| | |
+|---|---|
+| A paraphrase | ✗ rejected |
+| An invention | ✗ rejected |
+| A quote under 40 chars | ✗ rejected — *"registry"* is on every page |
+| Copied character-for-character | ✓ **evidence** |
+
+<details>
+<summary><b>Why confidence is never asked of the model</b></summary>
+
+<br>
+
+A model's self-reported certainty is not evidence. A verified claim starts at `0.50` and moves
+on observable facts — first-party publisher, concretely named asset, stated participant count,
+named investigator — capped at `0.95`, because reported evidence never reaches certainty.
+
+**Every score carries the sentence that produced it**, so *"why 0.83?"* has a real answer.
+
+</details>
+
+<img src="docs/assets/divider.svg" width="100%" alt="">
+
+## <img src="https://img.shields.io/badge/04-2D6A4F?style=flat-square" alt=""> Watch a claim earn its place
+
+<img src="docs/assets/pipeline.svg" width="100%" alt="Discovery pipeline with claims flowing through the quote verifier">
+
+The two **free** stages sit either side of the expensive ones. The classifier decides what is
+worth fetching; the verifier decides what was worth extracting.
+
+<div align="center">
+
+**Deliberately not scraped** — they have real APIs, so scraping them is money burned
+
+`ClinicalTrials.gov` · `PubMed` · `Europe PMC` · `NIH RePORTER` · `HPO` · `Monarch` · `Orphanet`
+
+</div>
+
+<img src="docs/assets/divider.svg" width="100%" alt="">
+
+## <img src="https://img.shields.io/badge/05-11201A?style=flat-square" alt=""> Measured, not estimated
+
+<img src="docs/assets/stats.svg" width="100%" alt="709 URLs, 81 claims, 58 verified, 23 rejected, 37 assets">
+
+<details>
+<summary><b>What those 37 assets actually are</b></summary>
+
+<br>
+
+| Kind | Found | | Kind | Found |
+|---|---:|---|---|---:|
+| Natural history study | **16** | | Animal / cell model | 2 |
+| Patient registry | **7** | | Biobank | 1 |
+| Dataset | 5 | | Protocol | 1 |
+| Outcome measure | 5 | | | |
+
+Real records from real foundation pages — **STARR Natural History Study** (CHOP), the
+**STXBP1 disorders registry**, **Simons Searchlight**'s VAMP2 cohort, the **KCNQ2 Cure
+Alliance** programme.
+
+</details>
+
+<img src="docs/assets/divider.svg" width="100%" alt="">
+
+## <img src="https://img.shields.io/badge/06-2D6A4F?style=flat-square" alt=""> Everything is live
+
+<table>
+<tr>
+<td width="55%">
+
+Discovery runs **offline**. A browser never calls Bright Data and never fetches a page — it
+reads what a run already stored.
+
+Twenty people searching the same gene costs **nothing** and answers in milliseconds.
+
+What *is* live is Postgres replication. Realtime honours RLS, so a subscriber receives a row
+only if their own policy would return it.
+
+</td>
+<td width="45%">
+
+| Stream | Appears as |
+|---|---|
+| `atlas_discovered_assets` | assets landing mid-run |
+| `atlas_discovery_runs` | a "running" badge |
+| `circle_messages` | group chat |
+| `private_messages` | 1:1 threads |
+| `circle_members` | a join approved |
+| `nodes` / `edges` | the public graph |
+
+</td>
+</tr>
+</table>
+
+<img src="docs/assets/divider.svg" width="100%" alt="">
+
+## <img src="https://img.shields.io/badge/07-2D6A4F?style=flat-square" alt=""> Who sees what
+
+<div align="center">
+
+| Role | Family space | Groups | Messages | Moderation | Evidence | Research | Ops |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| **Family member** | ✅ | ✅ | ✅ | · | · | · | · |
+| **Circle steward** | ✅ | ✅ | ✅ | ✅ | · | · | · |
+| **Evidence reviewer** | · | · | · | · | ✅ | ✅ | · |
+| **Administrator** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+</div>
+
+> A researcher does **not** get into families' private space. The RLS refuses it and the nav
+> does not pretend otherwise. Roles cannot be self-escalated — the update policy pins
+> `role = current_profile_role()`.
+
+<img src="docs/assets/divider.svg" width="100%" alt="">
+
+## <img src="https://img.shields.io/badge/08-2D6A4F?style=flat-square" alt=""> The app
+
+<table>
+<tr>
+<td width="50%"><img src="docs/assets/shots/disease.png" alt="A disease page with live discovered assets"><br><sub><b>Disease page</b> — connections, receipts, and assets discovered on the web</sub></td>
+<td width="50%"><img src="docs/assets/shots/dashboard.png" alt="The role-gated dashboard"><br><sub><b>Dashboard</b> — one entry point; the role decides the nav</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/assets/shots/methods.png" alt="The methods page"><br><sub><b>Methods</b> — sources, pull dates, and what each number means</sub></td>
+<td width="50%"><img src="docs/assets/palette.svg" alt="The palette"><br><sub><b>Every colour here is the app's own</b> — straight from <code>styles.css</code></sub></td>
+</tr>
+</table>
+
+<img src="docs/assets/divider.svg" width="100%" alt="">
+
+## <img src="https://img.shields.io/badge/09-2D6A4F?style=flat-square" alt=""> Run it
 
 ```bash
-# 1. Database — see "Database setup" below
-# 2. Frontend
-cd frontend
-bun install          # or: npm install
-cp .env.example .env # set BACKEND_URL after starting the API below
-bun run dev          # http://localhost:8080
+supabase db push                                   # every migration
+psql "$DATABASE_URL" -f supabase/seed.sql -f supabase/seed_atlas.sql
+
+cd frontend && bun install && cp .env.example .env
+bun run dev                                        # localhost:8080
 ```
 
-## Backend API
+<details>
+<summary><b>🛰️ Running the discovery pipeline</b></summary>
 
-The production search API lives in [`backend/`](backend/README.md). It exposes
-`POST /api/v1/search`, `/healthz`, and `/readyz`; `render.yaml` deploys it as a
-Render web service. Copy `backend/.env.example` to `backend/.env` locally, then
-set `BACKEND_URL` in `frontend/.env` to connect the frontend. The service-role
-key stays in the backend environment and must never use a `VITE_` prefix.
-Before production deployment, follow the [Render checklist](backend/RENDER_DEPLOY.md).
+<br>
 
-Without `.env`, the app still runs — search reports that the live atlas is not
-connected and the curated sample path on the page carries the demo.
+```bash
+cd backend && pip install -r requirements.txt && cp .env.example .env
 
-## Public project preview (GitHub Pages)
-
-GitHub Pages builds the actual [`frontend/`](frontend/) application in a static
-mode and prerenders its public routes: the landing page, research workspace,
-comparison, methods, mechanisms, researchers, and every seeded disease page.
-It uses the same components, styles, assets, and client-side interactions as
-the deployed frontend. The Pages artifact contains no credentials.
-
-GitHub Pages cannot run FastAPI or TanStack Start server functions. Therefore,
-the graph-backed landing-page search remains available on the Render deployment;
-all sample-data research views are fully available in the static preview.
-
-The workflow in [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)
-builds `frontend/.output/public` on pushes to `main`. After the first push, enable **Settings
-→ Pages → Build and deployment → Source → GitHub Actions** in the repository.
-GitHub then shows the published URL on the completed workflow run.
-
-## Database setup
-
-1. Create a project at https://supabase.com/dashboard, then copy `.env.example` to `.env` and fill it in
-   from **Settings → API** and **Settings → Database**.
-2. Apply the schema, either via the dashboard SQL Editor (paste `supabase/migrations/20261003000001_init.sql`)
-   or with the CLI:
-
-   ```bash
-   supabase login
-   supabase link --project-ref <your-ref>
-   supabase db push
-   ```
-
-3. Load the demo graph so searches return something: paste `supabase/seed.sql` into the SQL Editor.
-   Locally, `supabase db reset` loads it automatically (registered under `[db.seed]` in `config.toml`).
-4. Verify: run `supabase/verify.sql`. You should see the `vector` and `pgcrypto` extensions,
-   all three tables, and `evidence.embedding` typed as `vector(1536)`.
-5. Optional smoke test: run `supabase/smoke_test.sql`.
-
-Seeded queries worth trying on the landing page: `STXBP1`, `STX1B`, `CACNA1A`,
-`SNAP25`, `Presynaptic vesicle fusion`.
-
-## Schema notes
-
-- `evidence.embedding` is `vector(1536)` — matches OpenAI `text-embedding-3-small`. Change it in the
-  migration *before* first run if your model differs (Voyage `voyage-3` is 1024).
-- RLS is enabled on all three tables with **no policies**, so the `anon` key reads nothing.
-  Server-side access via the service-role key bypasses RLS. Add policies before exposing
-  direct client reads.
-- Each `evidence` row attaches to a node or an edge (at least one is required).
-
-## How the frontend reads the graph
-
-Because RLS blocks the anon key, the browser never queries Supabase directly.
-The lookup runs through the FastAPI backend; the TanStack Start **server function**
-forwards the browser request to it:
-
-- `backend/app/atlas.py` — matches nodes in three passes (exact → prefix →
-  substring), then loads public graph edges and neighbours with the server-only
-  service-role key.
-- `frontend/src/lib/atlas-search.ts` — the server function the browser calls over RPC;
-  it forwards the request to `BACKEND_URL`.
-- `frontend/src/components/atlas-results.tsx` — renders the match and its
-  connections, and explains when evidence is reviewer-only.
-
-The research views (`/dashboard`, `/disease/$id`, `/compare`, `/mechanisms`,
-`/researchers`, `/methods`) read the static sample dataset in
-`frontend/src/lib/atlas-data.ts`, not the database. Only the landing-page search
-is live.
-
-Set `SUPABASE_SERVICE_ROLE_KEY` only in `backend/.env` or Render. It must never
-be prefixed with `VITE_`, which would bundle it into client JavaScript.
-
-## Frontend commands
-
-Run from `frontend/`:
-
-| Command            | What it does                      |
-| ------------------ | --------------------------------- |
-| `bun run dev`      | Dev server on port 8080           |
-| `bun run build`    | Production build into `.output/`  |
-| `bun run test`     | Vitest suite                      |
-| `bun run lint`     | ESLint                            |
-| `bun run format`   | Prettier write                    |
-| `bunx tsc --noEmit`| Typecheck                         |
-
-## Access model
-
-Public graph reads and authenticated family-space features use different
-Supabase RLS policies. Generic evidence is reviewer-only, while the FastAPI
-public search returns nodes and edges without evidence content. The service-role
-key bypasses RLS and stays server-side only; it must never use a `VITE_` prefix.
-See [docs/DATA_PROVENANCE.md](docs/DATA_PROVENANCE.md) and the final migration
-policies for the current access model.
-
-### Subscribing to live updates
-
-```js
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-)
-
-// initial load
-const { data: nodes } = await supabase.from('nodes').select('*')
-const { data: edges } = await supabase.from('edges').select('*')
-
-// live patches
-supabase
-  .channel('graph')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'nodes' }, applyNodeChange)
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'edges' }, applyEdgeChange)
-  .subscribe()
+python -m app.discovery.cli doctor            # verify creds + zones (2 requests)
+python -m app.discovery.cli plan STXBP1       # what will this cost? spends nothing
+python -m app.discovery.cli run STXBP1 --disease-id stxbp1 --max-pages 6
 ```
 
-`payload.eventType` is `INSERT` / `UPDATE` / `DELETE`; `payload.new` holds the
-row (and `payload.old` the previous one, for `nodes` and `edges`).
+`doctor` checks each Bright Data **zone by name** — a valid token says nothing about whether a
+zone called `serp_api1` exists, and a mismatch fails per request, not at auth.
+
+~**18 billable requests per gene**. `BRIGHT_DATA_MAX_REQUESTS` is a hard stop, and a run that
+hits it records where it stopped rather than losing the work. → [backend/DISCOVERY.md](backend/DISCOVERY.md)
+
+</details>
+
+<details>
+<summary><b>🚢 Backend API, Render and GitHub Pages</b></summary>
+
+<br>
+
+[`backend/`](backend/README.md) exposes `POST /api/v1/search`, `/healthz`, `/readyz`;
+`render.yaml` deploys it to Render. Set `BACKEND_URL` in `frontend/.env`. Checklist:
+[backend/RENDER_DEPLOY.md](backend/RENDER_DEPLOY.md).
+
+[`deploy-pages.yml`](.github/workflows/deploy-pages.yml) prerenders the public routes to GitHub
+Pages on every push to `main`. Pages cannot run server functions, so graph-backed search stays
+on Render. The artifact contains no credentials.
+
+</details>
+
+<details>
+<summary><b>🧰 Commands &amp; layout</b></summary>
+
+<br>
+
+| Command | Does |
+|---|---|
+| `bun run dev` / `build` / `test` | dev server · production build · Vitest |
+| `bun run lint` / `format` | ESLint · Prettier |
+| `bunx tsc --noEmit` | typecheck |
+| `bun run seed:generate` | regenerate `seed_atlas.sql` from the curated dataset |
+
+```
+frontend/   TanStack Start app, role-gated dashboard, realtime hooks
+backend/    FastAPI service + discovery pipeline
+supabase/   migrations and seeds — the schema is the contract
+docs/       assets and data provenance
+```
+
+</details>
+
+<img src="docs/assets/divider.svg" width="100%" alt="">
+
+## <img src="https://img.shields.io/badge/10-C8941A?style=flat-square" alt=""> Honest gaps
+
+A project about traceable evidence has to be traceable about itself.
+
+| Gap | Why it is still open |
+|---|---|
+| A **9-unit slice**, not every monogenic disease | the curated backbone is a snapshot; discovery is live on top |
+| `atlas_publications` / `atlas_grants` are **empty** | seeding either would mean inventing a paper record |
+| `hgnc_id`, `reactome_id`, `go_id`, `hpo_id` are **null** | needs a registry lookup this snapshot never did |
+| Cluster stability & audit precision **unmeasured** | the rejection rate is real because that pipeline exists; these aren't, and an unmeasured number is not a perfect one |
+| Assets inherit their run's `disease_id` | entity reconciliation is not built yet |
+
+<img src="docs/assets/divider.svg" width="100%" alt="">
+
+<div align="center">
+
+### Research navigation, not medical advice.
+
+<sub>Connections and actions should be reviewed by qualified experts.</sub>
+
+<br><br>
+
+<img src="https://readme-typing-svg.demolab.com?font=Caveat&size=30&duration=4000&pause=1200&color=2D6A4F&center=true&vCenter=true&width=700&lines=The+rarest+thing+in+rare+disease+is+a+map." alt="The rarest thing in rare disease is a map." />
+
+<br>
+
+<sub>
+
+[Contributing](CONTRIBUTING.md) · [Data provenance](docs/DATA_PROVENANCE.md) · [Discovery pipeline](backend/DISCOVERY.md) · [Database](supabase/README.md)
+
+</sub>
+
+</div>

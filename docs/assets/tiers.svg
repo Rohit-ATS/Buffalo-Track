@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 230" width="1200" height="230" role="img" aria-label="Three evidence tiers: observed, reported, inferred">
+  <title>Every edge declares how it is known</title>
+  <desc>Observed is a solid line from a curated database. Reported is outlined, extracted with a verbatim quote. Inferred is dashed, computed by us.</desc>
+
+  <defs>
+    <style>
+      .bg     { fill: #FDFCF8; }
+      .card   { fill: #F6F5EF; }
+      .ink    { fill: #11201A; }
+      .green  { fill: #2D6A4F; }
+      .muted  { fill: #5B6B63; }
+      .serif  { font-family: "DM Serif Display", Georgia, serif; }
+      .sans   { font-family: "DM Sans", "Segoe UI", system-ui, sans-serif; }
+      .sketch { font-family: "Caveat", "Bradley Hand", cursive; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1200" height="230" rx="10"/>
+
+  <!-- OBSERVED -->
+  <g transform="translate(40,30)">
+    <rect class="card" width="352" height="150" rx="8"/>
+    <rect x="0" y="0" width="352" height="4" rx="2" fill="#2D6A4F"/>
+    <circle cx="316" cy="34" r="8" fill="#2D6A4F">
+      <animate attributeName="opacity" values="1;.4;1" dur="2.4s" repeatCount="indefinite"/>
+    </circle>
+    <text class="sans muted" x="26" y="40" font-size="11" letter-spacing="1.4">OBSERVED</text>
+    <text class="serif ink" x="26" y="78" font-size="26">Registry record</text>
+    <text class="sans muted" x="26" y="104" font-size="13">Found in a curated database:</text>
+    <text class="sans muted" x="26" y="122" font-size="13">ClinVar, HPO, ClinicalTrials.gov.</text>
+    <line x1="26" y1="136" x2="326" y2="136" stroke="#2D6A4F" stroke-width="3"/>
+  </g>
+
+  <!-- REPORTED -->
+  <g transform="translate(424,30)">
+    <rect class="card" width="352" height="150" rx="8"/>
+    <rect x="0" y="0" width="352" height="4" rx="2" fill="#11201A"/>
+    <circle cx="316" cy="34" r="8" fill="#FDFCF8" stroke="#11201A" stroke-width="2.5"/>
+    <text class="sans muted" x="26" y="40" font-size="11" letter-spacing="1.4">REPORTED</text>
+    <text class="serif ink" x="26" y="78" font-size="26">Source quote</text>
+    <text class="sans muted" x="26" y="104" font-size="13">Extracted from a real page, with</text>
+    <text class="sans muted" x="26" y="122" font-size="13">the verbatim sentence attached.</text>
+    <line x1="26" y1="136" x2="326" y2="136" stroke="#11201A" stroke-width="3"/>
+  </g>
+
+  <!-- INFERRED -->
+  <g transform="translate(808,30)">
+    <rect class="card" width="352" height="150" rx="8"/>
+    <rect x="0" y="0" width="352" height="4" rx="2" fill="#C8941A"/>
+    <circle cx="316" cy="34" r="8" fill="#FDFCF8" stroke="#C8941A" stroke-width="2.5" stroke-dasharray="3 3">
+      <animateTransform attributeName="transform" type="rotate" from="0 316 34" to="360 316 34" dur="14s" repeatCount="indefinite"/>
+    </circle>
+    <text class="sans muted" x="26" y="40" font-size="11" letter-spacing="1.4">INFERRED</text>
+    <text class="serif ink" x="26" y="78" font-size="26">Computed link</text>
+    <text class="sans muted" x="26" y="104" font-size="13">Similarity, clusters, suggested</text>
+    <text class="sans muted" x="26" y="122" font-size="13">actions — every input listed.</text>
+    <line x1="26" y1="136" x2="326" y2="136" stroke="#C8941A" stroke-width="3" stroke-dasharray="8 7"/>
+  </g>
+
+  <text class="sketch green" x="600" y="208" font-size="21" text-anchor="middle">a model-written claim never outranks a database record</text>
+</svg>

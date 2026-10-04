@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="1200" height="420" role="img" aria-label="Rare Disease Atlas — start with a diagnosis, find a path">
+  <title>Rare Disease Atlas</title>
+  <desc>Hand-drawn title card: different names, shared biology, a way forward.</desc>
+
+  <defs>
+    <!-- Landing-page palette, converted from the oklch tokens in styles.css -->
+    <style>
+      .bg      { fill: #FDFCF8; }
+      .ink     { fill: #11201A; }
+      .green   { fill: #2D6A4F; }
+      .muted   { fill: #5B6B63; }
+      .stroke  { stroke: #11201A; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+      .gstroke { stroke: #2D6A4F; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+      .gold    { stroke: #C8941A; fill: none; stroke-linecap: round; }
+      .serif   { font-family: "DM Serif Display", Georgia, "Times New Roman", serif; }
+      .sketch  { font-family: "Caveat", "Bradley Hand", "Segoe Script", cursive; }
+      .sans    { font-family: "DM Sans", "Segoe UI", system-ui, sans-serif; }
+    </style>
+
+    <!-- The pencil-draw effect the landing page uses for its sketches. -->
+    <linearGradient id="fade" x1="0" x2="1">
+      <stop offset="0" stop-color="#2D6A4F" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#2D6A4F" stop-opacity="0.15"/>
+    </linearGradient>
+  </defs>
+
+  <rect class="bg" width="1200" height="420" rx="10"/>
+
+  <!-- grid, barely there -->
+  <g stroke="#2D6A4F" stroke-opacity="0.07">
+    <path d="M0 60H1200M0 120H1200M0 180H1200M0 240H1200M0 300H1200M0 360H1200"/>
+    <path d="M60 0V420M180 0V420M300 0V420M420 0V420M540 0V420M660 0V420M780 0V420M900 0V420M1020 0V420M1140 0V420"/>
+  </g>
+
+  <!-- atlas mark -->
+  <g transform="translate(64,54)">
+    <path class="gstroke" stroke-width="3.4" d="M5 18c7-9 12-12 18-6 5 5 8 4 16-5M6 23c5-5 10-6 15-1 5 4 10 3 17-3"/>
+    <circle class="green" cx="6" cy="18" r="3.6"/>
+    <circle class="green" cx="38" cy="7" r="3.6"/>
+    <circle class="green" cx="38" cy="19" r="3.6"/>
+  </g>
+  <text class="serif ink" x="118" y="72" font-size="27">Rare Disease Atlas</text>
+
+  <!-- headline -->
+  <text class="serif ink" x="64" y="186" font-size="74">Start with a diagnosis.</text>
+  <text class="serif green" x="64" y="268" font-size="74" font-style="italic">Find a path.</text>
+
+  <!-- hand-drawn underline, drawn on load -->
+  <path class="gstroke" stroke-width="5" d="M66 288c118 10 236 12 352 2" pathLength="1"
+        stroke-dasharray="1" stroke-dashoffset="1">
+    <animate attributeName="stroke-dashoffset" from="1" to="0" dur="1.1s" begin="0.35s" fill="freeze"/>
+  </path>
+  <path class="gold" stroke-width="2.6" d="M74 299c112 8 224 9 330 1" pathLength="1"
+        stroke-dasharray="1" stroke-dashoffset="1">
+    <animate attributeName="stroke-dashoffset" from="1" to="0" dur="1.1s" begin="0.75s" fill="freeze"/>
+  </path>
+
+  <text class="sans muted" x="64" y="344" font-size="19">Find who shares your disease’s biology, what their community already built,</text>
+  <text class="sans muted" x="64" y="372" font-size="19">and the evidence behind every connection.</text>
+
+  <!-- constellation: nodes find each other -->
+  <g transform="translate(726,96)">
+    <path class="gstroke" stroke-width="1.6" stroke-opacity="0.55" d="M20 60L96 18L170 54L120 112L52 104Z M96 18L120 112" pathLength="1"
+          stroke-dasharray="1" stroke-dashoffset="1">
+      <animate attributeName="stroke-dashoffset" from="1" to="0" dur="1.8s" begin="0.2s" fill="freeze"/>
+    </path>
+    <g class="green">
+      <circle cx="20" cy="60" r="5.5"><animate attributeName="r" values="0;6.5;5.5" dur=".5s" begin=".3s" fill="freeze"/></circle>
+      <circle cx="96" cy="18" r="5.5"><animate attributeName="r" values="0;6.5;5.5" dur=".5s" begin=".6s" fill="freeze"/></circle>
+      <circle cx="170" cy="54" r="5.5"><animate attributeName="r" values="0;6.5;5.5" dur=".5s" begin=".9s" fill="freeze"/></circle>
+      <circle cx="120" cy="112" r="7.5"><animate attributeName="r" values="0;9;7.5" dur=".5s" begin="1.2s" fill="freeze"/>
+        <animate attributeName="opacity" values="1;.45;1" dur="2.4s" begin="1.7s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="52" cy="104" r="5.5"><animate attributeName="r" values="0;6.5;5.5" dur=".5s" begin="1.5s" fill="freeze"/></circle>
+    </g>
+  </g>
+
+  <!-- handwritten note -->
+  <g transform="translate(956,232) rotate(-4)">
+    <text class="sketch ink" x="0" y="0"   font-size="30">Different names.</text>
+    <text class="sketch ink" x="0" y="38"  font-size="30">Shared biology.</text>
+    <text class="sketch green" x="0" y="76" font-size="30">A way forward.</text>
+  </g>
+
+  <!-- arrow pointing at the note -->
+  <path class="stroke" stroke-width="2.4" d="M905 268c-34-6-58 4-74 22m8-22-10 23 24 5" pathLength="1"
+        stroke-dasharray="1" stroke-dashoffset="1">
+    <animate attributeName="stroke-dashoffset" from="1" to="0" dur="1s" begin="1.4s" fill="freeze"/>
+  </path>
+
+  <!-- sparkles -->
+  <g class="green" opacity="0.85">
+    <path d="M690 150l4 11 11 4-11 4-4 11-4-11-11-4 11-4z">
+      <animateTransform attributeName="transform" type="rotate" from="0 694 165" to="360 694 165" dur="18s" repeatCount="indefinite"/>
+    </path>
+    <path d="M1148 120l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" opacity=".6"/>
+  </g>
+</svg>

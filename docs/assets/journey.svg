@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 250" width="1200" height="250" role="img" aria-label="The demo journey: diagnosis to mechanism to neighbour to community to asset to action">
+  <title>One search, one continuous path</title>
+  <desc>Six steps from a rare diagnosis to something a family can do this week.</desc>
+
+  <defs>
+    <style>
+      .bg     { fill: #FDFCF8; }
+      .ink    { fill: #11201A; }
+      .green  { fill: #2D6A4F; }
+      .gold   { fill: #C8941A; }
+      .muted  { fill: #5B6B63; }
+      .serif  { font-family: "DM Serif Display", Georgia, serif; }
+      .sans   { font-family: "DM Sans", "Segoe UI", system-ui, sans-serif; }
+      .sketch { font-family: "Caveat", "Bradley Hand", "Segoe Script", cursive; }
+      .line   { stroke: #2D6A4F; fill: none; stroke-width: 2.4; stroke-linecap: round; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1200" height="250" rx="10"/>
+
+  <!-- the thread, drawn left to right -->
+  <path class="line" d="M78 104H1122" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1">
+    <animate attributeName="stroke-dashoffset" from="1" to="0" dur="2.6s" fill="freeze"/>
+  </path>
+  <!-- the last leg is inferred, so it is dashed and gold -->
+  <path d="M938 104H1122" stroke="#C8941A" stroke-width="2.6" stroke-dasharray="7 7" fill="none" opacity="0">
+    <animate attributeName="opacity" from="0" to="1" dur=".4s" begin="2.4s" fill="freeze"/>
+  </path>
+
+  <g class="sans" font-size="13" text-anchor="middle">
+    <!-- 1 -->
+    <g>
+      <circle class="green" cx="78" cy="104" r="0"><animate attributeName="r" values="0;11;8.5" dur=".45s" begin="0.1s" fill="freeze"/></circle>
+      <text class="muted" x="78" y="60" font-size="11" letter-spacing="1.2">01 · DIAGNOSIS</text>
+      <text class="serif ink" x="78" y="146" font-size="17">A SNARE-gene</text>
+      <text class="serif ink" x="78" y="166" font-size="17">disorder</text>
+      <text class="sketch green" x="78" y="194" font-size="18">typed into one box</text>
+    </g>
+    <!-- 2 -->
+    <g>
+      <circle class="green" cx="287" cy="104" r="0"><animate attributeName="r" values="0;11;8.5" dur=".45s" begin="0.55s" fill="freeze"/></circle>
+      <text class="muted" x="287" y="60" font-size="11" letter-spacing="1.2">02 · MECHANISM</text>
+      <text class="serif ink" x="287" y="146" font-size="17">Presynaptic</text>
+      <text class="serif ink" x="287" y="166" font-size="17">vesicle fusion</text>
+      <text class="sans muted" x="287" y="192" font-size="11">observed</text>
+    </g>
+    <!-- 3 -->
+    <g>
+      <circle class="green" cx="496" cy="104" r="0"><animate attributeName="r" values="0;11;8.5" dur=".45s" begin="1.0s" fill="freeze"/></circle>
+      <text class="muted" x="496" y="60" font-size="11" letter-spacing="1.2">03 · NEIGHBOUR</text>
+      <text class="serif ink" x="496" y="146" font-size="17">STXBP1-related</text>
+      <text class="serif ink" x="496" y="166" font-size="17">disorder</text>
+      <text class="sans muted" x="496" y="192" font-size="11">observed + reported</text>
+    </g>
+    <!-- 4 -->
+    <g>
+      <circle class="green" cx="705" cy="104" r="0"><animate attributeName="r" values="0;11;8.5" dur=".45s" begin="1.45s" fill="freeze"/></circle>
+      <text class="muted" x="705" y="60" font-size="11" letter-spacing="1.2">04 · COMMUNITY</text>
+      <text class="serif ink" x="705" y="146" font-size="17">STXBP1</text>
+      <text class="serif ink" x="705" y="166" font-size="17">Foundation</text>
+      <text class="sans muted" x="705" y="192" font-size="11">reported · quoted</text>
+    </g>
+    <!-- 5 -->
+    <g>
+      <circle class="green" cx="938" cy="104" r="0"><animate attributeName="r" values="0;11;8.5" dur=".45s" begin="1.9s" fill="freeze"/></circle>
+      <text class="muted" x="938" y="60" font-size="11" letter-spacing="1.2">05 · EXISTING ASSET</text>
+      <text class="serif ink" x="938" y="146" font-size="17">STARR natural</text>
+      <text class="serif ink" x="938" y="166" font-size="17">history study</text>
+      <text class="sans muted" x="938" y="192" font-size="11">discovered on the web</text>
+    </g>
+    <!-- 6 -->
+    <g>
+      <circle class="gold" cx="1122" cy="104" r="0"><animate attributeName="r" values="0;14;11" dur=".5s" begin="2.5s" fill="freeze"/>
+        <animate attributeName="opacity" values="1;.5;1" dur="2.6s" begin="3s" repeatCount="indefinite"/>
+      </circle>
+      <text class="muted" x="1122" y="60" font-size="11" letter-spacing="1.2">06 · THIS WEEK</text>
+      <text class="serif ink" x="1122" y="146" font-size="17">A sourced</text>
+      <text class="serif ink" x="1122" y="166" font-size="17">collaboration brief</text>
+      <text class="sans muted" x="1122" y="192" font-size="11">inferred · checks listed</text>
+    </g>
+  </g>
+
+  <text class="sketch green" x="600" y="232" font-size="21" text-anchor="middle">six steps, one continuous thread — every edge carries a receipt</text>
+</svg>
