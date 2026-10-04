@@ -1,7 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AtlasShell, CitationChip, StateMessage, TierBadge } from "@/components/atlas-ui";
 import { Button } from "@/components/ui/button";
-import { clusters, diseaseById, diseases, edges, similarity } from "@/lib/atlas-data";
+import {
+  clusters,
+  diseaseById,
+  diseases,
+  edges,
+  humanizeMechanism,
+  similarity,
+} from "@/lib/atlas-data";
 
 const SITE = "https://gleam-artistic-page.lovable.app";
 export const Route = createFileRoute("/compare")({
@@ -106,8 +113,8 @@ function ComparePage() {
                 <div>
                   Gene: <b>{d.gene}</b>
                 </div>
-                <div className="capitalize">
-                  Mechanism: <b>{d.mechanism}</b>
+                <div>
+                  Mechanism: <b>{humanizeMechanism(d.mechanism)}</b>
                 </div>
                 <div>
                   Cluster: <b>{clusters.find((c) => c.id === d.cluster)?.name}</b>

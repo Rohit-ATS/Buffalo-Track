@@ -408,6 +408,16 @@ export const diseases: Disease[] = [
 ];
 export const diseaseById = (id: string) => diseases.find((d) => d.id === id);
 
+/**
+ * "loss-of-function" -> "Loss of function". CSS `capitalize` title-cases
+ * every segment after a hyphen too ("Loss-Of-Function"), which reads as
+ * broken rather than styled — this renders it as a normal sentence instead.
+ */
+export const humanizeMechanism = (mechanism: string) => {
+  const words = mechanism.replace(/-/g, " ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
+};
+
 const e = (
   id: string,
   from: string,

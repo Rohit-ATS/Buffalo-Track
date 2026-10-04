@@ -11,7 +11,15 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { diseases, diseaseById, edges, sources, coverage, type Edge } from "@/lib/atlas-data";
+import {
+  diseases,
+  diseaseById,
+  edges,
+  sources,
+  coverage,
+  humanizeMechanism,
+  type Edge,
+} from "@/lib/atlas-data";
 import {
   breakdown,
   mechanismUnits,
@@ -284,7 +292,7 @@ function Mechanisms({ focus }: { focus: string }) {
                 </span>
               )}
             </div>
-            <p className="mt-1 text-[11px] capitalize text-muted-foreground">{u.effect}</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">{humanizeMechanism(u.effect)}</p>
             <dl className="mt-3 space-y-1 text-xs">
               <div>
                 <dt className="inline text-muted-foreground">Pathway: </dt>

@@ -25,6 +25,7 @@ import {
   diseases,
   edges,
   edgesFor,
+  humanizeMechanism,
   other,
   similarity,
   sourceById,
@@ -175,8 +176,8 @@ function DiseaseView({ disease }: { disease: Disease }) {
             <span className="rounded-full border border-border px-3 py-1">
               Gene <b>{disease.gene}</b>
             </span>
-            <span className="rounded-full border border-border px-3 py-1 capitalize">
-              {disease.mechanism}
+            <span className="rounded-full border border-border px-3 py-1">
+              {humanizeMechanism(disease.mechanism)}
             </span>
             <span className="rounded-full border border-border px-3 py-1">{disease.pathway}</span>
           </div>
