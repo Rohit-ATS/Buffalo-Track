@@ -36,7 +36,13 @@ import { getSupabaseBrowser } from "@/lib/supabase-browser";
  * somewhere usable instead of erroring.
  */
 
-export function DashboardShell({ section: requested }: { section?: string | undefined }) {
+export function DashboardShell({
+  section: requested,
+  as: previewAs,
+}: {
+  section?: string | undefined;
+  as?: string | undefined;
+}) {
   const navigate = useNavigate();
   const [role, setRole] = React.useState<FamilyRole | null>(null);
   const [viewerId, setViewerId] = React.useState<string | null>(null);
@@ -105,8 +111,15 @@ export function DashboardShell({ section: requested }: { section?: string | unde
     return <SignedOut />;
   }
 
-  const active = resolveSection(role, requested);
-  const sections = sectionsFor(role);
+  // An admin can preview another role's dashboard without signing in four
+  // times. It only changes what the interface offers -- the database still
+  // answers as this account, so this is a preview, never an impersonation.
+  const canPreview = role === "admin";
+  const preview = canPreview && isFamilyRole(previewAs) && previewAs !== "admin" ? previewAs : null;
+  const effective: FamilyRole = preview ?? role;
+
+  const active = resolveSection(effective, requested);
+  const sections = sectionsFor(effective);
 
   return (
     <main className="min-h-screen bg-secondary text-foreground">
@@ -115,9 +128,34 @@ export function DashboardShell({ section: requested }: { section?: string | unde
           <Link to="/" className="font-display text-lg">
             Rare Disease Atlas
           </Link>
-          <span className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold uppercase">
-            {ROLE_LABELS[role]}
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            {canPreview && (
+              <label className="flex items-center gap-2 text-[11px] uppercase text-muted-foreground">
+                View as
+                <select
+                  value={preview ?? "admin"}
+                  onChange={(event) => {
+                    const next = event.target.value;
+                    void navigate({
+                      to: "/dashboard",
+                      search: next === "admin" ? {} : { as: next },
+                    });
+                  }}
+                  className="rounded-full border border-border bg-background px-3 py-1 text-[11px] font-semibold uppercase outline-none focus:ring-2 focus:ring-ring"
+                >
+                  {(Object.keys(ROLE_LABELS) as FamilyRole[]).map((value) => (
+                    <option key={value} value={value}>
+                      {ROLE_LABELS[value]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <span className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold uppercase">
+              {ROLE_LABELS[role]}
+            </span>
+            <SignOutButton />
+          </div>
         </div>
       </header>
 
@@ -130,7 +168,10 @@ export function DashboardShell({ section: requested }: { section?: string | unde
               aria-current={item.id === active ? "page" : undefined}
               onClick={() => {
                 trackDashboardClick(`dashboard_shell_section_${item.id}`, { section: item.id });
-                void navigate({ to: "/dashboard", search: { section: item.id } });
+                void navigate({
+                  to: "/dashboard",
+                  search: preview ? { section: item.id, as: preview } : { section: item.id },
+                });
               }}
               className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
                 item.id === active
@@ -143,6 +184,20 @@ export function DashboardShell({ section: requested }: { section?: string | unde
           ))}
         </nav>
 
+        {preview && (
+          <p className="mb-6 rounded-[6px] border border-highlight bg-surface px-4 py-3 text-sm">
+            Previewing the <strong>{ROLE_LABELS[preview]}</strong> dashboard. The database still
+            answers as your own account, so this shows the shape of their view, not their data.{" "}
+            <button
+              type="button"
+              className="font-semibold text-primary underline"
+              onClick={() => void navigate({ to: "/dashboard", search: {} })}
+            >
+              Back to yours
+            </button>
+          </p>
+        )}
+
         <SectionBody section={active} viewerId={viewerId} />
 
         <footer className="mt-14 border-t border-border pt-5 text-xs text-muted-foreground">
@@ -151,6 +206,26 @@ export function DashboardShell({ section: requested }: { section?: string | unde
         </footer>
       </div>
     </main>
+  );
+}
+
+function isFamilyRole(value: string | undefined): value is FamilyRole {
+  return (
+    value === "family" || value === "steward" || value === "evidence_reviewer" || value === "admin"
+  );
+}
+
+function SignOutButton() {
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => {
+        void getSupabaseBrowser()?.auth.signOut();
+      }}
+    >
+      Sign out
+    </Button>
   );
 }
 

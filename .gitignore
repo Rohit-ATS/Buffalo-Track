@@ -36,3 +36,6 @@ frontend/.tanstack/
 Thumbs.db
 .vscode/
 .idea/
+
+# Local Claude Code worktrees and session state.
+.claude/

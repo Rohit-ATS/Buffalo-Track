@@ -27,7 +27,8 @@ import communityPhoto from "@/assets/atlas-community.jpg";
 import motherPhoto from "@/assets/atlas-mother.jpg";
 import researcherPhoto from "@/assets/atlas-researcher.jpg";
 import { Button } from "@/components/ui/button";
-import { GITHUB_URL, PersonaSwitch, SearchBox } from "@/components/atlas-ui";
+import { GITHUB_URL, SearchBox } from "@/components/atlas-ui";
+import { AuthControl } from "@/components/auth-control";
 import { coverage } from "@/lib/atlas-data";
 import { AtlasResults } from "@/components/atlas-results";
 import { searchAtlas } from "@/lib/atlas-search";
@@ -241,12 +242,7 @@ function Index() {
             </a>
           </nav>
           <div className="flex items-center gap-2">
-            <PersonaSwitch />
-            <Button asChild size="sm" className="hidden sm:inline-flex">
-              <Link to="/dashboard" onClick={() => trackDashboardClick("landing_cta")}>
-                Dashboard <ArrowRight className="size-3.5" />
-              </Link>
-            </Button>
+            <AuthControl />
           </div>
         </div>
       </header>
