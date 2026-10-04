@@ -1,4 +1,5 @@
 import { PersonaProvider } from "@/lib/persona";
+import { RouteTransition } from "@/components/route-transition";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -131,6 +132,9 @@ function RootComponent() {
       <PersonaProvider>
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
+        {/* Sits beside <Outlet /> so the wipe survives the route change it
+            is covering, rather than unmounting with the departing page. */}
+        <RouteTransition />
         <Toaster />
       </PersonaProvider>
     </QueryClientProvider>
