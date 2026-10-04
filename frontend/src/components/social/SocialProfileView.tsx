@@ -1,5 +1,16 @@
 import * as React from "react";
-import { Bookmark, Edit3, Grid, Heart, Lock, ShieldCheck, Sparkles, Users } from "lucide-react";
+import {
+  Bookmark,
+  Edit3,
+  Grid,
+  Heart,
+  Lock,
+  ShieldCheck,
+  Sparkles,
+  Users,
+  UserCheck,
+  UserX,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { FamilyProfile } from "@/lib/family-network";
 import type { SocialPost } from "@/lib/social-feed";
@@ -40,6 +51,24 @@ export function SocialProfileView({
                   </span>
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <Lock className="size-3" /> Private Profile
+                  </span>
+                  {/* The one true answer to "can anyone find me," read from the
+                      same field search_people() and family_suggestions check
+                      live -- never a separate guess about what matching does. */}
+                  <span
+                    className={`flex items-center gap-1 text-xs ${
+                      profile?.matching_opt_in ? "text-primary" : "text-muted-foreground"
+                    }`}
+                  >
+                    {profile?.matching_opt_in ? (
+                      <>
+                        <UserCheck className="size-3" /> Matching on
+                      </>
+                    ) : (
+                      <>
+                        <UserX className="size-3" /> Matching off
+                      </>
+                    )}
                   </span>
                 </div>
               </div>
