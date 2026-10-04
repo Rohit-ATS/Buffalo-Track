@@ -50,7 +50,8 @@ export async function searchAtlas({
     return {
       status: "fallback",
       query,
-      message: "This route is available in the curated atlas while live records are being verified.",
+      message:
+        "This route is available in the curated atlas while live records are being verified.",
       matches: curatedMatches,
     };
   }
