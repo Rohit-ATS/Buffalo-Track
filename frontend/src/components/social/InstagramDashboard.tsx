@@ -73,6 +73,8 @@ const PROFILE_FIELD_CLASS =
 const PROFILE_TEXTAREA_CLASS =
   "min-h-32 w-full resize-y rounded-xl border border-border bg-surface/60 px-4 py-3 text-base text-foreground transition-[background-color,border-color,box-shadow] placeholder:text-muted-foreground hover:border-primary/40 focus:border-primary focus:bg-background focus:outline-none focus:ring-4 focus:ring-primary/10";
 
+const PROFILE_MODAL_EXIT_DURATION = 240;
+
 export function InstagramDashboard({
   role,
   viewerId,
@@ -95,6 +97,7 @@ export function InstagramDashboard({
   const [selectedStory, setSelectedStory] = React.useState<StoryUser | null>(null);
   const [evidenceModalItem, setEvidenceModalItem] = React.useState<FamilySuggestion | null>(null);
   const [profileEditModal, setProfileEditModal] = React.useState(false);
+  const [isProfileEditorMounted, setIsProfileEditorMounted] = React.useState(false);
   const [moonshotModal, setMoonshotModal] = React.useState(false);
   const [proposalModal, setProposalModal] = React.useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
@@ -190,6 +193,35 @@ export function InstagramDashboard({
     };
   }, [conditionId, conditions]);
 
+  // Keep the editor in the DOM briefly after a close request so its exit
+  // animation can play before the dialog is unmounted.
+  React.useEffect(() => {
+    if (profileEditModal) {
+      setIsProfileEditorMounted(true);
+      return;
+    }
+
+    const timeout = window.setTimeout(
+      () => setIsProfileEditorMounted(false),
+      PROFILE_MODAL_EXIT_DURATION,
+    );
+    return () => window.clearTimeout(timeout);
+  }, [profileEditModal]);
+
+  React.useEffect(() => {
+    if (!profileEditModal) return;
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setProfileEditModal(false);
+      }
+    };
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [profileEditModal]);
+
   const handlePublishPost = async (
     body: string,
     tags: string[],
@@ -250,6 +282,8 @@ export function InstagramDashboard({
     setProfile(profileDraft);
     setProfileEditModal(false);
   };
+
+  const closeProfileEditor = () => setProfileEditModal(false);
 
   const integrations = INTEGRATIONS.filter((item) => canSee(role, item.section));
   const openTrialCount = insight?.trials.filter((t) => isOpenTrial(t.status)).length ?? 0;
@@ -656,15 +690,21 @@ export function InstagramDashboard({
       </main>
 
       {/* Profile Edit Modal */}
-      {profileEditModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-foreground/55 p-3 backdrop-blur-sm sm:p-6">
+      {isProfileEditorMounted && (
+        <div
+          className={`family-profile-modal-backdrop fixed inset-0 z-50 overflow-y-auto bg-foreground/55 p-3 backdrop-blur-sm sm:p-6 ${
+            profileEditModal ? "" : "family-profile-modal-backdrop--closing"
+          }`}
+        >
           <div className="flex min-h-full items-center justify-center">
             <section
               role="dialog"
               aria-modal="true"
               aria-labelledby="family-profile-title"
               aria-describedby="family-profile-description"
-              className="my-auto w-full max-w-5xl overflow-hidden rounded-[2rem] border border-border/80 bg-background shadow-2xl"
+              className={`family-profile-modal-card my-auto w-full max-w-5xl overflow-hidden rounded-[2rem] border border-border/80 bg-background shadow-2xl ${
+                profileEditModal ? "" : "pointer-events-none family-profile-modal-card--closing"
+              }`}
             >
               <header className="border-b border-border/70 bg-surface/45 px-6 py-6 sm:px-8 md:px-10 md:py-8">
                 <div className="flex items-start justify-between gap-5">
@@ -688,7 +728,7 @@ export function InstagramDashboard({
                   </div>
                   <button
                     type="button"
-                    onClick={() => setProfileEditModal(false)}
+                    onClick={closeProfileEditor}
                     className="grid size-10 shrink-0 place-items-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                     aria-label="Close profile editor"
                     title="Close"
@@ -827,7 +867,7 @@ export function InstagramDashboard({
                     <Button
                       type="button"
                       variant="ghost"
-                      onClick={() => setProfileEditModal(false)}
+                      onClick={closeProfileEditor}
                       className="px-5"
                     >
                       Cancel
