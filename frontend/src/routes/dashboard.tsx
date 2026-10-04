@@ -33,6 +33,7 @@ import {
 } from "@/components/sketches";
 import { Button } from "@/components/ui/button";
 import { ResearchWorkspace } from "@/components/dashboard/ResearchWorkspace";
+import { DashboardShell } from "@/components/dashboard/shell";
 import { PersonaSwitch } from "@/components/atlas-ui";
 import { demoAccess, personas, usePersona } from "@/lib/persona";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
@@ -40,6 +41,12 @@ import { currentUser, loadProfile, type FamilyProfile } from "@/lib/family-netwo
 
 export const Route = createFileRoute("/dashboard")({
   staticData: { sitemap: true },
+  // The open section lives in the URL so a view is linkable and back works.
+  // access.resolveSection does the permission check; this only shapes the type.
+  validateSearch: (search: Record<string, unknown>): { section?: string } => {
+    const section = search["section"];
+    return typeof section === "string" ? { section } : {};
+  },
   head: () => ({
     meta: [
       { title: "Research Dashboard — Rare Disease Atlas" },
@@ -60,7 +67,7 @@ export const Route = createFileRoute("/dashboard")({
     ],
     links: [{ rel: "canonical", href: "/dashboard" }],
   }),
-  component: DashboardPage,
+  component: DashboardRoute,
 });
 
 const weeks = [
@@ -130,7 +137,7 @@ function MetricCard({
   );
 }
 
-function DashboardPage() {
+export function ResearchDashboard() {
   const navigate = useNavigate();
   const { persona } = usePersona();
   const [authChecked, setAuthChecked] = useState(false);
@@ -176,7 +183,7 @@ function DashboardPage() {
               <span className="hidden sm:inline">Rare Disease Atlas</span>
             </Link>
             <nav className="dashboard-nav" aria-label="Workspace navigation">
-              <Link to="/family">
+              <Link to="/dashboard" search={{ section: "family" }}>
                 <Users className="size-4" /> Family space
               </Link>
               <Link to="/dashboard" activeProps={{ className: "is-active" }}>
@@ -242,7 +249,7 @@ function DashboardPage() {
             {access.role === "steward" && "Review member safety and Circle requests; detailed research receipts remain restricted."}
             {access.role === "evidence_reviewer" && "Review source receipts and research signals; family identities and messages remain private."}
             {access.role === "admin" && "Coordinate partner operations and safety controls; role changes belong in trusted admin workflows."}
-            <Link to="/family" className="ml-2 font-semibold text-primary underline">Open Family Space</Link>
+            <Link to="/dashboard" search={{ section: "family" }} className="ml-2 font-semibold text-primary underline">Open your family space</Link>
           </section>
 
           <div className="dashboard-grid">
@@ -601,4 +608,9 @@ function DashboardPage() {
       </div>
     </main>
   );
+}
+
+function DashboardRoute() {
+  const { section } = Route.useSearch();
+  return <DashboardShell section={section} />;
 }
