@@ -21,6 +21,7 @@ import {
   Video,
   BookOpen,
   Radar,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StoriesTray } from "@/components/social/StoriesTray";
@@ -55,8 +56,10 @@ import {
   type FamilyProfile,
   type FamilySuggestion,
 } from "@/lib/family-network";
-import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { CirclesSection, MessagesSection } from "@/components/dashboard/sections";
+import { ClusterActionDossier } from "@/components/ClusterActionDossier";
+import { MoonshotAcceleratorModal } from "@/components/MoonshotAcceleratorModal";
+import { OpenAIProposalModal } from "@/components/OpenAIProposalModal";
 import { ROLE_LABELS, canSee, type FamilyRole } from "@/lib/access";
 
 export function InstagramDashboard({
@@ -81,6 +84,8 @@ export function InstagramDashboard({
   const [selectedStory, setSelectedStory] = React.useState<StoryUser | null>(null);
   const [evidenceModalItem, setEvidenceModalItem] = React.useState<FamilySuggestion | null>(null);
   const [profileEditModal, setProfileEditModal] = React.useState(false);
+  const [moonshotModal, setMoonshotModal] = React.useState(false);
+  const [proposalModal, setProposalModal] = React.useState(false);
   const [profileDraft, setProfileDraft] = React.useState<FamilyProfile>({
     condition: "STXBP1 Encephalopathy",
     caregiver_role: "Parent / Caregiver",
@@ -304,33 +309,59 @@ export function InstagramDashboard({
             />
           </nav>
 
-          {/*
-            Add-ons the viewer may actually open.
-            `canSee` is the same table the dashboard nav uses, so a family
-            member is not offered the evidence layer or the research workspace
-            -- the RLS would refuse the queries, and listing them would imply
-            the product shares family data with reviewers. It does not.
-          */}
-          {integrations.length > 0 && (
-            <div className="hidden border-t border-border/70 pt-4 md:block">
-              <p className="mb-2 flex items-center gap-1.5 px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                <Layers className="size-3 text-primary" /> Add-ons & Integrations
-              </p>
-              <div className="space-y-1">
-                {integrations.map((item) => (
-                  <button
-                    key={item.section}
-                    type="button"
-                    onClick={() => onOpenIntegration?.(item.section)}
-                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  >
-                    <item.icon className="size-4 shrink-0 text-primary" />
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
+          {/* Challenge 05 Tools */}
+          <div className="hidden border-t border-border/70 pt-4 md:block">
+            <p className="mb-2 flex items-center gap-1.5 px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <Sparkles className="size-3 text-primary" /> Challenge 05 Tools
+            </p>
+            <div className="space-y-1 mb-3">
+              <button
+                type="button"
+                onClick={() => setMoonshotModal(true)}
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 transition-colors"
+              >
+                <Zap className="size-4 shrink-0 text-primary" />
+                <span>10× Moonshot Timeline</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setProposalModal(true)}
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 transition-colors"
+              >
+                <FileText className="size-4 shrink-0 text-primary" />
+                <span>OpenAI Sourced Proposal</span>
+              </button>
             </div>
-          )}
+
+            {/*
+              Add-ons the viewer may actually open.
+              `canSee` is the same table the dashboard nav uses, so a family
+              member is not offered the evidence layer or the research workspace
+              -- the RLS would refuse the queries, and listing them would imply
+              the product shares family data with reviewers. It does not.
+            */}
+            {integrations.length > 0 && (
+              <>
+                <p className="mb-2 flex items-center gap-1.5 px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <Layers className="size-3 text-primary" /> Add-ons & Integrations
+                </p>
+                <div className="space-y-1">
+                  {integrations.map((item) => (
+                    <button
+                      key={item.section}
+                      type="button"
+                      onClick={() => onOpenIntegration?.(item.section)}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    >
+                      <item.icon className="size-4 shrink-0 text-primary" />
+                      <span>{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* User Card & Sign Out */}
@@ -359,7 +390,15 @@ export function InstagramDashboard({
         {activeTab === "home" && (
           <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
             {/* Center Feed Column */}
-            <div>
+            <div className="space-y-6">
+              {/* Challenge 05 Primary Journey: Mechanism Cluster & Action Dossier */}
+              <ClusterActionDossier
+                clusterName="SNARE Vesicle Fusion Cluster"
+                primaryDisease={profile?.condition || "STXBP1 Encephalopathy"}
+                onOpenMoonshot={() => setMoonshotModal(true)}
+                onOpenProposal={() => setProposalModal(true)}
+              />
+
               {/* Stories Tray */}
               <StoriesTray onSelectStory={() => setActiveTab("reels")} />
 
@@ -639,6 +678,23 @@ export function InstagramDashboard({
           </div>
         </div>
       )}
+
+      {/* Moonshot 10x Accelerator Modal */}
+      <MoonshotAcceleratorModal
+        isOpen={moonshotModal}
+        onClose={() => setMoonshotModal(false)}
+        diseaseName={profile?.condition || "STXBP1 Encephalopathy"}
+      />
+
+      {/* OpenAI Proposal Generator Modal */}
+      <OpenAIProposalModal
+        isOpen={proposalModal}
+        onClose={() => setProposalModal(false)}
+        disease={profile?.condition || "STXBP1 Encephalopathy"}
+        targetName="Lead Investigator & Natural History Study PI"
+        sharedPathway="SNARE Vesicle Docking & Fusion"
+        partnerOrg="STXBP1 Foundation"
+      />
     </div>
   );
 }

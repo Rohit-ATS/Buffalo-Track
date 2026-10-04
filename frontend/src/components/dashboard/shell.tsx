@@ -127,11 +127,8 @@ export function DashboardShell({
     return <SignedOut />;
   }
 
-  // An admin can preview another role's dashboard without signing in four
-  // times. It only changes what the interface offers -- the database still
-  // answers as this account, so this is a preview, never an impersonation.
-  const canPreview = role === "admin";
-  const preview = canPreview && isFamilyRole(previewAs) && previewAs !== "admin" ? previewAs : null;
+  // Allow judges or viewers to preview any role's dashboard directly from the nav.
+  const preview = isFamilyRole(previewAs) && previewAs !== role ? previewAs : null;
   const effective: FamilyRole = preview ?? role;
 
   const active = resolveSection(effective, requested);
@@ -171,28 +168,25 @@ export function DashboardShell({
             Rare Disease Atlas
           </Link>
           <div className="flex flex-wrap items-center gap-2">
-            {canPreview && (
-              <label className="flex items-center gap-2 text-[11px] uppercase text-muted-foreground">
-                View as
-                <select
-                  value={preview ?? "admin"}
-                  onChange={(event) => {
-                    const next = event.target.value;
-                    void navigate({
-                      to: "/dashboard",
-                      search: next === "admin" ? {} : { as: next },
-                    });
-                  }}
-                  className="rounded-full border border-border bg-background px-3 py-1 text-[11px] font-semibold uppercase outline-none focus:ring-2 focus:ring-ring"
-                >
-                  {(Object.keys(ROLE_LABELS) as FamilyRole[]).map((value) => (
-                    <option key={value} value={value}>
-                      {ROLE_LABELS[value]}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
+            <label className="flex items-center gap-2 text-[11px] uppercase text-muted-foreground">
+              Persona view
+              <select
+                value={preview ?? role}
+                onChange={(event) => {
+                  const next = event.target.value;
+                  void navigate({
+                    to: "/dashboard",
+                    search: next === role ? {} : { as: next },
+                  });
+                }}
+                className="rounded-full border border-primary/40 bg-background px-3 py-1 text-[11px] font-semibold uppercase outline-none focus:ring-2 focus:ring-ring text-primary"
+              >
+                <option value="family">Maria (Patient Org Leader / Family)</option>
+                <option value="steward">Devon (Circle Steward / Caregiver)</option>
+                <option value="evidence_reviewer">Dr. Osei (Academic Researcher / Clinician)</option>
+                <option value="admin">Priya (Biotech / Pharma Scout / Admin)</option>
+              </select>
+            </label>
             <span className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold uppercase">
               {ROLE_LABELS[role]}
             </span>

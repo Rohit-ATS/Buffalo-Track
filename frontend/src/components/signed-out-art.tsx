@@ -116,52 +116,85 @@ function Orbit({ className = "" }: { className?: string }) {
 
 export function SignedOutArt() {
   return (
-    <div className="relative hidden min-h-[700px] w-full lg:block" aria-hidden="true">
-      {/* ---- band 1: the sky ---- */}
-      <Constellation className="absolute left-0 top-0 w-64 text-foreground/55" />
-      <Orbit className="absolute right-6 top-2 w-24 text-primary/70" />
-      <Sparkle className="absolute right-40 top-10 w-9 spin-slow text-highlight" />
-      <Sparkle className="absolute left-60 top-28 w-4 float-fast text-primary" />
-      <Sparkle className="absolute right-4 top-44 w-5 float-slow text-highlight/80" />
-      <Sparkle className="absolute left-24 top-[18%] w-3.5 float-fast text-primary/70" />
-      <Sparkle className="absolute right-24 top-[33%] w-4 spin-slow text-highlight/60" />
+    <div
+      className="relative hidden min-h-[660px] w-full select-none lg:block"
+      aria-hidden="true"
+    >
+      {/* Soft framed sketchbook backdrop behind the art for depth and warm contrast */}
+      <div className="absolute inset-0 rounded-3xl border border-border/80 bg-background/50 shadow-sm backdrop-blur-[2px]" />
 
-      {/* ---- band 2: the biology ---- */}
-      <Helix className="absolute left-6 top-[27%] w-36 rotate-6 text-foreground/70 float-slow" />
-      <Magnifier className="absolute left-52 top-[21%] w-16 float-fast text-foreground/80" />
-      <CurvedArrow className="absolute left-36 top-[41%] w-28 text-foreground/55" />
+      {/* Subtle organic graph paper grid texture */}
+      <div
+        className="pointer-events-none absolute inset-0 rounded-3xl opacity-25"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)",
+          backgroundSize: "28px 28px",
+          color: "var(--muted-foreground)",
+        }}
+      />
 
-      {/* ---- band 3: the sentence, framed and never crossed ---- */}
-      <p className="absolute right-0 top-[40%] max-w-[300px] rotate-[-4deg] font-sketch text-3xl leading-snug">
-        Your people are
+      {/* Floating gentle reassurance pill */}
+      <div className="absolute right-6 top-6 z-10 flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1 text-[11px] font-medium text-primary shadow-xs">
+        <span className="size-2 rounded-full bg-primary animate-pulse" />
+        Private Peer Network · Zero Tracking
+      </div>
+
+      {/* ---- band 1: the sky (Constellation, Orbits & Stars) ---- */}
+      <div className="transition-transform duration-500 hover:scale-105">
+        <Constellation className="absolute left-6 top-8 w-56 text-foreground/50 transition-colors hover:text-foreground/80" />
+      </div>
+      <Orbit className="absolute right-12 top-14 w-24 text-primary/70" />
+      <Sparkle className="absolute right-44 top-12 w-8 spin-slow text-highlight" />
+      <Sparkle className="absolute left-64 top-24 w-4 float-fast text-primary" />
+      <Sparkle className="absolute right-8 top-36 w-5 float-slow text-highlight/80" />
+      <Sparkle className="absolute left-28 top-[17%] w-3.5 float-fast text-primary/70" />
+      <Sparkle className="absolute right-28 top-[28%] w-4 spin-slow text-highlight/60" />
+
+      {/* ---- band 2: the biology (Double helix, Magnifier & Connecting arrow) ---- */}
+      <Helix className="absolute left-8 top-[24%] w-36 rotate-3 text-foreground/70 float-slow" />
+      <Magnifier className="absolute left-48 top-[19%] w-16 float-fast text-foreground/80" />
+      <CurvedArrow className="absolute left-40 top-[37%] w-28 text-foreground/55" />
+
+      {/* ---- band 3: the focal message ---- */}
+      <div className="absolute right-4 top-[36%] max-w-[320px] rounded-2xl border border-primary/25 bg-background/90 p-5 shadow-sm backdrop-blur-sm transition-transform duration-300 hover:-translate-y-1">
+        <p className="rotate-[-2deg] font-sketch text-[28px] leading-snug text-foreground">
+          Your people are
+          <br />
+          already out there.
+          <br />
+          <span className="relative inline-block font-semibold text-primary">
+            Meet them at your pace.
+            <ScribbleCircle className="absolute -inset-x-4 -inset-y-2 h-[145%] w-[122%] text-primary/60" />
+          </span>
+        </p>
+        <p className="mt-2 text-[11px] font-sans leading-normal text-muted-foreground">
+          Matched purely on biological pathway, diagnosis & caregiver life stage.
+        </p>
+      </div>
+
+      {/* ---- band 4: the people & communication ---- */}
+      <Squiggle className="absolute left-4 top-[54%] w-36 text-primary/70" />
+      <div className="absolute right-14 top-[58%] transition-transform duration-300 hover:scale-110">
+        <TwoPeople className="w-40 text-foreground/75" />
+      </div>
+      <PaperPlane className="absolute left-40 top-[66%] w-16 float-slow text-primary/80" />
+
+      {/* ---- band 5: the grounded biological roots ---- */}
+      <Neuron className="absolute bottom-6 left-4 w-52 text-foreground/40 float-slow" />
+      <Orbit className="absolute bottom-24 left-56 w-20 text-primary/45" />
+      <Squiggle className="absolute bottom-4 left-52 w-28 text-highlight/60" />
+      <Heart className="absolute bottom-20 right-14 w-10 wiggle text-primary" />
+      <Sparkle className="absolute bottom-8 right-48 w-5 spin-slow text-highlight/70" />
+
+      {/* Bottom statement note */}
+      <div className="absolute bottom-4 right-5 max-w-[250px] text-right font-sketch text-xl leading-snug text-muted-foreground">
+        no algorithms, no ads —
         <br />
-        already out there.
-        <br />
-        <em className="relative inline-block text-primary">
-          Meet them at your pace.
-          <ScribbleCircle className="absolute -inset-x-5 -inset-y-3 h-[150%] w-[118%] text-primary/55" />
-        </em>
-      </p>
-
-      {/* ---- band 4: the people ---- */}
-      <Squiggle className="absolute left-2 top-[58%] w-36 text-primary/70" />
-      <TwoPeople className="absolute right-12 top-[62%] w-40 text-foreground/65" />
-      <PaperPlane className="absolute left-44 top-[70%] w-16 float-slow text-primary/80" />
-
-      {/* ---- band 5: the floor ---- */}
-      <Neuron className="absolute bottom-6 left-0 w-56 text-foreground/35 float-slow" />
-      <Orbit className="absolute bottom-28 left-56 w-20 text-primary/45" />
-      <Squiggle className="absolute bottom-2 left-52 w-28 text-highlight/60" />
-      <Heart className="absolute bottom-24 right-10 w-11 wiggle text-primary" />
-      <Sparkle className="absolute bottom-10 right-44 w-6 spin-slow text-highlight/70" />
-
-      <p className="absolute bottom-0 right-0 max-w-[230px] rotate-[2deg] text-right font-sketch text-xl leading-tight text-muted-foreground">
-        no feed, no followers —
-        <br />
-        just families who share
+        <span className="text-foreground/80 font-medium">just families who share</span>
         <br />
         the same biology.
-      </p>
+      </div>
     </div>
   );
 }
