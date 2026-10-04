@@ -139,6 +139,7 @@ function Index() {
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<string | null>(null);
   const [isOpening, setIsOpening] = useState(true);
+  const [hoveredNav, setHoveredNav] = useState<number | null>(null);
   const mainRef = useRef<HTMLElement>(null);
 
   // Hits the graph through a server function: RLS blocks the anon key, so the
@@ -236,27 +237,35 @@ function Index() {
             <span className="hidden whitespace-nowrap sm:inline">Rare Disease Atlas</span>
           </a>
           <nav
-            className="mx-auto hidden items-center rounded-full border border-border bg-surface/60 p-1 text-sm lg:flex"
+            className="relative mx-auto hidden w-[28rem] grid-cols-3 rounded-full border border-border bg-surface/60 p-1 text-sm lg:grid"
             aria-label="Main navigation"
+            onMouseLeave={() => setHoveredNav(null)}
           >
-            <a
-              className="rounded-full px-3.5 py-2 font-medium text-muted-foreground transition hover:bg-background hover:text-foreground"
-              href="#how-it-works"
-            >
-              How it works
-            </a>
-            <a
-              className="rounded-full px-3.5 py-2 font-medium text-muted-foreground transition hover:bg-background hover:text-foreground"
-              href="#evidence"
-            >
-              Evidence
-            </a>
-            <a
-              className="rounded-full px-3.5 py-2 font-medium text-muted-foreground transition hover:bg-background hover:text-foreground"
-              href="#action"
-            >
-              Shared action
-            </a>
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-y-1 left-1 rounded-full bg-primary transition-[transform,opacity] duration-200 ease-out"
+              style={{
+                width: "calc((100% - 8px) / 3)",
+                transform: `translateX(${(hoveredNav ?? 0) * 100}%)`,
+                opacity: hoveredNav === null ? 0 : 1,
+              }}
+            />
+            {[
+              ["How it works", "#how-it-works"],
+              ["Evidence", "#evidence"],
+              ["Shared action", "#action"],
+            ].map(([label, href], index) => (
+              <a
+                key={href}
+                className={`relative z-10 rounded-full px-3.5 py-2 text-center font-medium outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary/40 ${hoveredNav === index ? "text-primary-foreground" : "text-muted-foreground hover:text-primary-foreground"}`}
+                href={href}
+                onMouseEnter={() => setHoveredNav(index)}
+                onFocus={() => setHoveredNav(index)}
+                onBlur={() => setHoveredNav(null)}
+              >
+                {label}
+              </a>
+            ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
             <AuthControl />
@@ -267,19 +276,19 @@ function Index() {
           aria-label="Main navigation"
         >
           <a
-            className="shrink-0 rounded-full px-3 py-1.5 font-medium text-muted-foreground transition hover:bg-surface hover:text-foreground"
+            className="shrink-0 rounded-full px-3 py-1.5 font-medium text-muted-foreground transition hover:bg-primary hover:text-primary-foreground focus-visible:bg-primary focus-visible:text-primary-foreground"
             href="#how-it-works"
           >
             How it works
           </a>
           <a
-            className="shrink-0 rounded-full px-3 py-1.5 font-medium text-muted-foreground transition hover:bg-surface hover:text-foreground"
+            className="shrink-0 rounded-full px-3 py-1.5 font-medium text-muted-foreground transition hover:bg-primary hover:text-primary-foreground focus-visible:bg-primary focus-visible:text-primary-foreground"
             href="#evidence"
           >
             Evidence
           </a>
           <a
-            className="shrink-0 rounded-full px-3 py-1.5 font-medium text-muted-foreground transition hover:bg-surface hover:text-foreground"
+            className="shrink-0 rounded-full px-3 py-1.5 font-medium text-muted-foreground transition hover:bg-primary hover:text-primary-foreground focus-visible:bg-primary focus-visible:text-primary-foreground"
             href="#action"
           >
             Shared action
