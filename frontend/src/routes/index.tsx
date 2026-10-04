@@ -27,7 +27,7 @@ import communityPhoto from "@/assets/atlas-community.jpg";
 import motherPhoto from "@/assets/atlas-mother.jpg";
 import researcherPhoto from "@/assets/atlas-researcher.jpg";
 import { Button } from "@/components/ui/button";
-import { GITHUB_URL, SearchBox } from "@/components/atlas-ui";
+import { GITHUB_URL } from "@/components/atlas-ui";
 import { AuthControl } from "@/components/auth-control";
 import { coverage } from "@/lib/atlas-data";
 import { AtlasResults } from "@/components/atlas-results";
@@ -63,18 +63,21 @@ const examples = [
     label: "Maria's journey",
     value: "STXBP1 disorder",
     tone: "bg-example-blue",
+    blurb: "A community with a registry, a natural history study, and a way in.",
     link: { to: "/disease/$id", params: { id: "stxbp1" }, search: { q: "STXBP1 disorder" } },
   },
   {
     label: "The counterexample",
     value: "CACNA1A",
     tone: "bg-example-yellow",
+    blurb: "One gene, two opposite mechanisms. The atlas refuses to merge them.",
     link: { to: "/compare", search: { a: "cacna1a-ea2", b: "cacna1a-fhm1" } },
   },
   {
     label: "The gap",
     value: "VAMP2",
     tone: "bg-example-mint",
+    blurb: "No mapped community yet. What that looks like when stated honestly.",
     link: { to: "/disease/$id", params: { id: "vamp2" }, search: { q: "VAMP2" } },
   },
 ] as const;
@@ -338,24 +341,52 @@ function Index() {
         </div>
 
         <div
-          id="search"
-          className="relative mt-10 max-w-4xl scroll-mt-6 animate-fade-in [animation-delay:.75s] [animation-fill-mode:both]"
+          id="start"
+          className="mt-10 max-w-5xl scroll-mt-6 animate-fade-in [animation-delay:.75s] [animation-fill-mode:both]"
         >
           <Magnifier className="absolute -right-20 -top-8 hidden w-14 rotate-[12deg] float-fast text-foreground xl:block" />
-          <SearchBox size="lg" />
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="font-sketch text-lg text-muted-foreground">try →</span>
-            {examples.map((example) => (
+
+          <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
+            Three journeys, each one built from real sources. Open any of them and every connection
+            shows where it came from — the database record, the quoted sentence, the date it was
+            read.
+          </p>
+
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <Button asChild className="group">
+              <Link {...examples[0].link}>
+                Start with Maria&rsquo;s journey
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/methods">See how it is built</Link>
+            </Button>
+          </div>
+
+          <div className="mt-8 grid gap-3 md:grid-cols-3">
+            {examples.map((example, index) => (
               <Link
                 key={example.value}
                 {...example.link}
-                className={`rounded-full border border-border px-3 py-1.5 text-xs font-medium transition-transform hover:-translate-y-0.5 hover:rotate-[-1deg] ${example.tone}`}
+                className={`lift group relative overflow-hidden rounded-[6px] border border-border p-5 ${example.tone}`}
+                style={{ ["--d" as string]: `${index * 0.08}s` }}
               >
-                <span className="text-muted-foreground">{example.label}</span> · {example.value}
+                <span className="text-[11px] font-semibold uppercase text-muted-foreground">
+                  {example.label}
+                </span>
+                <span className="mt-2 block font-display text-2xl leading-tight">
+                  {example.value}
+                </span>
+                <span className="mt-2 block text-xs leading-relaxed text-muted-foreground">
+                  {example.blurb}
+                </span>
+                <ArrowRight className="mt-4 size-4 transition-transform group-hover:translate-x-1" />
               </Link>
             ))}
           </div>
-          <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+
+          <p className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
             <span className="size-2 rounded-full bg-primary node-pulse" />
             {coverage.diseases} diseases, {coverage.connections} sourced connections, updated{" "}
             {coverage.updated}
@@ -737,7 +768,7 @@ function Index() {
                 <p className="atlas-footer-label">Explore</p>
                 <ul className="mt-4 space-y-3 text-contrast-muted">
                   <li>
-                    <a href="#search">Search the atlas</a>
+                    <a href="#start">Search the atlas</a>
                   </li>
                   <li>
                     <a href="#sample-journey">Sample journey</a>

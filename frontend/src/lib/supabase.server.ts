@@ -14,12 +14,59 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 let cached: SupabaseClient | null | undefined;
 
+/**
+ * Parsed once from .env, and only when process.env is missing a key.
+ *
+ * Vite's SSR module runner does not always see mutations made to process.env
+ * in vite.config.ts, so a server-only secret can be present in .env, visible to
+ * loadEnv, and still absent here — which looks exactly like "not configured"
+ * and is maddening to debug. Reading the file directly removes the question.
+ *
+ * Server-only: this module must never reach the browser, and the dynamic
+ * require keeps the bundler from trying to follow `node:fs` if it ever did.
+ */
+let dotenvCache: Record<string, string> | null = null;
+
+function fromDotenv(name: string): string | undefined {
+  if (typeof process === "undefined") return undefined;
+
+  if (dotenvCache === null) {
+    dotenvCache = {};
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { readFileSync } = require("node:fs") as typeof import("node:fs");
+      const raw = readFileSync(".env", "utf8");
+      for (const line of raw.split(/\r?\n/)) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#")) continue;
+        const eq = trimmed.indexOf("=");
+        if (eq < 1) continue;
+        const key = trimmed.slice(0, eq).trim();
+        // Strip one layer of matching quotes, which .env files often carry.
+        const value = trimmed
+          .slice(eq + 1)
+          .trim()
+          .replace(/^(['"])(.*)\1$/, "$2");
+        if (value) dotenvCache[key] = value;
+      }
+    } catch {
+      // No .env, or not a filesystem we can read. Platform env is the answer.
+    }
+  }
+
+  return dotenvCache[name];
+}
+
 function readEnv(name: string): string | undefined {
   // `process` is absent on some edge runtimes (e.g. a Cloudflare Worker build),
   // where credentials arrive as platform bindings instead.
   if (typeof process === "undefined") return undefined;
+
   const value = process.env[name];
-  return value && value.length > 0 ? value : undefined;
+  if (value && value.length > 0) return value;
+
+  // A real environment variable always wins; this is only the fallback.
+  return fromDotenv(name);
 }
 
 /** Returns null when the project has no Supabase credentials configured. */
