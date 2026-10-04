@@ -1,7 +1,9 @@
 import * as React from "react";
 import {
   Bookmark,
+  Globe2,
   Heart,
+  Lock,
   MessageCircle,
   MoreHorizontal,
   Send,
@@ -70,6 +72,22 @@ export function PostCard({
               <span>{post.condition}</span>
               <span>•</span>
               <span>{post.created_at}</span>
+              <span>•</span>
+              {/* Says exactly what the database will actually show to who --
+                  see supabase/migrations/20261004000021_social_feed_circle_privacy.sql. */}
+              <span className="flex items-center gap-1" title="Who can see this post">
+                {post.circle_id ? (
+                  <>
+                    <Lock className="size-3" aria-hidden="true" />
+                    {post.circle_name ? `${post.circle_name} only` : "Circle only"}
+                  </>
+                ) : (
+                  <>
+                    <Globe2 className="size-3" aria-hidden="true" />
+                    Public
+                  </>
+                )}
+              </span>
             </div>
           </div>
         </div>

@@ -96,6 +96,34 @@ psql "$DATABASE_URL" -f supabase/seed_social.sql
 policies still require `author_id = auth.uid()`, so only the service role can
 write them — a browser cannot forge a community post.
 
+### Circle privacy
+
+`20261004000021_social_feed_circle_privacy.sql` adds `circle_id` to `posts`
+and `reels`. `circle_id is null` means public to the signed-in community —
+what every row already was before this migration, including everything
+`seed_social.sql` inserts, so applying it does not newly expose anything that
+was already out. `circle_id` set means visible only to that circle's active
+members and its steward; `post_comments` and `post_likes` inherit whichever
+one their post is. The composer (`CreatePostBox`) requires a conscious choice
+between an active circle and "Public to signed-in community" every time —
+there is no default that silently broadens reach.
+
+`supabase/tests/social_feed_privacy.sql` is an executable regression test for
+this (three accounts, two circles, `raise exception` on anything an outsider
+can read or write that they shouldn't be able to). Run it against a local
+stack:
+
+```bash
+supabase start
+psql postgresql://postgres:postgres@localhost:54322/postgres \
+  -v ON_ERROR_STOP=1 -f supabase/tests/social_feed_privacy.sql
+```
+
+It has not been run against a live project from this session — this repo's
+rules bar changing production database state without explicit approval, and
+there is no local Docker/Supabase stack in the environment this was written
+in to run it against either. Run it yourself before trusting the migration.
+
 The reel video files are Pexels free-licence clips, each checked to return a
 real `video/mp4`. If a clip ever starts answering 403 the reel falls back to its
 poster image rather than showing a black rectangle.

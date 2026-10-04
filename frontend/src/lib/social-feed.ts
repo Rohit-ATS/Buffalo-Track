@@ -20,6 +20,11 @@ export type SocialPost = {
   has_liked?: boolean | undefined;
   created_at: string;
   comments?: SocialComment[] | undefined;
+  /** Null = public to the signed-in community. Set = visible only to that
+   *  circle's active members and steward (supabase/migrations/20261004000021_social_feed_circle_privacy.sql). */
+  circle_id: string | null;
+  /** Resolved alongside circle_id for display; null for a public post. */
+  circle_name?: string | null | undefined;
 };
 
 export type SocialComment = {
@@ -59,6 +64,7 @@ export type StoryUser = {
 export const INITIAL_POSTS: SocialPost[] = [
   {
     id: "post-1",
+    circle_id: null, // curated demo content: public to the signed-in community
     author_id: "user-elena",
     author_name: "Elena Rostova",
     author_role: "Caregiver",
@@ -95,6 +101,7 @@ export const INITIAL_POSTS: SocialPost[] = [
   },
   {
     id: "post-2",
+    circle_id: null, // curated demo content: public to the signed-in community
     author_id: "user-snare-foundation",
     author_name: "STXBP1 Foundation Circle",
     author_role: "Steward",
@@ -121,6 +128,7 @@ export const INITIAL_POSTS: SocialPost[] = [
   },
   {
     id: "post-3",
+    circle_id: null, // curated demo content: public to the signed-in community
     author_id: "user-david",
     author_name: "David Chen",
     author_role: "Patient",
@@ -137,6 +145,7 @@ export const INITIAL_POSTS: SocialPost[] = [
   },
   {
     id: "post-4",
+    circle_id: null, // curated demo content: public to the signed-in community
     author_id: "user-priya",
     author_name: "Priya Raman",
     author_role: "Caregiver",
@@ -165,6 +174,7 @@ export const INITIAL_POSTS: SocialPost[] = [
   },
   {
     id: "post-5",
+    circle_id: null, // curated demo content: public to the signed-in community
     author_id: "user-sarah",
     author_role: "Caregiver",
     author_name: "Sarah Jenkins",
@@ -182,6 +192,7 @@ export const INITIAL_POSTS: SocialPost[] = [
   },
   {
     id: "post-6",
+    circle_id: null, // curated demo content: public to the signed-in community
     author_id: "user-snare-foundation",
     author_name: "STXBP1 Foundation Circle",
     author_role: "Steward",
@@ -362,9 +373,13 @@ export const STORIES: StoryUser[] = [
 /* ------------------------------------------------------------------ *
  * Live data
  *
- * Posts, likes, comments and reels are real rows in Supabase (migration
- * 20261003000018_social_feed.sql) with RLS: anyone signed in reads the feed,
- * but you may only write your own post, your own like and your own comment.
+ * Posts, likes, comments and reels are real rows in Supabase (migrations
+ * 20261003000018_social_feed.sql and 20261004000021_social_feed_circle_privacy.sql).
+ * A post with `circle_id: null` is public to the signed-in community; a post
+ * with a circle_id is readable only by that circle's active members and
+ * steward, and a comment or like inherits whichever one its post is. You may
+ * only write your own post, your own like and your own comment, and only
+ * into a circle you actually belong to.
  *
  * Likes and comments used to live in React state only, so a heart vanished on
  * reload and nobody else ever saw it. They are now rows, which is what makes
@@ -390,6 +405,10 @@ type PostRow = {
   likes_count: number | null;
   comments_count: number | null;
   created_at: string;
+  circle_id: string | null;
+  /** Embedded via the circle_id FK (`.select("*, circles(name)")`); absent
+   *  entirely on a public post, where circle_id is null. */
+  circles: { name: string } | null;
 };
 
 type CommentRow = {
@@ -465,6 +484,8 @@ function toPost(row: PostRow, comments: SocialComment[], liked: boolean): Social
     has_liked: liked,
     created_at: relativeTime(row.created_at),
     comments,
+    circle_id: row.circle_id,
+    circle_name: row.circles?.name ?? null,
   };
 }
 
@@ -479,7 +500,7 @@ export async function fetchSocialPosts(): Promise<SocialPost[]> {
   try {
     const { data, error } = await client
       .from("posts")
-      .select("*")
+      .select("*, circles(name)")
       .order("created_at", { ascending: false })
       .limit(50);
 
@@ -525,58 +546,55 @@ export async function fetchSocialPosts(): Promise<SocialPost[]> {
 }
 
 /**
- * Publishes a post and returns the stored row, so the id in the UI is the id in
- * the database and a like placed a second later lands on the right post.
- * Without credentials or a session it returns a local-only post instead of
- * throwing, which keeps the demo usable.
+ * Publishes a post and returns the stored row, so the id in the UI is the id
+ * in the database and a like placed a second later lands on the right post.
+ *
+ * This used to fall back to a `local-*` post that was never written anywhere
+ * and rendered exactly like a published one -- a draft that only looked
+ * posted, in a product whose composer tells people they're sharing with
+ * their circle. It now throws instead: the caller is responsible for showing
+ * that the write did not happen, not for quietly pretending it did.
+ *
+ * @param circleId The circle to post into, or `null` to post publicly to the
+ *   signed-in community. The caller must have already confirmed this is a
+ *   deliberate choice (see CreatePostBox) -- the database re-checks active
+ *   membership regardless (20261004000021_social_feed_circle_privacy.sql).
  */
 export async function publishPost(
   body: string,
   tags: string[] = [],
-  imageUrl?: string,
-  evidenceBadge?: string,
+  imageUrl: string | undefined,
+  evidenceBadge: string | undefined,
+  circleId: string | null,
 ): Promise<SocialPost> {
   const client = getSupabaseBrowser();
+  if (!client) throw new Error("Posting needs a configured Supabase connection.");
+
   const user = await currentUser();
-  const authorName = user?.email?.split("@")[0] ?? "Caregiver";
+  if (!user) throw new Error("Sign in to post.");
 
-  if (client && user) {
-    const { data, error } = await client
-      .from("posts")
-      .insert({
-        author_id: user.id,
-        author_name: authorName,
-        author_role: "Caregiver",
-        condition: "STXBP1 / Related Disorder",
-        body,
-        image_url: imageUrl ?? null,
-        tags,
-        evidence_badge: evidenceBadge ?? null,
-      })
-      .select()
-      .single();
+  const authorName = user.email?.split("@")[0] ?? "Caregiver";
 
-    if (!error && data) return toPost(data as PostRow, [], false);
+  const { data, error } = await client
+    .from("posts")
+    .insert({
+      author_id: user.id,
+      author_name: authorName,
+      author_role: "Caregiver",
+      condition: "STXBP1 / Related Disorder",
+      body,
+      image_url: imageUrl ?? null,
+      tags,
+      evidence_badge: evidenceBadge ?? null,
+      circle_id: circleId,
+    })
+    .select("*, circles(name)")
+    .single();
+
+  if (error || !data) {
+    throw new Error(error?.message ?? "That post could not be saved.");
   }
-
-  return {
-    id: `local-${Date.now()}`,
-    author_id: user?.id ?? "anon-user",
-    author_name: authorName,
-    author_role: "Caregiver",
-    condition: "STXBP1 / Related Disorder",
-    biology_badge: "Presynaptic Vesicle Fusion",
-    body,
-    image_url: imageUrl ?? null,
-    tags,
-    evidence_badge: evidenceBadge ?? null,
-    evidence_link: null,
-    likes_count: 0,
-    comments_count: 0,
-    has_liked: false,
-    created_at: "Just now",
-    comments: [],
-  };
+  return toPost(data as PostRow, [], false);
 }
 
 /**

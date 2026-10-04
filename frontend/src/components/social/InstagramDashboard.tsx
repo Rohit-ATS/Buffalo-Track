@@ -193,10 +193,15 @@ export function InstagramDashboard({
   const handlePublishPost = async (
     body: string,
     tags: string[],
-    imageUrl?: string,
-    evidenceBadge?: string,
+    imageUrl: string | undefined,
+    evidenceBadge: string | undefined,
+    circleId: string | null,
   ) => {
-    const created = await publishPost(body, tags, imageUrl, evidenceBadge);
+    // No try/catch here: a failed publish must surface to the person who
+    // wrote it, so the rejection is left to propagate to CreatePostBox, which
+    // keeps the draft on screen and shows the real error instead of this
+    // silently discarding it.
+    const created = await publishPost(body, tags, imageUrl, evidenceBadge, circleId);
     setPosts([created, ...posts]);
   };
 

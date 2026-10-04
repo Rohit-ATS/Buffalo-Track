@@ -1,6 +1,11 @@
 import * as React from "react";
-import { Image, Lock, ShieldCheck, Sparkles } from "lucide-react";
+import { Globe2, Image, Loader2, Lock, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { loadCircles, type Circle } from "@/lib/social";
+
+/** A post's circle is either a real circle id, or the literal "public" --
+ *  this string never reaches the database; see `toCircleId` below. */
+const PUBLIC = "public";
 
 export function CreatePostBox({
   onPublish,
@@ -8,8 +13,9 @@ export function CreatePostBox({
   onPublish: (
     body: string,
     tags: string[],
-    imageUrl?: string,
-    evidenceBadge?: string,
+    imageUrl: string | undefined,
+    evidenceBadge: string | undefined,
+    circleId: string | null,
   ) => Promise<void>;
 }) {
   const [open, setOpen] = React.useState(false);
@@ -20,6 +26,31 @@ export function CreatePostBox({
   const [evidenceBadge, setEvidenceBadge] = React.useState("");
   const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
+
+  // Who this post can go to: the circles this account is an *active* member
+  // of, plus the always-available public option. Loaded once the composer is
+  // actually opened, not on every feed render.
+  const [circles, setCircles] = React.useState<Circle[]>([]);
+  const [circlesLoading, setCirclesLoading] = React.useState(false);
+  const [audience, setAudience] = React.useState<string>(PUBLIC);
+
+  React.useEffect(() => {
+    if (!open || circles.length > 0) return;
+    setCirclesLoading(true);
+    loadCircles()
+      .then((all) => {
+        const mine = all.filter((c) => c.membership === "active");
+        setCircles(mine);
+        // Default to a real circle when the person has one: the composer has
+        // always told people "Connected Circle Only," so that is the safer
+        // default meaning, not a silent broadening to public. Someone with no
+        // circle sees only the public option, stated plainly, not implied.
+        if (mine.length > 0) setAudience(mine[0]!.id);
+      })
+      .catch(() => setCircles([]))
+      .finally(() => setCirclesLoading(false));
+  }, [open, circles.length]);
 
   const TAG_OPTIONS = [
     "#STXBP1",
@@ -40,18 +71,25 @@ export function CreatePostBox({
     e.preventDefault();
     if (!body.trim()) return;
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       await onPublish(
         body.trim(),
         selectedTags,
         imageUrl.trim() || undefined,
         evidenceBadge.trim() || undefined,
+        audience === PUBLIC ? null : audience,
       );
       setBody("");
       setImageUrl("");
       setEvidenceBadge("");
       setSelectedTags([]);
       setOpen(false);
+    } catch (cause) {
+      // The draft stays on screen: a write that failed must never look like
+      // one that quietly succeeded (that was the previous local-only
+      // fallback's mistake).
+      setSubmitError(cause instanceof Error ? cause.message : "That post could not be saved.");
     } finally {
       setIsSubmitting(false);
     }
@@ -123,6 +161,36 @@ export function CreatePostBox({
             />
           )}
 
+          {/* Who can read this -- a conscious choice every time, not a default
+              the person never saw. Options are exactly the circles the account
+              is an active member of, plus the one always-available public
+              choice; there is nothing here RLS wouldn't also allow. */}
+          <label className="block space-y-1">
+            <span className="flex items-center gap-1 text-[11px] font-semibold uppercase text-muted-foreground">
+              {audience === PUBLIC ? (
+                <Globe2 className="size-3" aria-hidden="true" />
+              ) : (
+                <Lock className="size-3" aria-hidden="true" />
+              )}
+              Who can see this
+            </span>
+            <select
+              value={audience}
+              onChange={(e) => setAudience(e.target.value)}
+              disabled={circlesLoading}
+              className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary"
+            >
+              {circles.map((circle) => (
+                <option key={circle.id} value={circle.id}>
+                  {circle.name} (circle members only)
+                </option>
+              ))}
+              <option value={PUBLIC}>Public to signed-in community</option>
+            </select>
+          </label>
+
+          {submitError && <p className="text-xs text-destructive">{submitError}</p>}
+
           <div className="flex items-center justify-between pt-1">
             <div className="flex items-center gap-2 text-xs">
               <button
@@ -139,9 +207,11 @@ export function CreatePostBox({
               >
                 <ShieldCheck className="size-3.5" /> Evidence Card
               </button>
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground ml-2">
-                <Lock className="size-3" /> Connected Circle Only
-              </span>
+              {circlesLoading && (
+                <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <Loader2 className="size-3 animate-spin" aria-hidden="true" /> loading circles…
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
