@@ -43,9 +43,14 @@ export const Route = createFileRoute("/dashboard")({
   staticData: { sitemap: true },
   // The open section lives in the URL so a view is linkable and back works.
   // access.resolveSection does the permission check; this only shapes the type.
-  validateSearch: (search: Record<string, unknown>): { section?: string } => {
-    const section = search["section"];
-    return typeof section === "string" ? { section } : {};
+  validateSearch: (search: Record<string, unknown>): { section?: string; as?: string } => {
+    const out: { section?: string; as?: string } = {};
+    if (typeof search["section"] === "string") out.section = search["section"];
+    // `as` previews another role's dashboard. Only honoured for admins, and
+    // only for what the interface offers -- the database still answers as the
+    // signed-in account.
+    if (typeof search["as"] === "string") out.as = search["as"];
+    return out;
   },
   head: () => ({
     meta: [
@@ -656,6 +661,6 @@ export function ResearchDashboard() {
 }
 
 function DashboardRoute() {
-  const { section } = Route.useSearch();
-  return <DashboardShell section={section} />;
+  const { section, as } = Route.useSearch();
+  return <DashboardShell section={section} as={as} />;
 }
