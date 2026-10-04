@@ -1,5 +1,8 @@
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
+export const INCOMING_INTRODUCTION_PAGE_SIZE = 25;
+export const INTRODUCTION_NOTE_MAX_LENGTH = 1000;
+
 export type FamilyProfile = {
   id?: string;
   display_name?: string | null;
@@ -101,7 +104,8 @@ export async function incomingIntroductions() {
     .select("id, sender_id, note, status, created_at")
     .eq("recipient_id", user.id)
     .eq("status", "pending")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(INCOMING_INTRODUCTION_PAGE_SIZE);
   if (error) throw error;
   return data ?? [];
 }

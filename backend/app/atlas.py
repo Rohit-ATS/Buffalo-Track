@@ -1,15 +1,13 @@
 import re
-from collections import Counter
 from typing import Any
 
 import httpx
 
 from .config import Settings
-from .schemas import Connection, Evidence, Match, NodeRef, SearchResponse
+from .schemas import Connection, Match, NodeRef, SearchResponse
 
 MAX_MATCHES = 6
 MAX_CONNECTIONS = 12
-MAX_EVIDENCE = 3
 _FILTER_CHARS = re.compile(r'[,()"\'\\*%]')
 
 
@@ -53,7 +51,7 @@ class AtlasRepository:
                 return SearchResponse(status="empty", query=term)
             best, *rest = nodes
             node_id = best["id"]
-            edges, node_evidence = await self._load_edges_and_evidence(node_id)
+            edges = await self._load_edges(node_id)
             connections = await self._connections(node_id, edges)
             return SearchResponse(
                 status="ok",
@@ -61,40 +59,48 @@ class AtlasRepository:
                 match=Match(
                     node=NodeRef(**best),
                     connections=connections,
-                    evidence=[
-                        Evidence(id=row["id"], content=row["content"], sourceUrl=row.get("source_url"), confidence=row.get("confidence"))
-                        for row in node_evidence
-                    ],
+                    # Generic evidence is intentionally reviewer-only. This public
+                    # endpoint never queries it with its service-role credential.
+                    evidence=[],
                 ),
                 alsoMatched=[NodeRef(**node) for node in rest],
             )
         except (httpx.HTTPError, KeyError, TypeError, ValueError) as error:
             return SearchResponse(status="error", query=term, message="The atlas database is temporarily unavailable.")
 
-    async def _load_edges_and_evidence(self, node_id: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-        import asyncio
-
-        return tuple(await asyncio.gather(
-            self._get("edges", {"select": "id,source_id,target_id,type,weight", "or": f"source_id.eq.{node_id},target_id.eq.{node_id}", "order": "weight.desc", "limit": str(MAX_CONNECTIONS)}),
-            self._get("evidence", {"select": "id,content,source_url,confidence", "node_id": f"eq.{node_id}", "order": "confidence.desc.nullslast", "limit": str(MAX_EVIDENCE)}),
-        ))  # type: ignore[return-value]
+    async def _load_edges(self, node_id: str) -> list[dict[str, Any]]:
+        return await self._get(
+            "edges",
+            {
+                "select": "id,source_id,target_id,type,weight",
+                "or": f"source_id.eq.{node_id},target_id.eq.{node_id}",
+                "order": "weight.desc",
+                "limit": str(MAX_CONNECTIONS),
+            },
+        )
 
     async def _connections(self, node_id: str, edges: list[dict[str, Any]]) -> list[Connection]:
         if not edges:
             return []
         neighbor_ids = {edge["target_id"] if edge["source_id"] == node_id else edge["source_id"] for edge in edges}
-        edge_ids = [edge["id"] for edge in edges]
-        import asyncio
-        neighbor_rows, evidence_rows = await asyncio.gather(
-            self._get("nodes", {"select": "id,type,name", "id": f"in.({','.join(neighbor_ids)})"}),
-            self._get("evidence", {"select": "edge_id", "edge_id": f"in.({','.join(edge_ids)})"}),
+        neighbor_rows = await self._get(
+            "nodes",
+            {"select": "id,type,name", "id": f"in.({','.join(neighbor_ids)})"},
         )
         neighbors = {row["id"]: NodeRef(**row) for row in neighbor_rows}
-        counts = Counter(row["edge_id"] for row in evidence_rows if row.get("edge_id"))
         result: list[Connection] = []
         for edge in edges:
             outgoing = edge["source_id"] == node_id
             neighbor = neighbors.get(edge["target_id"] if outgoing else edge["source_id"])
             if neighbor:
-                result.append(Connection(edgeId=edge["id"], type=edge["type"], weight=edge["weight"], direction="outgoing" if outgoing else "incoming", neighbor=neighbor, evidenceCount=counts[edge["id"]]))
+                result.append(
+                    Connection(
+                        edgeId=edge["id"],
+                        type=edge["type"],
+                        weight=edge["weight"],
+                        direction="outgoing" if outgoing else "incoming",
+                        neighbor=neighbor,
+                        evidenceCount=0,
+                    )
+                )
         return result
