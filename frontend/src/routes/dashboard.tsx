@@ -35,6 +35,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { ResearchWorkspace } from "@/components/dashboard/ResearchWorkspace";
 import { DashboardShell } from "@/components/dashboard/shell";
+import { atlasRecentEdges, atlasRunActivity } from "@/lib/atlas-live";
+import type { EdgeReceipt } from "@/lib/atlas-schema";
 import { PersonaSwitch } from "@/components/atlas-ui";
 import { demoAccess, personas, usePersona } from "@/lib/persona";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
@@ -76,28 +78,7 @@ export const Route = createFileRoute("/dashboard")({
   component: DashboardRoute,
 });
 
-const weeks = [
-  { label: "18–24 May", values: [42, 66, 48, 80, 58, 72, 86], receipts: 18 },
-  { label: "25–31 May", values: [58, 72, 65, 88, 76, 92, 83], receipts: 24 },
-  { label: "1–7 Jun", values: [48, 62, 78, 70, 91, 84, 96], receipts: 29 },
-] as const;
-
-const evidence = {
-  All: [
-    ["STX1B ↔ STXBP1", "Observed", "Shared presynaptic vesicle-fusion biology", "12 min"],
-    ["SNARE gene disorders", "Reported", "Community assets mapped to a shared mechanism", "2 hr"],
-    ["Candidate cohort 04", "Inferred", "Potential natural-history study reuse", "Yesterday"],
-  ],
-  Observed: [["STX1B ↔ STXBP1", "Observed", "Shared presynaptic vesicle-fusion biology", "12 min"]],
-  Reported: [
-    ["SNARE gene disorders", "Reported", "Community assets mapped to a shared mechanism", "2 hr"],
-  ],
-  Inferred: [
-    ["Candidate cohort 04", "Inferred", "Potential natural-history study reuse", "Yesterday"],
-  ],
-} as const;
-
-type EvidenceFilter = keyof typeof evidence;
+type EvidenceFilter = "All" | "Observed" | "Reported" | "Inferred";
 
 function AtlasMark({ className = "" }: { className?: string }) {
   return (
@@ -151,12 +132,36 @@ export function ResearchDashboard() {
   const demoPerson = personas.find((item) => item.id === persona) ?? personas[0];
   const access = { ...demoAccess[persona], role: databaseRole ?? demoAccess[persona].role };
   const hasEvidenceAccess = access.role === "evidence_reviewer" || access.role === "admin";
-  const [weekIndex, setWeekIndex] = useState(1);
+  // Real rows, not a shape. An empty dashboard is a truthful dashboard.
+  const [edges, setEdges] = useState<EdgeReceipt[]>([]);
+  const [activity, setActivity] = useState<
+    { label: string; verified: number; extracted: number }[]
+  >([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void Promise.all([atlasRecentEdges(), atlasRunActivity()])
+      .then(([e, a]) => {
+        if (cancelled) return;
+        setEdges(e);
+        setActivity(a);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const [weekIndex, setWeekIndex] = useState(0);
   const [filter, setFilter] = useState<EvidenceFilter>("All");
   const [query, setQuery] = useState("");
   const [selectedDay, setSelectedDay] = useState(5);
-  const currentWeek = weeks[weekIndex] ?? weeks[0];
-  const filteredEvidence = useMemo(() => evidence[filter], [filter]);
+  const peak = Math.max(1, ...activity.map((a) => a.extracted));
+  const totalVerified = activity.reduce((sum, a) => sum + a.verified, 0);
+  const filteredEvidence = useMemo(
+    () => (filter === "All" ? edges : edges.filter((e) => e.tier === filter.toLowerCase())),
+    [filter, edges],
+  );
 
   useEffect(() => {
     const client = getSupabaseBrowser();
@@ -348,60 +353,46 @@ export function ResearchDashboard() {
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="eyebrow text-accent-foreground/65">Evidence activity</p>
-                  <h2 className="mt-1 font-display text-2xl">
-                    {currentWeek.receipts} receipts reviewed
-                  </h2>
+                  <h2 className="mt-1 font-display text-2xl">{totalVerified} claims verified</h2>
                 </div>
-                <div className="flex items-center rounded-full border border-accent-foreground/15 bg-background/40 p-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setWeekIndex((weekIndex + weeks.length - 1) % weeks.length)}
-                    aria-label="Previous week"
-                    className="rounded-full"
-                  >
-                    <ChevronLeft className="size-4" />
-                  </Button>
-                  <span className="min-w-24 text-center text-[11px] font-semibold">
-                    {currentWeek.label}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setWeekIndex((weekIndex + 1) % weeks.length)}
-                    aria-label="Next week"
-                    className="rounded-full"
-                  >
-                    <ChevronRight className="size-4" />
-                  </Button>
-                </div>
+                <span className="rounded-full border border-accent-foreground/15 bg-background/40 px-3 py-1 text-[11px] font-semibold">
+                  across {activity.length} discovery run{activity.length === 1 ? "" : "s"}
+                </span>
               </div>
               <div
-                className="mt-8 grid h-48 grid-cols-7 items-end gap-3"
-                aria-label="Evidence activity by day"
+                className="mt-8 flex h-48 items-end gap-3"
+                aria-label="Claims extracted per discovery run"
               >
-                {currentWeek.values.map((value, index) => (
+                {activity.length === 0 && (
+                  <p className="self-center text-sm text-accent-foreground/70">
+                    No discovery run yet. Numbers appear here once the pipeline writes some.
+                  </p>
+                )}
+                {activity.map((run, index) => (
                   <button
-                    key={`${currentWeek.label}-${index}`}
+                    key={`${run.label}-${index}`}
                     type="button"
                     onClick={() => setSelectedDay(index)}
-                    className="group flex h-full flex-col items-center justify-end gap-2"
-                    aria-label={`${["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][index]}: ${value} percent activity`}
+                    className="group flex h-full flex-1 flex-col items-center justify-end gap-2"
+                    aria-label={`${run.label}: ${run.verified} of ${run.extracted} claims verified`}
                   >
                     <span
                       className={`text-[10px] font-semibold transition-opacity ${selectedDay === index ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
                     >
-                      {value}%
+                      {run.verified}/{run.extracted}
                     </span>
-                    <span className="relative block h-36 w-full max-w-8 overflow-hidden rounded-full bg-background/65">
+                    <span
+                      className="w-full rounded-t-[4px] bg-accent-foreground/20"
+                      style={{ height: `${Math.max(6, (run.extracted / peak) * 100)}%` }}
+                    >
                       <span
-                        className={`absolute inset-x-0 bottom-0 rounded-full transition-[height] duration-500 ${selectedDay === index ? "bg-foreground" : "bg-primary"}`}
-                        style={{ height: `${value}%` }}
+                        className="block w-full rounded-t-[4px] bg-primary"
+                        style={{
+                          height: `${run.extracted === 0 ? 0 : (run.verified / run.extracted) * 100}%`,
+                        }}
                       />
                     </span>
-                    <span className="text-[10px]">
-                      {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][index]}
-                    </span>
+                    <span className="text-[10px] font-semibold opacity-70">{run.label}</span>
                   </button>
                 ))}
               </div>
@@ -630,24 +621,38 @@ export function ResearchDashboard() {
                 </div>
               </div>
               <div className="overflow-hidden rounded-[6px] border border-border bg-surface">
-                {filteredEvidence.map(([title, tier, description, time], index) => (
+                {filteredEvidence.length === 0 && (
+                  <p className="p-5 text-sm text-muted-foreground">No edges at this tier yet.</p>
+                )}
+                {filteredEvidence.map((edge, index) => (
                   <article
-                    key={title}
+                    key={edge.id}
                     className={`grid gap-3 p-4 sm:grid-cols-[1.1fr_.55fr_1.5fr_auto] sm:items-center ${index ? "border-t border-border" : ""}`}
                   >
                     <div className="flex items-center gap-3">
                       <span className="grid size-9 shrink-0 place-items-center rounded-full bg-background">
                         <FileText className="size-4" />
                       </span>
-                      <strong className="text-sm">{title}</strong>
+                      <strong className="text-sm">
+                        {edge.fromName} &harr; {edge.toName}
+                      </strong>
                     </div>
                     <span className="w-fit rounded-full border border-border px-2 py-1 text-[10px] font-semibold uppercase">
-                      {tier}
+                      {edge.tier}
                     </span>
-                    <p className="text-xs text-muted-foreground">{description}</p>
-                    <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground" title={edge.rule}>
+                      {edge.sentence}
+                    </p>
+                    <span
+                      className="flex items-center gap-1 text-[10px] text-muted-foreground"
+                      title={
+                        edge.source
+                          ? `${edge.source.name} — retrieved ${edge.retrievedAt}`
+                          : undefined
+                      }
+                    >
                       <Clock3 className="size-3" />
-                      {time}
+                      {edge.retrievedAt}
                     </span>
                   </article>
                 ))}
