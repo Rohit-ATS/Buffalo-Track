@@ -34,6 +34,7 @@ import { currentRole } from "@/lib/social";
 import {
   MIN_PASSWORD_LENGTH,
   createAccountWithPassword,
+  resendEmailConfirmation,
   signInWithPassword,
 } from "@/lib/password-auth";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
@@ -183,7 +184,9 @@ export function DashboardShell({
               >
                 <option value="family">Maria (Patient Org Leader / Family)</option>
                 <option value="steward">Devon (Circle Steward / Caregiver)</option>
-                <option value="evidence_reviewer">Dr. Osei (Academic Researcher / Clinician)</option>
+                <option value="evidence_reviewer">
+                  Dr. Osei (Academic Researcher / Clinician)
+                </option>
                 <option value="admin">Priya (Biotech / Pharma Scout / Admin)</option>
               </select>
             </label>
@@ -315,6 +318,11 @@ function SignedOut() {
   const [password, setPassword] = React.useState("");
   const [status, setStatus] = React.useState<"idle" | "working" | "confirm" | "error">("idle");
   const [message, setMessage] = React.useState<string | null>(null);
+  const [resendingConfirmation, setResendingConfirmation] = React.useState(false);
+  const [resendNotice, setResendNotice] = React.useState<{
+    message: string;
+    tone: "problem" | "pending";
+  } | null>(null);
   const emailId = React.useId();
   const passwordId = React.useId();
 
@@ -327,10 +335,16 @@ function SignedOut() {
 
     setStatus("working");
     setMessage(null);
+    setResendNotice(null);
 
     const client = getSupabaseBrowser();
     const result = creating
-      ? await createAccountWithPassword({ client, email: value, password })
+      ? await createAccountWithPassword({
+          client,
+          email: value,
+          password,
+          emailRedirectTo: new URL("/dashboard", window.location.origin).toString(),
+        })
       : await signInWithPassword({ client, email: value, password });
 
     if (result.kind === "confirm-email") {
@@ -352,10 +366,27 @@ function SignedOut() {
     setStatus("idle");
   }
 
+  async function resendConfirmation() {
+    if (!email || resendingConfirmation) return;
+
+    setResendingConfirmation(true);
+    const result = await resendEmailConfirmation({
+      client: getSupabaseBrowser(),
+      email,
+      emailRedirectTo: new URL("/dashboard", window.location.origin).toString(),
+    });
+    setResendNotice({
+      message: result.message,
+      tone: result.kind === "error" || result.kind === "unconfigured" ? "problem" : "pending",
+    });
+    setResendingConfirmation(false);
+  }
+
   function switchMode() {
     setMode(creating ? "sign-in" : "sign-up");
     setStatus("idle");
     setMessage(null);
+    setResendNotice(null);
   }
 
   return (
@@ -379,7 +410,7 @@ function SignedOut() {
         <div>
           <div className="mb-5 inline-flex animate-fade-in items-center gap-2 rounded-full border border-border px-3 py-1.5 text-xs font-semibold">
             <Sparkles className="size-3.5 spin-slow text-primary" aria-hidden="true" />
-            Email and password · you are in straight away
+            Email and password · private by default
           </div>
 
           <h1 className="word-rise font-display text-[clamp(2.6rem,5.4vw,4.4rem)] font-medium leading-[.92]">
@@ -396,7 +427,7 @@ function SignedOut() {
 
           <p className="mt-8 max-w-md animate-fade-in text-base leading-relaxed text-muted-foreground [animation-delay:.5s] [animation-fill-mode:both]">
             {creating
-              ? `Choose a password of at least ${MIN_PASSWORD_LENGTH} characters. Your account opens as soon as you submit — no email to wait for.`
+              ? `Choose a password of at least ${MIN_PASSWORD_LENGTH} characters. If this deployment requires it, we will ask you to confirm your email before signing in.`
               : "Groups and conversations open once you sign in. Enter your email and password and you are through."}
           </p>
 
@@ -412,6 +443,24 @@ function SignedOut() {
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{message}</p>
                 </div>
               </div>
+              <button
+                type="button"
+                onClick={() => void resendConfirmation()}
+                disabled={resendingConfirmation}
+                className="mt-4 font-sketch text-lg text-primary underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {resendingConfirmation ? "sending confirmation…" : "resend confirmation email →"}
+              </button>
+              {resendNotice && (
+                <p
+                  className={`mt-3 rounded-xl border bg-secondary/60 p-3 text-sm leading-relaxed ${
+                    resendNotice.tone === "problem" ? "border-risk/40" : "border-primary/30"
+                  }`}
+                  role={resendNotice.tone === "problem" ? "alert" : "status"}
+                >
+                  {resendNotice.message}
+                </p>
+              )}
               <button
                 type="button"
                 onClick={() => {

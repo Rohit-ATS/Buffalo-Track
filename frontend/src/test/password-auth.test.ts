@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  CONFIRMATION_RESEND_COOLDOWN_MS,
   MIN_PASSWORD_LENGTH,
   createAccountWithPassword,
   passwordAuthErrorMessage,
   passwordRuleMessage,
+  resendEmailConfirmation,
   signInWithPassword,
 } from "@/lib/password-auth";
 
@@ -65,6 +67,7 @@ describe("account creation", () => {
       client: clientWith({ signUp }),
       email: "new@example.com",
       password: "short",
+      emailRedirectTo: "https://atlas.example/dashboard",
     });
 
     expect(result).toMatchObject({ kind: "error" });
@@ -81,20 +84,42 @@ describe("account creation", () => {
         }),
         email: "new@example.com",
         password: "a-long-enough-password",
+        emailRedirectTo: "https://atlas.example/dashboard",
       }),
     ).resolves.toEqual({ kind: "signed-in" });
   });
 
   it("does not claim a session when the project requires email confirmation", async () => {
+    const signUp = vi.fn().mockResolvedValue({ data: { session: null, user: {} }, error: null });
     const result = await createAccountWithPassword({
-      client: clientWith({
-        signUp: vi.fn().mockResolvedValue({ data: { session: null, user: {} }, error: null }),
-      }),
+      client: clientWith({ signUp }),
       email: "new@example.com",
       password: "a-long-enough-password",
+      emailRedirectTo: "https://atlas.example/dashboard",
     });
 
     expect(result).toMatchObject({ kind: "confirm-email" });
+    expect(signUp).toHaveBeenCalledWith({
+      email: "new@example.com",
+      password: "a-long-enough-password",
+      options: { emailRedirectTo: "https://atlas.example/dashboard" },
+    });
+  });
+
+  it("does not promise a confirmation email for an obscured existing account", async () => {
+    const result = await createAccountWithPassword({
+      client: clientWith({
+        signUp: vi
+          .fn()
+          .mockResolvedValue({ data: { session: null, user: { identities: [] } }, error: null }),
+      }),
+      email: "existing@example.com",
+      password: "a-long-enough-password",
+      emailRedirectTo: "https://atlas.example/dashboard",
+    });
+
+    expect(result).toMatchObject({ kind: "error" });
+    expect(result.kind === "error" && result.message).toMatch(/sign in with your password/i);
   });
 
   it("points an existing account at sign-in instead", () => {
@@ -102,5 +127,29 @@ describe("account creation", () => {
       /sign in with your password/i,
     );
     expect(passwordAuthErrorMessage({ status: 429 }, "sign-in")).toMatch(/too many attempts/i);
+  });
+
+  it("resends a confirmation once, then applies a short cooldown", async () => {
+    const resend = vi.fn().mockResolvedValue({ error: null });
+    const client = clientWith({ resend });
+    const now = 1_000_000;
+    const request = {
+      client,
+      email: "confirm-check@example.com",
+      emailRedirectTo: "https://atlas.example/dashboard",
+      now,
+    };
+
+    await expect(resendEmailConfirmation(request)).resolves.toMatchObject({ kind: "sent" });
+    await expect(resendEmailConfirmation({ ...request, now: now + 1_000 })).resolves.toMatchObject({
+      kind: "cooldown",
+    });
+    expect(resend).toHaveBeenCalledWith({
+      type: "signup",
+      email: "confirm-check@example.com",
+      options: { emailRedirectTo: "https://atlas.example/dashboard" },
+    });
+    expect(resend).toHaveBeenCalledOnce();
+    expect(CONFIRMATION_RESEND_COOLDOWN_MS).toBe(60_000);
   });
 });

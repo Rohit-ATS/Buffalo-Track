@@ -10,6 +10,7 @@ import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import {
   MIN_PASSWORD_LENGTH,
   createAccountWithPassword,
+  resendEmailConfirmation,
   signInWithPassword,
   type PasswordAuthResult,
 } from "@/lib/password-auth";
@@ -118,7 +119,12 @@ async function authenticate(
 ): Promise<PasswordAuthResult> {
   const client = getSupabaseBrowser();
   return creating
-    ? createAccountWithPassword({ client, email, password })
+    ? createAccountWithPassword({
+        client,
+        email,
+        password,
+        emailRedirectTo: new URL("/family", window.location.origin).toString(),
+      })
     : signInWithPassword({ client, email, password });
 }
 
@@ -133,6 +139,7 @@ function SignIn({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [working, setWorking] = useState(false);
+  const [resending, setResending] = useState(false);
   const [notice, setNotice] = useState<{ tone: "problem" | "pending"; message: string } | null>(
     null,
   );
@@ -158,11 +165,27 @@ function SignIn({
     }
   }
 
+  async function resendConfirmation() {
+    if (!email || resending) return;
+
+    setResending(true);
+    const result = await resendEmailConfirmation({
+      client: getSupabaseBrowser(),
+      email,
+      emailRedirectTo: new URL("/family", window.location.origin).toString(),
+    });
+    setNotice({
+      tone: result.kind === "error" || result.kind === "unconfigured" ? "problem" : "pending",
+      message: result.message,
+    });
+    setResending(false);
+  }
+
   return (
     <Modal title={creating ? "Create your private account" : "Sign in privately"} onClose={onClose}>
       <p className="text-sm text-muted-foreground">
         {creating
-          ? `Your email and a password of at least ${MIN_PASSWORD_LENGTH} characters. You are in as soon as you submit.`
+          ? `Your email and a password of at least ${MIN_PASSWORD_LENGTH} characters. This deployment may ask you to confirm your email before you sign in.`
           : "Your email and password. Nothing to wait for in your inbox."}
       </p>
       <form onSubmit={submit}>
@@ -208,14 +231,24 @@ function SignIn({
           </button>
         </p>
         {notice && (
-          <p
+          <div
             className={`mt-3 rounded-lg border bg-background p-3 text-sm ${
               notice.tone === "problem" ? "border-risk/40" : "border-primary/40"
             }`}
             role={notice.tone === "problem" ? "alert" : "status"}
           >
-            {notice.message}
-          </p>
+            <p>{notice.message}</p>
+            {notice.tone === "pending" && (
+              <button
+                type="button"
+                onClick={() => void resendConfirmation()}
+                disabled={resending}
+                className="mt-2 font-semibold text-primary underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {resending ? "Sending confirmation…" : "Resend confirmation email"}
+              </button>
+            )}
+          </div>
         )}
       </form>
     </Modal>
