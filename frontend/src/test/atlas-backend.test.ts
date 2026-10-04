@@ -35,13 +35,14 @@ describe("frontend to backend atlas search", () => {
     expect(headers["content-type"]).toBe("application/json");
   });
 
-  it("uses a curated route when the live database has not seeded it yet", async () => {
+  it("offers curated matches as a labeled supplement when live verified there is nothing", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(JSON.stringify({ status: "empty", query: "SCN1A" }), { status: 200 }),
     );
 
     await expect(searchAtlas({ data: { query: "SCN1A" } })).resolves.toMatchObject({
       status: "fallback",
+      reason: "no-live-match",
       query: "SCN1A",
       matches: expect.arrayContaining([
         expect.objectContaining({ diseaseId: "scn1a", type: "gene" }),
@@ -49,15 +50,45 @@ describe("frontend to backend atlas search", () => {
     });
   });
 
-  it("returns the documented fallback without calling the network when no backend URL exists", async () => {
-    vi.stubEnv("VITE_BACKEND_URL", "");
+  it("never relabels a real backend search failure as empty or as 'not yet verified'", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          status: "error",
+          query: "STXBP1",
+          message: "The atlas database is temporarily unavailable.",
+        }),
+        { status: 200 },
+      ),
+    );
 
     await expect(searchAtlas({ data: { query: "STXBP1" } })).resolves.toMatchObject({
       status: "fallback",
+      reason: "unavailable",
+      query: "STXBP1",
+      message: "The atlas database is temporarily unavailable.",
+    });
+  });
+
+  it("reports an unconfigured build honestly instead of as a live outage", async () => {
+    vi.stubEnv("VITE_BACKEND_URL", "");
+
+    await expect(searchAtlas({ data: { query: "STXBP1" } })).resolves.toMatchObject({
+      status: "unconfigured",
       query: "STXBP1",
       matches: expect.any(Array),
     });
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("reports a network failure as the live atlas being unavailable, not silently as empty", async () => {
+    vi.mocked(fetch).mockRejectedValueOnce(new TypeError("network error"));
+
+    await expect(searchAtlas({ data: { query: "STXBP1" } })).resolves.toMatchObject({
+      status: "fallback",
+      reason: "unavailable",
+      query: "STXBP1",
+    });
   });
 
   it("maps backend rate limiting to a retryable UI error", async () => {
@@ -66,7 +97,7 @@ describe("frontend to backend atlas search", () => {
     await expect(searchAtlas({ data: { query: "STXBP1" } })).resolves.toEqual({
       status: "error",
       query: "STXBP1",
-      message: "The atlas is handling many searches. Please try again shortly.",
+      message: "The atlas is handling many searches right now. Please try again shortly.",
     });
   });
 });

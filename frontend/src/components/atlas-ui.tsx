@@ -45,6 +45,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import {
+  coverage,
   diseaseById,
   edgesFor,
   other,
@@ -55,6 +56,7 @@ import {
   type Match,
   type Tier,
 } from "@/lib/atlas-data";
+import { DataStateBar } from "@/components/DataStateBadge";
 import { personas, usePersona, type PersonaId } from "@/lib/persona";
 
 export const GITHUB_URL = "https://github.com/"; // placeholder until the real repo link is provided
@@ -540,6 +542,12 @@ export function AtlasShell({ children }: { children: ReactNode }) {
     <DrawerCtx.Provider value={setEdge}>
       <div className="flex min-h-screen flex-col bg-background text-foreground">
         <SiteHeader />
+        <div className="mx-auto w-full max-w-[1100px] px-4 pt-5 md:px-8">
+          <DataStateBar
+            state="curated"
+            detail={`${coverage.diseases} conditions, ${coverage.connections} connections · updated ${coverage.updated}`}
+          />
+        </div>
         <main className="flex-1">{children}</main>
         <EvidenceKey className="mx-auto px-4 py-3 md:hidden" />
         <SiteFooter />

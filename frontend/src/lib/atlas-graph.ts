@@ -138,7 +138,7 @@ export async function runAtlasSearch(
 ): Promise<AtlasSearchResult> {
   const term = sanitizeQuery(rawQuery);
   if (!term) return { status: "empty", query: rawQuery };
-  if (!db) return { status: "unconfigured", query: term };
+  if (!db) return { status: "unconfigured", query: term, matches: [] };
 
   try {
     const nodes = await findNodes(db, term);

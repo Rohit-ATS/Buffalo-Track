@@ -28,14 +28,57 @@ describe("AtlasResults", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it("explains the fallback when Supabase is not configured", () => {
-    render(<AtlasResults result={{ status: "unconfigured", query: "STXBP1" }} isPending={false} />);
-    expect(screen.getByText(/curated sample path below still works/i)).toBeInTheDocument();
+  it("labels an unconfigured build as curated-only, never as a live outage", () => {
+    render(
+      <AtlasResults
+        result={{ status: "unconfigured", query: "STXBP1", matches: [] }}
+        isPending={false}
+      />,
+    );
+    expect(screen.getByText("Curated snapshot")).toBeInTheDocument();
+    expect(screen.getByText(/no live atlas connection/i)).toBeInTheDocument();
+    expect(screen.queryByText("Live atlas temporarily unavailable")).not.toBeInTheDocument();
   });
 
   it("reports an honest gap for an unmatched query", () => {
     render(<AtlasResults result={{ status: "empty", query: "nothing" }} isPending={false} />);
+    expect(screen.getByText("Live verified atlas")).toBeInTheDocument();
     expect(screen.getByText(/honest gap, not a guess/i)).toBeInTheDocument();
+  });
+
+  it("labels a genuine live outage as unavailable, distinct from a curated supplement", () => {
+    render(
+      <AtlasResults
+        result={{
+          status: "fallback",
+          reason: "unavailable",
+          query: "STXBP1",
+          message: "The atlas database is temporarily unavailable.",
+          matches: [],
+        }}
+        isPending={false}
+      />,
+    );
+    expect(screen.getByText("Live atlas temporarily unavailable")).toBeInTheDocument();
+    expect(screen.getByText("The atlas database is temporarily unavailable.")).toBeInTheDocument();
+  });
+
+  it("labels a curated supplement to a verified empty live result as curated, not as an outage", () => {
+    render(
+      <AtlasResults
+        result={{
+          status: "fallback",
+          reason: "no-live-match",
+          query: "SCN1A",
+          message: "The live atlas checked and found nothing for this exact term.",
+          matches: [{ label: "Dravet syndrome", type: "disease", diseaseId: "scn1a" }],
+        }}
+        isPending={false}
+      />,
+    );
+    expect(screen.getByText("Curated snapshot")).toBeInTheDocument();
+    expect(screen.queryByText("Live atlas temporarily unavailable")).not.toBeInTheDocument();
+    expect(screen.getByText("Dravet syndrome")).toBeInTheDocument();
   });
 
   it("renders connections and evidence receipts for a live match", () => {

@@ -33,6 +33,35 @@ def test_readiness_requires_database_credentials() -> None:
     assert response.status_code == 503
 
 
+def test_readiness_runs_the_same_query_path_as_search() -> None:
+    # /readyz used to ping only `nodes` with no filter -- reachable, but not
+    # proof that search works. It must now run the same request shape search
+    # depends on (AtlasRepository.check_query_path), not a simpler stand-in.
+    settings = Settings(supabase_url="https://project.supabase.co", supabase_service_role_key="secret")
+    with patch("app.main.AtlasRepository.check_query_path", new_callable=AsyncMock) as check:
+        with TestClient(create_app(settings)) as api:
+            response = api.get("/readyz")
+    assert response.status_code == 200
+    check.assert_awaited_once()
+
+
+def test_readiness_fails_when_the_edge_query_path_is_broken() -> None:
+    # The historical bug: the database was reachable (nodes responded) while
+    # every real search 400'd on the edges lookup, and readiness stayed green
+    # throughout because it never exercised that path. This pins the fix: a
+    # broken edge query must fail /readyz, not just the user-facing search.
+    settings = Settings(supabase_url="https://project.supabase.co", supabase_service_role_key="secret")
+    broken_filter = httpx.HTTPStatusError(
+        "bad or filter",
+        request=httpx.Request("GET", "https://project.supabase.co/rest/v1/edges"),
+        response=httpx.Response(400),
+    )
+    with patch("app.main.AtlasRepository.check_query_path", new_callable=AsyncMock, side_effect=broken_filter):
+        with TestClient(create_app(settings)) as api:
+            response = api.get("/readyz")
+    assert response.status_code == 503
+
+
 def test_search_reports_unconfigured_without_database_credentials() -> None:
     with client() as api:
         response = api.post("/api/v1/search", json={"query": "STXBP1"})
@@ -145,6 +174,32 @@ def test_production_with_database_requires_proxy_secret() -> None:
     assert settings.database_configured
 
 
+def test_edge_lookup_or_filter_is_parenthesized() -> None:
+    # Regression test for the production outage: the edges `or` filter was
+    # built as `source_id.eq.X,target_id.eq.X` with no wrapping parentheses.
+    # PostgREST requires the parens on an `or` filter's condition list and
+    # returns 400 without them -- every edge lookup failed, "search" degraded
+    # to "find a node and then report it has no connections or an error," and
+    # nothing in the response shape said so explicitly.
+    captured: list[httpx.Request] = []
+
+    def supabase(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        return httpx.Response(200, json=[])
+
+    async def run() -> None:
+        transport = httpx.MockTransport(supabase)
+        async with httpx.AsyncClient(transport=transport) as http:
+            repo = AtlasRepository(
+                Settings(supabase_url="https://project.supabase.co", supabase_service_role_key="secret"),
+                http,
+            )
+            await repo._load_edges("node-1")
+
+    asyncio.run(run())
+    assert captured[0].url.params["or"] == "(source_id.eq.node-1,target_id.eq.node-1)"
+
+
 def test_public_search_returns_live_graph_without_querying_reviewer_evidence() -> None:
     calls: list[httpx.Request] = []
 
@@ -159,6 +214,12 @@ def test_public_search_returns_live_graph_without_querying_reviewer_evidence() -
                 {"id": "n4", "type": "disorder", "name": "STXBP1-related disorder"},
             ])
         if request.url.path.endswith("/edges"):
+            # Mirrors real PostgREST: an `or` filter without the wrapping
+            # parentheses is a 400, not a quietly-ignored filter. Without this,
+            # the mock would paper over the exact bug this suite exists to catch.
+            or_filter = params.get("or", "")
+            if not (or_filter.startswith("(") and or_filter.endswith(")")):
+                return httpx.Response(400, json={"message": "unexpected \"o\" expecting..."})
             return httpx.Response(200, json=[
                 {"id": "e1", "source_id": "n1", "target_id": "n2", "type": "acts_in", "weight": 0.95},
                 {"id": "e2", "source_id": "n3", "target_id": "n1", "type": "shares_mechanism", "weight": 0.8},

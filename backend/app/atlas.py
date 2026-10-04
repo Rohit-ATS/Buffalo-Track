@@ -72,12 +72,39 @@ class AtlasRepository:
         except (httpx.HTTPError, KeyError, TypeError, ValueError) as error:
             return SearchResponse(status="error", query=term, message="The atlas database is temporarily unavailable.")
 
+    async def check_query_path(self) -> None:
+        """Exercise the exact request shapes `search()` depends on.
+
+        `/readyz` used to ping only `nodes` with no filter, which stayed green
+        through the entire outage where every real search failed: the broken
+        step was the `or`-filtered `edges` lookup, which that check never ran.
+        A random UUID matches nothing, so this proves PostgREST accepts the
+        filter's syntax -- the thing that was actually broken -- without
+        depending on any particular row existing.
+        """
+        await self._get("nodes", {"select": "id", "limit": "1"})
+        probe_id = "00000000-0000-0000-0000-000000000000"
+        await self._get(
+            "edges",
+            {
+                "select": "id",
+                "or": f"(source_id.eq.{probe_id},target_id.eq.{probe_id})",
+                "limit": "1",
+            },
+        )
+
     async def _load_edges(self, node_id: str) -> list[dict[str, Any]]:
         return await self._get(
             "edges",
             {
                 "select": "id,source_id,target_id,type,weight",
-                "or": f"source_id.eq.{node_id},target_id.eq.{node_id}",
+                # PostgREST requires the or-list to be wrapped in parentheses
+                # (see find_nodes above, which gets this right). Without them,
+                # PostgREST returns 400 for every edge lookup, _get raises,
+                # search() catches it as a generic error, and a node that
+                # really has edges comes back looking like it has none -- while
+                # /readyz, which only pings `nodes`, stays green throughout.
+                "or": f"(source_id.eq.{node_id},target_id.eq.{node_id})",
                 "order": "weight.desc",
                 "limit": str(MAX_CONNECTIONS),
             },

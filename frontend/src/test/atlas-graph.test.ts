@@ -56,7 +56,7 @@ function fakeDb(tables: TableRows, options: { failOn?: string } = {}) {
 describe("runAtlasSearch", () => {
   it("reports unconfigured when there is no client", async () => {
     const result = await runAtlasSearch(null, "STXBP1");
-    expect(result).toEqual({ status: "unconfigured", query: "STXBP1" });
+    expect(result).toEqual({ status: "unconfigured", query: "STXBP1", matches: [] });
   });
 
   it("reports empty for a blank query without touching the database", async () => {

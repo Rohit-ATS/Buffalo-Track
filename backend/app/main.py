@@ -90,17 +90,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return HealthResponse(status="ok", service=settings.app_name, environment=settings.environment)
 
     @app.get("/readyz", response_model=ReadinessResponse, tags=["operations"])
-    async def readiness() -> ReadinessResponse:
+    async def readiness(repo: AtlasRepository = Depends(repository)) -> ReadinessResponse:
         if not settings.database_configured:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Supabase is not configured")
         try:
-            response = await app.state.http.get(
-                f"{str(settings.supabase_url).rstrip('/')}/rest/v1/nodes",
-                headers={"apikey": settings.supabase_service_role_key or ""},
-                params={"select": "id", "limit": "1"},
-            )
-            response.raise_for_status()
-        except httpx.HTTPError as error:
+            # Runs the same nodes + edges request shapes `search()` makes, not
+            # just "is the database reachable" -- a readable table is not the
+            # same claim as a working search (see AtlasRepository.check_query_path).
+            await repo.check_query_path()
+        except (httpx.HTTPError, ValueError) as error:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Supabase is unavailable",

@@ -1,8 +1,9 @@
 import { ArrowRight, Check, Database, FileText, Loader2, SearchX } from "lucide-react";
 import type { ReactNode } from "react";
 
-import type { AtlasConnection, AtlasSearchResult } from "@/lib/atlas";
+import type { AtlasConnection, AtlasMatchSummary, AtlasSearchResult } from "@/lib/atlas";
 import { Squiggle, Underline } from "@/components/sketches";
+import { DataStateBar } from "@/components/DataStateBadge";
 
 function Shell({ tag, children }: { tag: string; children: ReactNode }) {
   return (
@@ -22,6 +23,31 @@ function Note({ title, body }: { title: string; body: string }) {
     <div className="rounded-[6px] border border-border bg-surface p-6 md:p-8">
       <h3 className="font-display text-3xl leading-tight md:text-4xl">{title}</h3>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">{body}</p>
+    </div>
+  );
+}
+
+function MatchGrid({ matches, query }: { matches: AtlasMatchSummary[]; query: string }) {
+  if (matches.length === 0) {
+    return (
+      <Note
+        title={`No curated match for “${query}”.`}
+        body="Try a gene, disorder, symptom, or mechanism from the sample atlas."
+      />
+    );
+  }
+  return (
+    <div className="mt-4 grid gap-3 md:grid-cols-2">
+      {matches.map((match) => (
+        <a
+          key={`${match.type}-${match.diseaseId}-${match.label}`}
+          href={`${import.meta.env.BASE_URL}disease/${match.diseaseId}/?q=${encodeURIComponent(match.alias ?? match.label)}`}
+          className="rounded-[6px] border border-border bg-surface p-4 transition-colors hover:border-primary"
+        >
+          <span className="eyebrow">{match.type}</span>
+          <span className="mt-1 block font-display text-xl">{match.label}</span>
+        </a>
+      ))}
     </div>
   );
 }
@@ -84,39 +110,35 @@ export function AtlasResults({
   if (!result) return null;
 
   if (result.status === "fallback") {
+    const unavailable = result.reason === "unavailable";
     return (
-      <Shell tag="Curated fallback · live atlas unavailable">
-        <Note title="You can keep exploring while the API is offline." body={result.message} />
-        {result.matches.length > 0 ? (
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {result.matches.map((match) => (
-              <a
-                key={`${match.type}-${match.diseaseId}-${match.label}`}
-                href={`${import.meta.env.BASE_URL}disease/${match.diseaseId}/?q=${encodeURIComponent(match.alias ?? match.label)}`}
-                className="rounded-[6px] border border-border bg-surface p-4 transition-colors hover:border-primary"
-              >
-                <span className="eyebrow">{match.type}</span>
-                <span className="mt-1 block font-display text-xl">{match.label}</span>
-              </a>
-            ))}
-          </div>
-        ) : (
-          <Note
-            title={`No curated match for “${result.query}”.`}
-            body="Try a gene, disorder, symptom, or mechanism from the sample atlas."
-          />
-        )}
+      <Shell tag={unavailable ? "Live atlas unavailable" : "Related curated entries"}>
+        <DataStateBar
+          state={unavailable ? "unavailable" : "curated"}
+          detail={unavailable ? undefined : "offered alongside a verified live result"}
+        />
+        <Note
+          title={
+            unavailable
+              ? "The live atlas could not answer that search."
+              : `Live search found nothing for “${result.query}.”`
+          }
+          body={result.message}
+        />
+        <MatchGrid matches={result.matches} query={result.query} />
       </Shell>
     );
   }
 
   if (result.status === "unconfigured") {
     return (
-      <Shell tag="Curated fallback">
+      <Shell tag="Curated atlas only">
+        <DataStateBar state="curated" detail="no live API configured for this build" />
         <Note
-          title="The live atlas is not configured for this build."
-          body="The curated sample path below still works while the live API connection is configured."
+          title="This build has no live atlas connection."
+          body="Results below come only from the bundled curated snapshot, not a live database."
         />
+        <MatchGrid matches={result.matches} query={result.query} />
       </Shell>
     );
   }
@@ -124,6 +146,7 @@ export function AtlasResults({
   if (result.status === "error") {
     return (
       <Shell tag="The atlas could not answer">
+        <DataStateBar state="unavailable" />
         <Note title="That search hit a database error." body={result.message} />
       </Shell>
     );
@@ -132,6 +155,7 @@ export function AtlasResults({
   if (result.status === "empty") {
     return (
       <Shell tag={`Nothing mapped for ${result.query} yet`}>
+        <DataStateBar state="live" />
         <Note
           title="An honest gap, not a guess."
           body="The atlas would rather show an empty result than invent a connection. Try a gene symbol, a mechanism, or a disorder name that is already in the graph."
@@ -145,7 +169,8 @@ export function AtlasResults({
   const withEvidence = match.connections.filter((c) => c.evidenceCount > 0).length;
 
   return (
-    <Shell tag={`Live result · ${match.connections.length} connections from the graph`}>
+    <Shell tag={`${match.connections.length} connections from the graph`}>
+      <DataStateBar state="live" />
       <div className="grid gap-px overflow-hidden rounded-[6px] border border-border bg-border lg:grid-cols-[1.15fr_.85fr]">
         <div className="bg-background p-6 md:p-8">
           <p className="eyebrow">{match.node.type}</p>
