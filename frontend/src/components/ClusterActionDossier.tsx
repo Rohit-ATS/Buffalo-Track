@@ -13,6 +13,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DataStateBadge } from "@/components/DataStateBadge";
 
 export interface PathwayClusterNode {
   disease: string;
@@ -70,13 +71,17 @@ export function ClusterActionDossier({
       {/* Top Banner */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/70 pb-4">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-0.5 text-xs font-bold text-primary-foreground">
               <GitMerge className="size-3" /> Core Mechanism Cluster
             </span>
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               {clusterName}
             </span>
+            {/* These three members and their asset/registry status are the
+                same curated sample set as the rest of the atlas (src/lib/atlas-data.ts),
+                not a live query -- see DataStateBadge.tsx. */}
+            <DataStateBadge state="curated" />
           </div>
           <h2 className="mt-2 font-display text-2xl md:text-3xl text-foreground">
             Who shares our biology & what can we reuse this week?
@@ -106,7 +111,7 @@ export function ClusterActionDossier({
             className="rounded-full text-xs font-semibold h-8 shadow-xs"
           >
             <Sparkles className="size-3.5 mr-1.5" />
-            Generate Sourced Proposal (GPT-4o)
+            Open outreach template
           </Button>
         </div>
       </div>

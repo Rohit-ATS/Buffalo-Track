@@ -77,16 +77,19 @@ export function MoonshotAcceleratorModal({
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/80 pb-5">
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              <Sparkles className="size-3.5 text-primary" />
-              Challenge 05: The 10× Moonshot Timeline
+            <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground">
+              <Sparkles className="size-3.5" />
+              Illustrative example, not a published benchmark
             </div>
             <h2 className="font-display text-2xl md:text-3xl text-foreground">
-              Accelerating Rare Disease Treatment by 10×
+              What sharing a mechanism could save
             </h2>
             <p className="text-xs text-muted-foreground">
-              Calculated comparison: Siloed single-disease research vs. Atlas Shared-Mechanism Model
-              for <strong className="text-foreground">{diseaseName}</strong>.
+              A hypothetical comparison -- siloed single-disease research vs. an atlas
+              shared-mechanism model -- for{" "}
+              <strong className="text-foreground">{diseaseName}</strong>. The figures below are
+              scenario assumptions this demo made up to illustrate the idea, not measurements of any
+              real program.
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={onClose} className="rounded-full">
@@ -203,8 +206,9 @@ export function MoonshotAcceleratorModal({
           </p>
           <p className="text-muted-foreground leading-relaxed text-[11px]">{current.assumption}</p>
           <p className="text-[10px] text-muted-foreground/80 italic pt-1 border-t border-border/50">
-            * Benchmark timelines derived from Rare Disease Moonshot, NIH NCATS Toolkit for
-            Patient-Focused Therapy Development, and Orphanet rare epilepsy natural history studies.
+            * These timelines, costs, and the "{current.speedup}" figure are scenario assumptions
+            written for this demo, not measurements from a real program, a citation, or a published
+            benchmark. Treat every number on this screen as illustrative only.
           </p>
         </div>
       </div>
