@@ -1,0 +1,52 @@
+name: Bug report
+description: Tell us about a reproducible problem in Buffalo-Track.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Do not include credentials, private health information, or other sensitive data. Security vulnerabilities belong in a private report, not this form.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the unexpected behavior and its impact.
+      placeholder: The search result stays on “Tracing the evidence”…
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Give the smallest reliable sequence of steps.
+      placeholder: |
+        1. Open …
+        2. Search for …
+        3. Observe …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Affected area
+      options:
+        - Frontend / GitHub Pages
+        - FastAPI backend
+        - Supabase migration or family space
+        - CI / deployment
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser and version, operating system, deployment URL, and non-sensitive console output if relevant.

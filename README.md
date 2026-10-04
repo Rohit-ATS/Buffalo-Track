@@ -2,6 +2,12 @@
 
 A graph-backed rare-disease atlas. Two halves:
 
+## Contributing
+
+Bug reports and feature requests use the repository's issue forms. Read
+[CONTRIBUTING.md](CONTRIBUTING.md) for local setup, required checks, migration
+guidance, and the rules for handling secrets and private data.
+
 | Path        | What it is                                                                    |
 | ----------- | ----------------------------------------------------------------------------- |
 | `supabase/` | Postgres schema: `nodes`, `edges`, `evidence` (with pgvector embeddings)      |
