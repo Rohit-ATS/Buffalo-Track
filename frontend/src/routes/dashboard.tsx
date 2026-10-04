@@ -155,18 +155,37 @@ export function ResearchDashboard() {
   useEffect(() => {
     const client = getSupabaseBrowser();
     // Without configured Supabase, retain the four-person hackathon demo mode.
-    if (!client) { setAuthChecked(true); return; }
-    void currentUser().then(async (user) => {
-      if (!user) { await navigate({ to: "/family" }); return; }
-      const profile = await loadProfile();
-      if (!profile) { await navigate({ to: "/family" }); return; }
-      setDatabaseRole(profile.role ?? "family");
+    if (!client) {
       setAuthChecked(true);
-    }).catch(() => { void navigate({ to: "/family" }); });
+      return;
+    }
+    void currentUser()
+      .then(async (user) => {
+        if (!user) {
+          await navigate({ to: "/family" });
+          return;
+        }
+        const profile = await loadProfile();
+        if (!profile) {
+          await navigate({ to: "/family" });
+          return;
+        }
+        setDatabaseRole(profile.role ?? "family");
+        setAuthChecked(true);
+      })
+      .catch(() => {
+        void navigate({ to: "/family" });
+      });
   }, [navigate]);
 
   if (getSupabaseBrowser() && !authChecked) {
-    return <main className="grid min-h-screen place-items-center bg-secondary p-6"><p className="rounded-xl border bg-background px-5 py-4 text-sm">Checking your private dashboard…</p></main>;
+    return (
+      <main className="grid min-h-screen place-items-center bg-secondary p-6">
+        <p className="rounded-xl border bg-background px-5 py-4 text-sm">
+          Checking your private dashboard…
+        </p>
+      </main>
+    );
   }
 
   return (
@@ -189,19 +208,33 @@ export function ResearchDashboard() {
               <Link to="/dashboard" activeProps={{ className: "is-active" }}>
                 <LayoutDashboard className="size-4" /> Overview
               </Link>
-              {hasEvidenceAccess && <>
-                <Link to="/stxbp1-disorder"><FlaskConical className="size-4" /> Research</Link>
-                <Link to="/compare"><GitCompareArrows className="size-4" /> Compare</Link>
-                <Link to="/mechanisms"><Network className="size-4" /> Mechanisms</Link>
-                <Link to="/researchers"><Users className="size-4" /> Researchers</Link>
-                <Link to="/methods"><BookOpen className="size-4" /> Methods</Link>
-              </>}
+              {hasEvidenceAccess && (
+                <>
+                  <Link to="/stxbp1-disorder">
+                    <FlaskConical className="size-4" /> Research
+                  </Link>
+                  <Link to="/compare">
+                    <GitCompareArrows className="size-4" /> Compare
+                  </Link>
+                  <Link to="/mechanisms">
+                    <Network className="size-4" /> Mechanisms
+                  </Link>
+                  <Link to="/researchers">
+                    <Users className="size-4" /> Researchers
+                  </Link>
+                  <Link to="/methods">
+                    <BookOpen className="size-4" /> Methods
+                  </Link>
+                </>
+              )}
             </nav>
             <div className="flex shrink-0 items-center gap-2">
               <NotificationsBell />
               <PersonaSwitch />
               <div className="hidden text-right md:block">
-                <p className="text-xs font-semibold">{demoPerson.name} · {access.role.replace("_", " ")}</p>
+                <p className="text-xs font-semibold">
+                  {demoPerson.name} · {access.role.replace("_", " ")}
+                </p>
                 <p className="text-[10px] text-muted-foreground">{access.dashboard}</p>
               </div>
               <AccountMenu />
@@ -213,7 +246,9 @@ export function ResearchDashboard() {
           <div className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="relative">
               <p className="eyebrow">{access.role} dashboard</p>
-              <h1 className="mt-1 font-display text-4xl md:text-5xl">Good morning, {demoPerson.name}.</h1>
+              <h1 className="mt-1 font-display text-4xl md:text-5xl">
+                Good morning, {demoPerson.name}.
+              </h1>
               <span className="ml-1 mt-1 hidden -rotate-2 font-sketch text-lg text-primary md:inline-block">
                 follow the evidence ↘
               </span>
@@ -245,11 +280,21 @@ export function ResearchDashboard() {
 
           <section className="mb-6 rounded-xl border border-primary/25 bg-example-mint px-4 py-3 text-sm">
             <strong>{access.dashboard}.</strong>{" "}
-            {access.role === "family" && "Start in Family Space to manage your private profile, trusted introductions, and Circles."}
-            {access.role === "steward" && "Review member safety and Circle requests; detailed research receipts remain restricted."}
-            {access.role === "evidence_reviewer" && "Review source receipts and research signals; family identities and messages remain private."}
-            {access.role === "admin" && "Coordinate partner operations and safety controls; role changes belong in trusted admin workflows."}
-            <Link to="/dashboard" search={{ section: "family" }} className="ml-2 font-semibold text-primary underline">Open your family space</Link>
+            {access.role === "family" &&
+              "Start in Family Space to manage your private profile, trusted introductions, and Circles."}
+            {access.role === "steward" &&
+              "Review member safety and Circle requests; detailed research receipts remain restricted."}
+            {access.role === "evidence_reviewer" &&
+              "Review source receipts and research signals; family identities and messages remain private."}
+            {access.role === "admin" &&
+              "Coordinate partner operations and safety controls; role changes belong in trusted admin workflows."}
+            <Link
+              to="/dashboard"
+              search={{ section: "family" }}
+              className="ml-2 font-semibold text-primary underline"
+            >
+              Open your family space
+            </Link>
           </section>
 
           <div className="dashboard-grid">
