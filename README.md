@@ -235,7 +235,9 @@ hits it records where it stopped rather than losing the work. → [backend/DISCO
 <br>
 
 [`backend/`](backend/README.md) exposes `POST /api/v1/search`, `/healthz`, `/readyz`;
-`render.yaml` deploys it to Render. Set `BACKEND_URL` in `frontend/.env`. Checklist:
+`render.yaml` deploys it to Render. The Pages workflow sets the public
+`VITE_BACKEND_URL` to the Render API; set the exact Pages origin in Render's
+`CORS_ORIGINS`. Checklist:
 [backend/RENDER_DEPLOY.md](backend/RENDER_DEPLOY.md).
 
 [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) prerenders the public routes to GitHub

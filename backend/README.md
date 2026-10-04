@@ -35,12 +35,11 @@ infrastructure they've built, via Bright Data web search and extraction.
 ## Render
 
 The root `render.yaml` defines the service. Create a Render Blueprint from this
-repository and enter `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, the final
-frontend URL in `CORS_ORIGINS`, and a random `BACKEND_PROXY_SECRET` (at least
-32 characters). Set the identical `BACKEND_PROXY_SECRET`, without a `VITE_`
-prefix, in the frontend server environment. It signs the browser's rate-limit
-identity without exposing a secret to the browser. Render injects `PORT`
-automatically. The blueprint fixes the API at one instance; use a shared rate
-limiter before scaling it out.
+repository and enter `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, the exact
+GitHub Pages origin in `CORS_ORIGINS`, and a random `BACKEND_PROXY_SECRET` (at
+least 32 characters). The Pages build uses the public
+`VITE_BACKEND_URL=https://buffalo-track-api.onrender.com`; no backend secret is
+placed in the browser. Render injects `PORT` automatically. The blueprint fixes
+the API at one instance; use a shared rate limiter before scaling it out.
 
 Follow the complete [Render deployment checklist](RENDER_DEPLOY.md).
