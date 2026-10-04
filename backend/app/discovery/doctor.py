@@ -98,14 +98,25 @@ async def check_serp(settings: Settings, client: httpx.AsyncClient) -> Check:
             json={
                 "zone": settings.bright_data_serp_zone,
                 "url": "https://www.google.com/search?q=test&brd_json=1",
-                "format": "raw",
+                "format": "json",
             },
             timeout=httpx.Timeout(90.0),
         )
     except httpx.HTTPError as error:
         return Check(name, False, f"Request failed: {error}", "Check network access to Bright Data.")
 
-    return _zone_verdict(name, response, settings.bright_data_serp_zone, kind="SERP API")
+    verdict = _zone_verdict(name, response, settings.bright_data_serp_zone, kind="SERP API")
+    if verdict.ok and len(response.text) < 500:
+        # A 200 with almost nothing in it means the request shape is wrong, not
+        # that the zone is missing. Worth failing loudly: discovery would
+        # otherwise find no URLs and report an empty run as a success.
+        return Check(
+            name,
+            False,
+            f"Zone answered but returned only {len(response.text)} bytes.",
+            "The SERP request needs format=json with brd_json=1 in the URL.",
+        )
+    return verdict
 
 
 async def check_unlocker(settings: Settings, client: httpx.AsyncClient) -> Check:

@@ -39,12 +39,15 @@ def _domain_of(url: str) -> str:
     return host[4:] if host.startswith("www.") else host
 
 
-def _search_url(query: str, *, count: int, country: str) -> str:
-    # brd_json=1 asks the SERP zone for parsed JSON rather than raw HTML.
-    return (
-        f"https://www.google.com/search?q={quote_plus(query)}"
-        f"&num={count}&gl={country}&hl=en&brd_json=1"
-    )
+def _search_url(query: str, *, country: str) -> str:
+    """The search URL the SERP zone fetches.
+
+    `brd_json=1` asks for parsed results instead of HTML. `num` is deliberately
+    absent: Bright Data strips it and warns
+    ("these query parameters have unacceptable name and/or value"), so sending
+    it only adds noise. Result count comes from the SERP default.
+    """
+    return f"https://www.google.com/search?q={quote_plus(query)}&gl={country}&hl=en&brd_json=1"
 
 
 def _parse_organic(payload: dict[str, object], query: str) -> list[SerpHit]:
@@ -81,6 +84,37 @@ def _parse_organic(payload: dict[str, object], query: str) -> list[SerpHit]:
     return hits
 
 
+def _unwrap(text: str, query: str) -> dict[str, object] | None:
+    """Pulls the parsed SERP out of the envelope.
+
+    The response is {"status_code", "headers", "body"} where `body` is a JSON
+    *string* holding the parsed result page, so it needs decoding twice.
+    """
+    try:
+        envelope = json.loads(text)
+    except json.JSONDecodeError:
+        LOG.warning("SERP response for %r was not JSON; skipping", query)
+        return None
+
+    if not isinstance(envelope, dict):
+        return None
+
+    body = envelope.get("body", envelope)
+    if isinstance(body, dict):
+        return body
+    if not isinstance(body, str):
+        return None
+
+    try:
+        inner = json.loads(body)
+    except json.JSONDecodeError:
+        # Raw HTML instead of parsed results: brd_json was dropped somewhere.
+        LOG.warning("SERP body for %r was not parsed JSON; skipping", query)
+        return None
+
+    return inner if isinstance(inner, dict) else None
+
+
 class SerpClient:
     """Runs discovery searches through Bright Data's SERP zone."""
 
@@ -90,25 +124,21 @@ class SerpClient:
 
     async def search(self, query: str, *, count: int = 10, country: str = "us") -> list[SerpHit]:
         """Returns organic hits for one query, or [] if the payload is unusable."""
+        # format=json is required here. With format=raw this zone returns an
+        # empty body for a brd_json request -- 200 OK, zero bytes, no error.
         response = await self._client.post(
             {
                 "zone": self._zone,
-                "url": _search_url(query, count=count, country=country),
-                "format": "raw",
+                "url": _search_url(query, country=country),
+                "format": "json",
             }
         )
 
-        try:
-            payload = response.json()
-        except json.JSONDecodeError:
-            LOG.warning("SERP payload for %r was not JSON; skipping", query)
+        payload = _unwrap(response.text, query)
+        if payload is None:
             return []
 
-        if not isinstance(payload, dict):
-            LOG.warning("SERP payload for %r was not an object; skipping", query)
-            return []
-
-        hits = _parse_organic(payload, query)
+        hits = _parse_organic(payload, query)[:count]
         LOG.info("SERP %r -> %s hits", query, len(hits))
         return hits
 
