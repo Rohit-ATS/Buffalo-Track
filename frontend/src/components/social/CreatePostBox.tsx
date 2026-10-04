@@ -5,7 +5,12 @@ import { Button } from "@/components/ui/button";
 export function CreatePostBox({
   onPublish,
 }: {
-  onPublish: (body: string, tags: string[], imageUrl?: string, evidenceBadge?: string) => Promise<void>;
+  onPublish: (
+    body: string,
+    tags: string[],
+    imageUrl?: string,
+    evidenceBadge?: string,
+  ) => Promise<void>;
 }) {
   const [open, setOpen] = React.useState(false);
   const [body, setBody] = React.useState("");
@@ -36,7 +41,12 @@ export function CreatePostBox({
     if (!body.trim()) return;
     setIsSubmitting(true);
     try {
-      await onPublish(body.trim(), selectedTags, imageUrl.trim() || undefined, evidenceBadge.trim() || undefined);
+      await onPublish(
+        body.trim(),
+        selectedTags,
+        imageUrl.trim() || undefined,
+        evidenceBadge.trim() || undefined,
+      );
       setBody("");
       setImageUrl("");
       setEvidenceBadge("");

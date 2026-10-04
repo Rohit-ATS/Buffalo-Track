@@ -7,7 +7,7 @@ export type SocialPost = {
   author_name: string;
   author_role: "Caregiver" | "Patient" | "Steward" | "Clinician";
   condition: string;
-  biology_badge?: string;
+  biology_badge?: string | null;
   body: string;
   image_url?: string | null;
   tags: string[];
@@ -63,7 +63,8 @@ export const INITIAL_POSTS: SocialPost[] = [
     condition: "STXBP1 Encephalopathy",
     biology_badge: "Presynaptic Vesicle Fusion",
     body: "Milestone day for our family! After 6 months of systematic seizure tracking with our pediatric neurologist, Leo went 45 days without a focal seizure cluster. To any parents just starting this journey: keeping an hourly sleep and meal log made all the difference in spotting triggers. You are not alone in this.",
-    image_url: "https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=900&q=80",
+    image_url:
+      "https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=900&q=80",
     tags: ["#STXBP1", "#SeizureDiary", "#CaregiverWins", "#SchoolAge"],
     evidence_badge: "Reviewed Natural-History Measure",
     evidence_link: "https://clinicaltrials.gov",
@@ -142,8 +143,10 @@ export const INITIAL_REELS: SocialReel[] = [
     condition: "STXBP1",
     title: "Morning sensory routine that changed our day",
     caption: "Deep pressure weighted blanket + 5 min low-stimulation transition before school.",
-    video_url: "https://assets.mixkit.co/videos/preview/mixkit-hands-of-mother-and-child-42358-large.mp4",
-    thumbnail_url: "https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=600&q=80",
+    video_url:
+      "https://assets.mixkit.co/videos/preview/mixkit-hands-of-mother-and-child-42358-large.mp4",
+    thumbnail_url:
+      "https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=600&q=80",
     duration: "0:42",
     tags: ["#SensoryDiet", "#MorningRoutine", "#STXBP1"],
     likes_count: 142,
@@ -155,9 +158,12 @@ export const INITIAL_REELS: SocialReel[] = [
     author_role: "Dad of 7yo",
     condition: "SNARE Pathway",
     title: "How we track seizure clusters in real-time",
-    caption: "Our setup for syncing wearable logs with clinical visit notes. No spreadsheets required.",
-    video_url: "https://assets.mixkit.co/videos/preview/mixkit-father-and-son-playing-in-a-park-41584-large.mp4",
-    thumbnail_url: "https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?auto=format&fit=crop&w=600&q=80",
+    caption:
+      "Our setup for syncing wearable logs with clinical visit notes. No spreadsheets required.",
+    video_url:
+      "https://assets.mixkit.co/videos/preview/mixkit-father-and-son-playing-in-a-park-41584-large.mp4",
+    thumbnail_url:
+      "https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?auto=format&fit=crop&w=600&q=80",
     duration: "1:05",
     tags: ["#SeizureTracking", "#CaregiverTips", "#DigitalHealth"],
     likes_count: 98,
@@ -170,8 +176,10 @@ export const INITIAL_REELS: SocialReel[] = [
     condition: "Presynaptic Vesicle Fusion",
     title: "What does 'SNARE complex' mean for your child?",
     caption: "30-second primer on vesicle fusion biology in plain English without jargon.",
-    video_url: "https://assets.mixkit.co/videos/preview/mixkit-doctor-explaining-a-diagnosis-42385-large.mp4",
-    thumbnail_url: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=600&q=80",
+    video_url:
+      "https://assets.mixkit.co/videos/preview/mixkit-doctor-explaining-a-diagnosis-42385-large.mp4",
+    thumbnail_url:
+      "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=600&q=80",
     duration: "0:38",
     tags: ["#BiologyExplained", "#ScienceForFamilies", "#NeuroGenetics"],
     likes_count: 310,
@@ -184,7 +192,8 @@ export const STORIES: StoryUser[] = [
     id: "s-1",
     name: "The SNARE Circle",
     condition: "14 Families",
-    avatar_url: "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=150&q=80",
+    avatar_url:
+      "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=150&q=80",
     has_unseen: true,
     reel_id: "reel-1",
   },
@@ -192,7 +201,8 @@ export const STORIES: StoryUser[] = [
     id: "s-2",
     name: "Elena M.",
     condition: "STXBP1",
-    avatar_url: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80",
+    avatar_url:
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80",
     has_unseen: true,
     reel_id: "reel-1",
   },
@@ -200,7 +210,8 @@ export const STORIES: StoryUser[] = [
     id: "s-3",
     name: "Marcus V.",
     condition: "STX1B",
-    avatar_url: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80",
+    avatar_url:
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80",
     has_unseen: false,
     reel_id: "reel-2",
   },
@@ -208,7 +219,8 @@ export const STORIES: StoryUser[] = [
     id: "s-4",
     name: "Dr. Osei",
     condition: "Reviewer",
-    avatar_url: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=150&q=80",
+    avatar_url:
+      "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=150&q=80",
     has_unseen: true,
     reel_id: "reel-3",
   },
@@ -216,7 +228,8 @@ export const STORIES: StoryUser[] = [
     id: "s-5",
     name: "Foundation",
     condition: "Steward",
-    avatar_url: "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=150&q=80",
+    avatar_url:
+      "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=150&q=80",
     has_unseen: false,
     reel_id: "reel-2",
   },
@@ -238,22 +251,26 @@ export async function fetchSocialPosts(): Promise<SocialPost[]> {
       return INITIAL_POSTS;
     }
 
-    return (data as any[]).map((p) => ({
-      id: p.id,
-      author_id: p.author_id,
-      author_name: p.author_name || "Community Member",
-      author_role: (p.author_role as any) || "Caregiver",
-      condition: p.condition || "Rare Disorder",
-      biology_badge: p.biology_badge || undefined,
-      body: p.body,
-      image_url: p.image_url,
-      tags: p.tags || [],
-      evidence_badge: p.evidence_badge,
-      evidence_link: p.evidence_link,
-      likes_count: p.likes_count || 0,
-      comments_count: p.comments_count || 0,
+    return (data as Record<string, unknown>[]).map((p) => ({
+      id: String(p["id"]),
+      author_id: String(p["author_id"]),
+      author_name: String(p["author_name"]) || "Community Member",
+      author_role: (String(p["author_role"]) || "Caregiver") as
+        "Caregiver" | "Patient" | "Steward" | "Clinician",
+      condition: String(p["condition"]) || "Rare Disorder",
+      biology_badge: (p["biology_badge"] as string | null) ?? null,
+      body: String(p["body"]),
+      image_url: (p["image_url"] as string | null) ?? null,
+      tags: (Array.isArray(p["tags"]) ? p["tags"] : []) as string[],
+      evidence_badge: (p["evidence_badge"] as string | null) ?? null,
+      evidence_link: (p["evidence_link"] as string | null) ?? null,
+      likes_count: Number(p["likes_count"]) || 0,
+      comments_count: Number(p["comments_count"]) || 0,
       has_liked: false,
-      created_at: new Date(p.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      created_at: new Date(String(p["created_at"])).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       comments: [],
     }));
   } catch {
@@ -280,9 +297,9 @@ export async function publishPost(
     condition: "STXBP1 / Related Disorder",
     biology_badge: "Presynaptic Vesicle Fusion",
     body,
-    image_url: imageUrl,
+    image_url: imageUrl ?? null,
     tags,
-    evidence_badge: evidenceBadge,
+    evidence_badge: evidenceBadge ?? null,
     likes_count: 0,
     comments_count: 0,
     has_liked: false,
@@ -316,27 +333,23 @@ export function subscribeToPosts(onNewPost: (post: SocialPost) => void) {
 
   const channel = client
     .channel("realtime-social-posts")
-    .on(
-      "postgres_changes",
-      { event: "INSERT", schema: "public", table: "posts" },
-      (payload) => {
-        const p = payload.new as any;
-        onNewPost({
-          id: p.id,
-          author_id: p.author_id,
-          author_name: p.author_name || "Community Member",
-          author_role: "Caregiver",
-          condition: p.condition || "Rare Disorder",
-          body: p.body,
-          image_url: p.image_url,
-          tags: p.tags || [],
-          evidence_badge: p.evidence_badge,
-          likes_count: p.likes_count || 0,
-          comments_count: 0,
-          created_at: "Just now",
-        });
-      },
-    )
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts" }, (payload) => {
+      const p = payload.new as Record<string, unknown>;
+      onNewPost({
+        id: String(p["id"]),
+        author_id: String(p["author_id"]),
+        author_name: String(p["author_name"]) || "Community Member",
+        author_role: "Caregiver",
+        condition: String(p["condition"]) || "Rare Disorder",
+        body: String(p["body"]),
+        image_url: (p["image_url"] as string | null) ?? null,
+        tags: (Array.isArray(p["tags"]) ? p["tags"] : []) as string[],
+        evidence_badge: (p["evidence_badge"] as string | null) ?? null,
+        likes_count: Number(p["likes_count"]) || 0,
+        comments_count: 0,
+        created_at: "Just now",
+      });
+    })
     .subscribe();
 
   return () => {

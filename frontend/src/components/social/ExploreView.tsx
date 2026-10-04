@@ -1,5 +1,15 @@
 import * as React from "react";
-import { BookOpen, Check, HeartHandshake, Lock, Search, ShieldCheck, Sparkles, UserPlus, Users } from "lucide-react";
+import {
+  BookOpen,
+  Check,
+  HeartHandshake,
+  Lock,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   acceptIntroduction,
@@ -17,7 +27,9 @@ export function ExploreView({
 }) {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [requestModal, setRequestModal] = React.useState<FamilySuggestion | null>(null);
-  const [requestNote, setRequestNote] = React.useState("I’d appreciate learning how other families approach seizure tracking and daily routines.");
+  const [requestNote, setRequestNote] = React.useState(
+    "I’d appreciate learning how other families approach seizure tracking and daily routines.",
+  );
   const [statusNotice, setStatusNotice] = React.useState<string | null>(null);
   const [joinedCircleIds, setJoinedCircleIds] = React.useState<string[]>([]);
   const [sentRequestIds, setSentRequestIds] = React.useState<string[]>([]);
@@ -80,7 +92,8 @@ export function ExploreView({
         <div>
           <h2 className="font-display text-2xl">Atlas Explainable Connections</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Connections suggested based on verified shared biological pathways and shared life stages.
+            Connections suggested based on verified shared biological pathways and shared life
+            stages.
           </p>
         </div>
 
@@ -147,7 +160,11 @@ export function ExploreView({
                       variant="outline"
                       className="rounded-full text-xs h-8 px-4"
                     >
-                      <a href={item.source_url || "https://clinicaltrials.gov"} target="_blank" rel="noreferrer">
+                      <a
+                        href={item.source_url || "https://clinicaltrials.gov"}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
                         View eligibility
                       </a>
                     </Button>
@@ -165,7 +182,9 @@ export function ExploreView({
           <div className="w-full max-w-md rounded-2xl bg-background p-6 shadow-xl space-y-4">
             <h3 className="font-display text-2xl">Send a request, not your personal details</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Write a short note about what you hope to learn. The recipient can accept, decline, or suggest a group conversation. Your email and medical details stay completely private unless you both choose to share them.
+              Write a short note about what you hope to learn. The recipient can accept, decline, or
+              suggest a group conversation. Your email and medical details stay completely private
+              unless you both choose to share them.
             </p>
             <textarea
               value={requestNote}

@@ -97,6 +97,16 @@ export function useLiveConversation(kind: Kind, id: string | null): LiveConversa
 
     void loadBacklog();
 
+    if (kind === "private") {
+      const refresh = window.setInterval(() => {
+        void loadBacklog();
+      }, 5000);
+      return () => {
+        cancelled = true;
+        window.clearInterval(refresh);
+      };
+    }
+
     const onInsert = (payload: RealtimePostgresChangesPayload<LiveMessage>) => {
       const row = payload.new as LiveMessage | undefined;
       if (!row?.id) return;

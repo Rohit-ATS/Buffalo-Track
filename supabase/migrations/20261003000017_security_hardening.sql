@@ -171,6 +171,15 @@ begin
      or p_search is not null and (char_length(p_search) > 500 or p_search !~ '^[A-Za-z0-9_=&%.,~+:/-]*$') then
     raise exception 'Invalid dashboard click payload';
   end if;
+  if (
+    select count(*)
+    from public.atlas_dashboard_clicks
+    where source = p_source
+      and from_path = p_from_path
+      and created_at >= now() - interval '1 minute'
+  ) >= 60 then
+    return;
+  end if;
   insert into public.atlas_dashboard_clicks (source, from_path, search)
   values (p_source, p_from_path, nullif(p_search, ''));
 end;

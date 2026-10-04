@@ -101,6 +101,7 @@ const preview: FamilySuggestion[] = [
 
 export function FamilySpace() {
   const [email, setEmail] = useState<string | null>(null);
+  const [viewerId, setViewerId] = useState<string | null>(null);
   const [profile, setProfile] = useState<FamilyProfile | null>(null);
   const [suggestions, setSuggestions] = useState<FamilySuggestion[]>([]);
   const [requests, setRequests] = useState<Array<{ id: string; sender_id: string; note: string }>>(
@@ -114,6 +115,7 @@ export function FamilySpace() {
     try {
       const user = await currentUser();
       setEmail(user?.email ?? null);
+      setViewerId(user?.id ?? null);
       if (!user) return;
       const [p, s, r] = await Promise.all([
         loadProfile(),
@@ -215,7 +217,7 @@ export function FamilySpace() {
             </button>
           </div>
         </div>
-        <InstagramDashboard role="family" viewerId={email} initialTab="home" />
+        <InstagramDashboard role="family" viewerId={viewerId} initialTab="home" />
       </div>
     );
   }

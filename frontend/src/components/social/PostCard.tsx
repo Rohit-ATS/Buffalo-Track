@@ -106,9 +106,7 @@ export function PostCard({
 
       {/* Post Content */}
       <div className="p-4 space-y-3">
-        <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
-          {post.body}
-        </p>
+        <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">{post.body}</p>
 
         {/* Tags */}
         {post.tags.length > 0 && (
@@ -153,7 +151,9 @@ export function PostCard({
               type="button"
               onClick={handleLike}
               className={`flex items-center gap-1.5 text-sm transition-transform active:scale-125 ${
-                liked ? "text-rose-500 font-semibold" : "text-muted-foreground hover:text-foreground"
+                liked
+                  ? "text-rose-500 font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
               aria-label="Like post"
             >
@@ -219,7 +219,12 @@ export function PostCard({
                 placeholder="Add a thoughtful reply to this circle…"
                 className="flex-1 rounded-full border border-border bg-background px-3.5 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary"
               />
-              <Button size="sm" type="submit" disabled={!commentText.trim()} className="rounded-full text-xs h-7 px-3">
+              <Button
+                size="sm"
+                type="submit"
+                disabled={!commentText.trim()}
+                className="rounded-full text-xs h-7 px-3"
+              >
                 Post
               </Button>
             </form>

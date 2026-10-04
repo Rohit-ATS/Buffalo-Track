@@ -159,8 +159,12 @@ export function InstagramDashboard({
               RA
             </div>
             <div className="hidden md:block">
-              <span className="font-display text-base font-semibold block leading-tight">Rare Atlas</span>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Family Network</span>
+              <span className="font-display text-base font-semibold block leading-tight">
+                Rare Atlas
+              </span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                Family Network
+              </span>
             </div>
           </Link>
 
@@ -360,19 +364,22 @@ export function InstagramDashboard({
                   <li className="flex items-start gap-2.5">
                     <span className="size-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                     <span>
-                      <strong className="text-foreground">People:</strong> 2 caregivers navigating related seizure disorders are open to connecting.
+                      <strong className="text-foreground">People:</strong> 2 caregivers navigating
+                      related seizure disorders are open to connecting.
                     </span>
                   </li>
                   <li className="flex items-start gap-2.5">
                     <span className="size-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                     <span>
-                      <strong className="text-foreground">Community:</strong> STXBP1 Foundation hosts a parent-led monthly Circle.
+                      <strong className="text-foreground">Community:</strong> STXBP1 Foundation
+                      hosts a parent-led monthly Circle.
                     </span>
                   </li>
                   <li className="flex items-start gap-2.5">
                     <span className="size-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                     <span>
-                      <strong className="text-foreground">Research:</strong> A natural-history study on presynaptic vesicle measures is actively recruiting.
+                      <strong className="text-foreground">Research:</strong> A natural-history study
+                      on presynaptic vesicle measures is actively recruiting.
                     </span>
                   </li>
                 </ul>
@@ -410,7 +417,9 @@ export function InstagramDashboard({
                   <div className="flex items-center justify-between text-xs">
                     <div>
                       <p className="font-semibold text-foreground">Marcus Vance</p>
-                      <p className="text-[11px] text-muted-foreground">Shares school-age seizure care</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Shares school-age seizure care
+                      </p>
                     </div>
                     <Button
                       size="sm"
@@ -426,7 +435,8 @@ export function InstagramDashboard({
 
               {/* Legal & Boundaries */}
               <p className="text-[11px] leading-relaxed text-muted-foreground px-1">
-                Peer support only — not medical advice. Connections are suggested by biology receipts.
+                Peer support only — not medical advice. Connections are suggested by biology
+                receipts.
               </p>
             </aside>
           </div>
@@ -434,10 +444,7 @@ export function InstagramDashboard({
 
         {/* Explore & Suggestions Tab */}
         {activeTab === "explore" && (
-          <ExploreView
-            suggestions={suggestions}
-            onOpenEvidence={(s) => setEvidenceModalItem(s)}
-          />
+          <ExploreView suggestions={suggestions} onOpenEvidence={(s) => setEvidenceModalItem(s)} />
         )}
 
         {/* Reels Tab */}
@@ -473,7 +480,8 @@ export function InstagramDashboard({
           <div className="w-full max-w-lg rounded-2xl bg-background p-6 shadow-xl space-y-4">
             <h3 className="font-display text-2xl">Find your people, at your pace</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Only share what you want Atlas to use. You decide who can contact you and whether to join a group or meet one peer first.
+              Only share what you want Atlas to use. You decide who can contact you and whether to
+              join a group or meet one peer first.
             </p>
 
             <div className="space-y-3 text-xs">
@@ -492,7 +500,9 @@ export function InstagramDashboard({
                 <input
                   type="text"
                   value={profileDraft.caregiver_role || ""}
-                  onChange={(e) => setProfileDraft({ ...profileDraft, caregiver_role: e.target.value })}
+                  onChange={(e) =>
+                    setProfileDraft({ ...profileDraft, caregiver_role: e.target.value })
+                  }
                   className="w-full rounded-lg border border-border bg-surface p-2.5 outline-none focus:ring-1 focus:ring-primary"
                 />
               </label>
@@ -521,7 +531,9 @@ export function InstagramDashboard({
                 <span className="font-semibold text-foreground">What help would be useful?</span>
                 <textarea
                   value={profileDraft.help_needed || ""}
-                  onChange={(e) => setProfileDraft({ ...profileDraft, help_needed: e.target.value })}
+                  onChange={(e) =>
+                    setProfileDraft({ ...profileDraft, help_needed: e.target.value })
+                  }
                   rows={3}
                   className="w-full rounded-lg border border-border bg-surface p-2.5 outline-none focus:ring-1 focus:ring-primary"
                 />
@@ -545,7 +557,9 @@ export function InstagramDashboard({
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-background p-6 shadow-xl space-y-4">
             <h3 className="font-display text-2xl">Evidence behind this suggestion</h3>
-            <p className="text-xs leading-relaxed text-muted-foreground">{evidenceModalItem.evidence_summary}</p>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              {evidenceModalItem.evidence_summary}
+            </p>
             {evidenceModalItem.evidence_url && (
               <a
                 href={evidenceModalItem.evidence_url}

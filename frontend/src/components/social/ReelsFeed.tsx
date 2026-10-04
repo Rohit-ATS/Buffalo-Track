@@ -79,10 +79,7 @@ export function ReelsFeed() {
                   <span className="text-[11px] font-medium text-white/90">{reelLike.count}</span>
                 </button>
 
-                <button
-                  type="button"
-                  className="flex flex-col items-center gap-1 group"
-                >
+                <button type="button" className="flex flex-col items-center gap-1 group">
                   <div className="size-10 rounded-full bg-black/40 backdrop-blur-md grid place-items-center text-white">
                     <MessageCircle className="size-5" />
                   </div>

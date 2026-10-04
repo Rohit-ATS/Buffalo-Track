@@ -44,7 +44,12 @@ export function SocialProfileView({
                 </div>
               </div>
 
-              <Button size="sm" variant="outline" onClick={onEditProfile} className="rounded-full text-xs h-8">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={onEditProfile}
+                className="rounded-full text-xs h-8"
+              >
                 <Edit3 className="size-3.5 mr-1.5" /> Edit Profile
               </Button>
             </div>
@@ -77,11 +82,13 @@ export function SocialProfileView({
               </p>
               <p>
                 <strong className="text-foreground">Life Stage:</strong>{" "}
-                {profile?.age_band || "School age (6–12)"} • {profile?.timezone || "America/New_York"}
+                {profile?.age_band || "School age (6–12)"} •{" "}
+                {profile?.timezone || "America/New_York"}
               </p>
               <p>
                 <strong className="text-foreground">What help would be useful:</strong>{" "}
-                {profile?.help_needed || "Tracking seizure clusters and comparing natural-history measures with other families."}
+                {profile?.help_needed ||
+                  "Tracking seizure clusters and comparing natural-history measures with other families."}
               </p>
             </div>
           </div>
@@ -155,7 +162,9 @@ export function SocialProfileView({
             <div className="rounded-lg border border-border/80 bg-background p-3 text-xs flex justify-between items-center">
               <div>
                 <p className="font-semibold">STX1B ↔ STXBP1 Vesicle Fusion Link</p>
-                <p className="text-muted-foreground text-[11px]">Reviewed biology citation • PubMed ID 31024001</p>
+                <p className="text-muted-foreground text-[11px]">
+                  Reviewed biology citation • PubMed ID 31024001
+                </p>
               </div>
               <ShieldCheck className="size-4 text-primary" />
             </div>
@@ -175,9 +184,13 @@ export function SocialProfileView({
           <div className="rounded-xl border border-border bg-surface p-4 text-xs space-y-1.5">
             <div className="flex justify-between items-center">
               <h4 className="font-semibold text-sm">The SNARE Caregiver Circle</h4>
-              <span className="rounded-full bg-example-mint px-2 py-0.5 text-[10px] text-primary font-medium">Active Member</span>
+              <span className="rounded-full bg-example-mint px-2 py-0.5 text-[10px] text-primary font-medium">
+                Active Member
+              </span>
             </div>
-            <p className="text-muted-foreground">14 caregivers • Moderated by STXBP1 Foundation steward</p>
+            <p className="text-muted-foreground">
+              14 caregivers • Moderated by STXBP1 Foundation steward
+            </p>
           </div>
         </div>
       )}
