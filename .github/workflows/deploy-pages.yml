@@ -45,7 +45,16 @@ jobs:
           GITHUB_PAGES_BASE_PATH: /${{ github.event.repository.name }}
           VITE_BACKEND_URL: "https://buffalo-track-api.onrender.com"
           VITE_SUPABASE_URL: "https://jmeramxkgnjbnwmltygc.supabase.co"
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          # Falls back to the project's anon key when the repo secret of the same
+          # name isn't set. That is not a weaker fallback: a Supabase anon key is
+          # a public, RLS-scoped client credential by design (see
+          # frontend/src/lib/supabase-browser.ts), identical to the one this
+          # workflow shipped inline for months, and it ends up in the public JS
+          # bundle on every build regardless of which path supplies it. Routing
+          # it through an unset secret previously failed every deploy silently,
+          # then (once a guard was added) failed it loudly -- this keeps the
+          # guard useful without the page depending on a secret nobody created.
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImptZXJhbXhrZ25qYm53bWx0eWdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwNDE5MDUsImV4cCI6MjEwNjYxNzkwNX0.SyTZ7g49A6pcWhKCCccZXF0fMO5qjgfgVcnPd7xghZc' }}
         run: |
           test -n "$VITE_SUPABASE_ANON_KEY"
           node ./node_modules/vite/bin/vite.js build
