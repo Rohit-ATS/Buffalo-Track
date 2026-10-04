@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import {
   ArrowRight,
   BookOpen,
@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { requestMagicLink, type MagicLinkRequestResult } from "@/lib/magic-link";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import {
   acceptIntroduction,
@@ -131,17 +132,16 @@ export function FamilySpace() {
     return () => data.subscription.unsubscribe();
   }, []);
   async function magicLink(value: string) {
-    const client = getSupabaseBrowser();
-    if (!client)
-      return setNotice(
-        "Add your teammate’s VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to activate sign-in.",
-      );
-    const { error } = await client.auth.signInWithOtp({
+    const result = await requestMagicLink({
+      client: getSupabaseBrowser(),
       email: value,
-      options: { emailRedirectTo: `${window.location.origin}/family` },
+      emailRedirectTo: `${window.location.origin}/family`,
     });
-    setNotice(error ? error.message : "Check your inbox for a secure sign-in link.");
-    if (!error) setModal(null);
+    if (result.kind === "sent") {
+      setNotice("Check your inbox for a secure sign-in link.");
+      setModal(null);
+    }
+    return result;
   }
   async function persist(next: FamilyProfile) {
     try {
@@ -475,24 +475,57 @@ function ProfileForm({
     </Modal>
   );
 }
-function SignIn({ onClose, onSubmit }: { onClose: () => void; onSubmit: (email: string) => void }) {
+function SignIn({
+  onClose,
+  onSubmit,
+}: {
+  onClose: () => void;
+  onSubmit: (email: string) => Promise<MagicLinkRequestResult>;
+}) {
   const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    if (!email || sending) return;
+
+    setSending(true);
+    setMessage(null);
+    const result = await onSubmit(email);
+    if (result.kind !== "sent") {
+      setMessage(result.message);
+      setSending(false);
+    }
+  }
+
   return (
     <Modal title="Sign in privately" onClose={onClose}>
       <p className="text-sm text-muted-foreground">
         We’ll email a secure magic link—no password required.
       </p>
-      <input
-        type="email"
-        autoComplete="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="mt-4 w-full rounded-lg border bg-background px-3 py-2"
-        placeholder="you@example.com"
-      />
-      <Button className="mt-4" disabled={!email} onClick={() => onSubmit(email)}>
-        Email me a magic link
-      </Button>
+      <form onSubmit={submit}>
+        <input
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="mt-4 w-full rounded-lg border bg-background px-3 py-2"
+          placeholder="you@example.com"
+        />
+        <Button className="mt-4" type="submit" disabled={!email || sending}>
+          {sending ? "Sending…" : "Email me a magic link"}
+        </Button>
+        {message && (
+          <p
+            className="mt-3 rounded-lg border border-risk/40 bg-background p-3 text-sm"
+            role="alert"
+          >
+            {message}
+          </p>
+        )}
+      </form>
     </Modal>
   );
 }

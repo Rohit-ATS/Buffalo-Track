@@ -31,6 +31,7 @@ import {
   type SectionId,
 } from "@/lib/access";
 import { currentRole } from "@/lib/social";
+import { requestMagicLink } from "@/lib/magic-link";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 /**
@@ -293,24 +294,18 @@ function SignedOut() {
     const value = email.trim();
     if (!value || status === "sending") return;
 
-    const client = getSupabaseBrowser();
-    if (!client) {
-      setStatus("error");
-      setMessage("Sign-in is not configured in this build.");
-      return;
-    }
-
     setStatus("sending");
     setMessage(null);
-    const { error } = await client.auth.signInWithOtp({
+    const result = await requestMagicLink({
+      client: getSupabaseBrowser(),
       email: value,
       // Keep landing people in their family space, the way the previous
       // modal did -- /family redirects into the dashboard's family section.
-      options: { emailRedirectTo: `${window.location.origin}/family` },
+      emailRedirectTo: `${window.location.origin}/family`,
     });
-    if (error) {
+    if (result.kind !== "sent") {
       setStatus("error");
-      setMessage(error.message);
+      setMessage(result.message);
       return;
     }
     setStatus("sent");

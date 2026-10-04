@@ -54,6 +54,22 @@ VITE_SUPABASE_URL=https://<ref>.supabase.co
 VITE_SUPABASE_ANON_KEY=<anon key>
 ```
 
+## Production magic-link email
+
+The built-in hosted Supabase email provider permits only two emails per hour for
+the entire project. That limit is appropriate for a fresh project, but it is
+too small for a shared demo or a family-facing sign-in flow.
+
+Before deploying, configure a verified custom SMTP provider (or a Send Email
+hook) in **Supabase Dashboard → Authentication → Email**. Then set a suitable
+email-send limit in **Authentication → Rate Limits**, and add your deployed
+`https://<domain>/family` URL to the Auth redirect allow-list. These are hosted
+Auth settings: `supabase db push` does not apply them.
+
+The frontend prevents accidental repeat sends for 60 seconds and tells people
+to use their newest link first, but it intentionally does not bypass Supabase's
+server-side protection.
+
 ## Run it locally instead
 
 ```bash
