@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rare Disease Atlas — Project Demo</title>
+    <style>
+      :root { --ink:#18362a; --paper:#fffdf7; --mint:#d8efe0; --green:#28734d; --yellow:#f2cf70; --line:#d8d8ca; --muted:#607067; }
+      * { box-sizing:border-box; } body { margin:0; color:var(--ink); background:var(--paper); font-family:Arial,sans-serif; line-height:1.5; }
+      main { max-width:1120px; margin:auto; padding:28px; } section { min-height:80vh; padding:72px 0; border-bottom:1px solid var(--line); }
+      .eyebrow { color:var(--green); font-size:.75rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; } h1,h2,h3 { font-family:Georgia,serif; line-height:1.04; margin:.35rem 0 1rem; } h1 { font-size:clamp(3.5rem,9vw,7rem); max-width:900px; } h2 { font-size:clamp(2.3rem,5vw,4.4rem); max-width:850px; } h3 { font-size:1.45rem; } p { max-width:760px; font-size:1.04rem; } .sub { color:var(--muted); font-size:1.25rem; }
+      .pill { display:inline-block; margin:.2rem; padding:.35rem .65rem; border:1px solid var(--line); border-radius:99px; font-size:.8rem; font-weight:700; } .hero { display:flex; min-height:84vh; flex-direction:column; justify-content:center; }
+      .grid { display:grid; gap:18px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); margin-top:32px; } .card { padding:22px; border:1px solid var(--line); border-radius:16px; background:white; } .card.mint { background:var(--mint); border-color:transparent; } .card.yellow { background:#fff3ca; border-color:transparent; }
+      .number { display:grid; width:34px; height:34px; place-items:center; border-radius:50%; background:var(--green); color:white; font-weight:bold; } .flow { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-top:28px; } .flow div { padding:12px 16px; border-radius:10px; background:var(--mint); font-weight:700; } .flow b { color:var(--green); }
+      table { width:100%; margin-top:24px; border-collapse:collapse; font-size:.94rem; } th,td { padding:13px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top; } th { color:var(--muted); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; }
+      .demo { background:var(--ink); color:#f9faf4; border-radius:24px; padding:28px; margin-top:30px; } .demo .eyebrow { color:var(--yellow); } .demo p { color:#d5dfd5; } .demo ol { padding-left:22px; } .demo li { margin:.8rem 0; }
+      code { padding:.15rem .35rem; background:#edf2ec; border-radius:4px; color:#164a2e; } .team { min-height:0; } .team .card p { color:var(--muted); font-size:.9rem; }
+      footer { padding:38px 0 64px; text-align:center; color:var(--muted); } @media print { section { min-height:0; page-break-after:always; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <span class="eyebrow">Hackathon project demo</span>
+        <h1>Rare Disease Atlas</h1>
+        <p class="sub">A private, evidence-backed network that helps rare-disease families find people, communities, studies, and reusable resources—without needing to become research experts.</p>
+        <div>
+          <span class="pill">Private by default</span><span class="pill">Evidence-backed</span><span class="pill">Explainable matching</span><span class="pill">Family-first</span>
+        </div>
+      </section>
+
+      <section>
+        <span class="eyebrow">The problem</span>
+        <h2>A diagnosis should not begin with isolation.</h2>
+        <div class="grid">
+          <article class="card"><div class="number">1</div><h3>Information is fragmented</h3><p>Families must navigate medical language, studies, registries, foundations, and social groups across disconnected sources.</p></article>
+          <article class="card"><div class="number">2</div><h3>Trust is difficult</h3><p>A useful connection needs a reason, a source, consent, and a safety boundary—not an opaque recommendation.</p></article>
+          <article class="card"><div class="number">3</div><h3>Privacy is essential</h3><p>Medical details and contact information cannot be prerequisites for finding meaningful peer support.</p></article>
+        </div>
+      </section>
+
+      <section>
+        <span class="eyebrow">Our answer</span>
+        <h2>From evidence to trusted connection to shared action.</h2>
+        <div class="flow"><div>Diagnosis</div><b>→</b><div>Reviewed evidence</div><b>→</b><div>Explainable match</div><b>→</b><div>Private introduction</div><b>→</b><div>Circle &amp; action</div></div>
+        <p>Atlas brings the research engine and family experience together. The same evidence that helps identify a relevant study or mechanism also explains why a Circle or resource may help today.</p>
+      </section>
+
+      <section>
+        <span class="eyebrow">What a family sees</span>
+        <h2>“Good morning. Here are the three things that may help today.”</h2>
+        <div class="grid">
+          <article class="card mint"><span class="eyebrow">People</span><h3>2 caregivers navigating related seizure disorders</h3><p>Open to a paced introduction. Atlas explains the shared life stage and resource need.</p></article>
+          <article class="card mint"><span class="eyebrow">Community</span><h3>The SNARE Caregiver Circle</h3><p>14 caregivers · moderated · private. Families share a presynaptic-vesicle pathway and practical experience.</p></article>
+          <article class="card yellow"><span class="eyebrow">Research</span><h3>A natural-history study may be relevant</h3><p>Families see eligibility and a reviewed source—not a claim that Atlas determines medical eligibility.</p></article>
+        </div>
+      </section>
+
+      <section>
+        <span class="eyebrow">Demo walkthrough</span>
+        <h2>One safe vertical slice, end to end.</h2>
+        <div class="demo"><ol>
+          <li><strong>Sign in</strong> with a passwordless Supabase email magic link.</li>
+          <li><strong>Onboard once:</strong> condition, patient/caregiver role, age band, time zone, language, help needed, and matching consent.</li>
+          <li><strong>Enter the role-specific dashboard.</strong> A family sees connections; an evidence reviewer sees sources; a steward sees Circle safety tools.</li>
+          <li><strong>Open a match.</strong> “Why Atlas suggested this” shows shared diagnosis, mechanism, life stage, research question, or resource need.</li>
+          <li><strong>Request, don’t expose.</strong> A private introduction request shares a note—not email, phone, or medical record.</li>
+          <li><strong>Accept privately.</strong> Mutual acceptance opens a private conversation; a steward can moderate a Circle and members can report or block.</li>
+        </ol></div>
+      </section>
+
+      <section>
+        <span class="eyebrow">Role-based product</span>
+        <h2>Not everyone should see the same dashboard.</h2>
+        <table>
+          <thead><tr><th>Demo person</th><th>Role</th><th>Primary experience</th><th>Protected boundary</th></tr></thead>
+          <tbody>
+            <tr><td>Maria</td><td>Family member</td><td>Private profile, explainable matches, Circles, introductions</td><td>No other family’s private profile, report, or evidence workspace</td></tr>
+            <tr><td>Devon</td><td>Community steward</td><td>Circle requests, moderation, reports, safety controls</td><td>Only their Circle; no global family data</td></tr>
+            <tr><td>Dr. Osei</td><td>Evidence reviewer</td><td>Source receipts, studies, discovery signals, research review</td><td>No private family profiles or conversations</td></tr>
+            <tr><td>Priya</td><td>Administrator / partner operations</td><td>Safety and partner operations</td><td>Role assignment stays in trusted server-side workflows</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <span class="eyebrow">Technical walkthrough</span>
+        <h2>Trust is built into the architecture.</h2>
+        <div class="grid">
+          <article class="card"><h3>Supabase Auth + RLS</h3><p>Magic-link authentication. Profiles, requests, messages, reports, and blocks are row-level protected. The browser only receives the anon key.</p></article>
+          <article class="card"><h3>Private network model</h3><p><code>profiles</code>, <code>circles</code>, <code>introduction_requests</code>, private conversations, messages, and reports establish consent before contact.</p></article>
+          <article class="card"><h3>Evidence layer</h3><p>Evidence reviewers can inspect receipts. Family-facing cards receive approved public context and a clear source—not raw, unverified web results.</p></article>
+          <article class="card"><h3>Bright Data ingestion</h3><p>Server-side only. Bright Data discovers public, permitted organization and study pages; the pipeline records provenance, verifies claims, and caps spend.</p></article>
+        </div>
+        <div class="flow"><div>Bright Data</div><b>→</b><div>Server discovery + verification</div><b>→</b><div>Supabase evidence records</div><b>→</b><div>Reviewed suggestions</div><b>→</b><div>Family dashboard</div></div>
+      </section>
+
+      <section class="team">
+        <span class="eyebrow">Meet the team</span>
+        <h2>Replace these placeholders before presenting.</h2>
+        <div class="grid">
+          <article class="card"><h3>[Name]</h3><p>Product &amp; family experience<br />Problem framing, onboarding, demo narrative</p></article>
+          <article class="card"><h3>[Name]</h3><p>Full-stack &amp; Supabase<br />Auth, RLS, social network workflows</p></article>
+          <article class="card"><h3>[Name]</h3><p>Evidence &amp; data systems<br />Bright Data pipeline, source verification, study data</p></article>
+          <article class="card"><h3>[Name]</h3><p>Design &amp; community safety<br />Role dashboards, Circle moderation, accessibility</p></article>
+        </div>
+      </section>
+
+      <section>
+        <span class="eyebrow">Why this can win</span>
+        <h2>We did not build another search tool.</h2>
+        <p>Rare Disease Atlas converts evidence into an understandable, private next step. It serves a family in a difficult moment while preserving the scientific provenance, consent, and role boundaries required to earn trust.</p>
+        <div class="grid"><article class="card mint"><h3>Human impact</h3><p>Less isolation. More agency. Better pathways to peers and studies.</p></article><article class="card mint"><h3>Technical depth</h3><p>Auth, RLS, role-based products, evidence provenance, and real-time ingestion.</p></article><article class="card yellow"><h3>Demo clarity</h3><p>One emotional, safe, end-to-end story in under three minutes.</p></article></div>
+      </section>
+      <footer>Rare Disease Atlas · Evidence-backed connection, at your pace.</footer>
+    </main>
+  </body>
+</html>
