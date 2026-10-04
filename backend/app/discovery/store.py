@@ -37,6 +37,38 @@ class RunCounters:
     claims_rejected: int = 0
 
 
+def _dedupe(rows: list[dict[str, Any]], key: tuple[str, ...]) -> list[dict[str, Any]]:
+    """Keeps the first row for each key tuple, preserving order."""
+    seen: set[tuple[Any, ...]] = set()
+    out: list[dict[str, Any]] = []
+    for row in rows:
+        identity = tuple(row.get(part) for part in key)
+        if identity in seen:
+            continue
+        seen.add(identity)
+        out.append(row)
+    return out
+
+
+def _align_keys(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Gives every row in a batch the same keys, filling gaps with None.
+
+    PostgREST rejects a multi-row insert whose objects differ in shape --
+    "All object keys must match" (PGRST102) -- and our rows legitimately do:
+    a verified claim carries confidence and rule, a rejected one carries
+    reject_reason instead. Padding here keeps that difference expressible at
+    the call site without every caller having to remember the rule.
+    """
+    if len(rows) < 2:
+        return rows
+
+    keys: set[str] = set()
+    for row in rows:
+        keys.update(row)
+
+    return [{key: row.get(key) for key in keys} for row in rows]
+
+
 class DiscoveryStore:
     """Persists runs, SERP hits, pages, claims and promoted assets."""
 
@@ -53,18 +85,31 @@ class DiscoveryStore:
         }
 
     async def _insert(
-        self, table: str, rows: list[dict[str, Any]], *, returning: bool = False, upsert: bool = False
+        self,
+        table: str,
+        rows: list[dict[str, Any]],
+        *,
+        returning: bool = False,
+        upsert: bool = False,
+        on_conflict: str | None = None,
     ) -> list[dict[str, Any]]:
         if not rows:
             return []
 
+        rows = _align_keys(rows)
         prefer = ["return=representation" if returning else "return=minimal"]
         if upsert:
             prefer.append("resolution=merge-duplicates")
 
+        # merge-duplicates only resolves against the primary key unless the
+        # conflicting columns are named, so a unique constraint like
+        # atlas_web_sources.url still raises 23505 without this.
+        params = {"on_conflict": on_conflict} if on_conflict else None
+
         response = await self._client.post(
             f"{self._base}/{table}",
             headers={**self._headers, "Prefer": ",".join(prefer)},
+            params=params,
             json=rows,
             timeout=httpx.Timeout(30.0),
         )
@@ -122,6 +167,7 @@ class DiscoveryStore:
             "atlas_serp_results",
             [{**hit, "run_id": run_id} for hit in hits],
             upsert=True,
+            on_conflict="run_id,query,url",
         )
 
     # ---------------------------------------------------------------- pages
@@ -132,6 +178,7 @@ class DiscoveryStore:
             [{**page, "run_id": run_id}],
             returning=True,
             upsert=True,
+            on_conflict="url",
         )
         if rows and "id" in rows[0]:
             return str(rows[0]["id"])
@@ -164,4 +211,11 @@ class DiscoveryStore:
 
     # ---------------------------------------------------------------- assets
     async def save_assets(self, assets: list[dict[str, Any]]) -> None:
-        await self._insert("atlas_discovered_assets", assets, upsert=True)
+        # One page often yields two claims naming the same asset. Postgres
+        # refuses an upsert that would touch a row twice in one command
+        # (21000), so collapse them here -- keeping the first, which is the
+        # higher-confidence claim since _judge preserves extraction order.
+        deduped = _dedupe(assets, ("source_id", "kind", "name"))
+        await self._insert(
+            "atlas_discovered_assets", deduped, upsert=True, on_conflict="source_id,kind,name"
+        )
