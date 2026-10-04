@@ -203,3 +203,31 @@ export const atlasDiseases = createServerFn({ method: "GET" }).handler(
     }
   },
 );
+
+/** Recent edges for the research dashboard. */
+export const atlasRecentEdges = createServerFn({ method: "GET" }).handler(
+  async (): Promise<EdgeReceipt[]> => {
+    const client = db();
+    if (!client) return [];
+    try {
+      return await Q.getRecentEdges(client);
+    } catch (error) {
+      console.error("atlasRecentEdges failed", error);
+      return [];
+    }
+  },
+);
+
+/** Per-run claim counts, for the activity chart. */
+export const atlasRunActivity = createServerFn({ method: "GET" }).handler(
+  async (): Promise<{ label: string; verified: number; extracted: number }[]> => {
+    const client = db();
+    if (!client) return [];
+    try {
+      return await Q.getRunActivity(client);
+    } catch (error) {
+      console.error("atlasRunActivity failed", error);
+      return [];
+    }
+  },
+);

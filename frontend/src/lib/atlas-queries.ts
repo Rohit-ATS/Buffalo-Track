@@ -789,3 +789,41 @@ export async function listDiseases(db: SupabaseClient): Promise<DiseaseRef[]> {
   if (error) fail(error.message);
   return ((data ?? []) as unknown as DiseaseRow[]).map(toDisease);
 }
+
+/** Recent edges, newest first — what the research dashboard lists. */
+export async function getRecentEdges(db: SupabaseClient, limit = 8): Promise<EdgeReceipt[]> {
+  const { data, error } = await db
+    .from("atlas_edges")
+    .select(EDGE_SELECT)
+    .order("retrieved_at", { ascending: false })
+    .limit(limit);
+  if (error) fail(error.message);
+  return ((data ?? []) as unknown as EdgeRow[]).map(toEdge);
+}
+
+/** Verified-claim counts per discovery run, for the activity chart. */
+export async function getRunActivity(
+  db: SupabaseClient,
+  limit = 7,
+): Promise<{ label: string; verified: number; extracted: number }[]> {
+  const { data, error } = await db
+    .from("atlas_discovery_runs")
+    .select("seed_term, claims_verified, claims_extracted, started_at")
+    .order("started_at", { ascending: false })
+    .limit(limit);
+  if (error) fail(error.message);
+
+  return (
+    (data ?? []) as unknown as {
+      seed_term: string;
+      claims_verified: number;
+      claims_extracted: number;
+    }[]
+  )
+    .map((r) => ({
+      label: r.seed_term,
+      verified: r.claims_verified,
+      extracted: r.claims_extracted,
+    }))
+    .reverse();
+}
