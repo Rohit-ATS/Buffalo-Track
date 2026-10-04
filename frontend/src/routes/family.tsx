@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import {
   ArrowRight,
@@ -26,9 +26,14 @@ import {
 } from "@/lib/family-network";
 
 export const Route = createFileRoute("/family")({
+  // Not a destination any more, so it stays out of the sitemap.
   staticData: { sitemap: false },
-  head: () => ({ meta: [{ title: "Family space — Rare Disease Atlas" }] }),
-  component: FamilyPage,
+  // The family space lives inside the dashboard now. This route stays so the
+  // magic-link redirect (emailRedirectTo: `${origin}/family`) and any shared
+  // link keep working.
+  beforeLoad: () => {
+    throw redirect({ to: "/dashboard", search: { section: "family" } });
+  },
 });
 
 const blank: FamilyProfile = {
@@ -82,7 +87,7 @@ const preview: FamilySuggestion[] = [
   },
 ];
 
-function FamilyPage() {
+export function FamilySpace() {
   const [email, setEmail] = useState<string | null>(null);
   const [profile, setProfile] = useState<FamilyProfile | null>(null);
   const [suggestions, setSuggestions] = useState<FamilySuggestion[]>([]);
@@ -174,28 +179,21 @@ function FamilyPage() {
   // suggested people is rendered until Supabase Auth has established a session.
   const cards = email ? (suggestions.length ? suggestions : preview) : [];
   return (
-    <main className="min-h-screen bg-secondary text-foreground">
-      <header className="border-b border-border bg-background/90 px-5 py-4 backdrop-blur md:px-10">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-          <Link to="/" className="font-display text-xl">
-            Rare Disease Atlas
-          </Link>
-          <div className="flex items-center gap-2">
-            <span className="hidden text-xs text-muted-foreground sm:inline">
-              <LockKeyhole className="mr-1 inline size-3" />
-              Private family space
-            </span>
-            {email ? (
-              <span className="text-xs font-semibold">{email}</span>
-            ) : (
-              <Button size="sm" onClick={() => setModal("sign-in")}>
-                Sign in
-              </Button>
-            )}
-          </div>
-        </div>
-      </header>
-      <section className="mx-auto max-w-6xl px-5 py-9 md:px-10 md:py-14">
+    <>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <LockKeyhole className="size-3" aria-hidden="true" />
+          Private to you. Nothing here is visible to researchers or reviewers.
+        </span>
+        {email ? (
+          <span className="text-xs font-semibold">{email}</span>
+        ) : (
+          <Button size="sm" onClick={() => setModal("sign-in")}>
+            Sign in
+          </Button>
+        )}
+      </div>
+      <section>
         <div className="grid gap-8 lg:grid-cols-[1fr_280px]">
           <div>
             <p className="eyebrow">Your private home</p>
@@ -332,7 +330,7 @@ function FamilyPage() {
           }}
         />
       )}
-    </main>
+    </>
   );
 }
 function Card({
